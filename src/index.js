@@ -2,8 +2,8 @@
 import 'babel-polyfill'
 import { mat4 } from 'gl-matrix'
 import CubeTexture from './textures/cubetexture.png'
-import VsSource from './vsSource.glsl'
-import FsSource from './fsSource.glsl'
+import VertexShader from './shaders/vertex.glsl'
+import FragmentShader from './shaders/fragment.glsl'
 
 const initShaderProgram = (gl, vsSource, fsSource) => {
   const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource)
@@ -125,8 +125,47 @@ const initBuffers = (gl) => {
     20, 21, 22, 20, 22, 23 // left
   ]
 
+  const vertexNormals = [
+    // Front
+    0.0, 0.0, 1.0,
+    0.0, 0.0, 1.0,
+    0.0, 0.0, 1.0,
+    0.0, 0.0, 1.0,
+
+    // Back
+    0.0, 0.0, -1.0,
+    0.0, 0.0, -1.0,
+    0.0, 0.0, -1.0,
+    0.0, 0.0, -1.0,
+
+    // Top
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 0.0,
+
+    // Bottom
+    0.0, -1.0, 0.0,
+    0.0, -1.0, 0.0,
+    0.0, -1.0, 0.0,
+    0.0, -1.0, 0.0,
+
+    // Right
+    1.0, 0.0, 0.0,
+    1.0, 0.0, 0.0,
+    1.0, 0.0, 0.0,
+    1.0, 0.0, 0.0,
+
+    // Left
+    -1.0, 0.0, 0.0,
+    -1.0, 0.0, 0.0,
+    -1.0, 0.0, 0.0,
+    -1.0, 0.0, 0.0
+  ]
+
   return {
     position: createArrayBuffer(positions),
+    normal: createArrayBuffer(vertexNormals),
     textureCoord: createArrayBuffer(textureCoordinates),
     indices: createElementArrayBuffer(indices)
   }
@@ -148,16 +187,21 @@ const drawScene = (gl, programInfo, buffers, texture, cubeRotation) => {
   mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar)
 
   const modelViewMatrix = mat4.create()
-
   mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -6])
   mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation, [0, 0, 1])
   mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation * 0.7, [0, 1, 0])
+
+  const normalMatrix = mat4.create()
+  mat4.invert(normalMatrix, modelViewMatrix)
+  mat4.transpose(normalMatrix, normalMatrix)
 
   gl.useProgram(programInfo.program)
 
   gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix)
 
   gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix)
+
+  gl.uniformMatrix4fv(programInfo.uniformLocations.normalMatrix, false, normalMatrix)
 
   const bindBuffer = (numComponents, buffer, attribLocs) => {
     const type = gl.FLOAT
@@ -177,6 +221,8 @@ const drawScene = (gl, programInfo, buffers, texture, cubeRotation) => {
   }
 
   bindBuffer(3, buffers.position, programInfo.attribLocations.vertexPosition)
+
+  bindBuffer(3, buffers.normal, programInfo.attribLocations.vertexNormal)
 
   bindBuffer(2, buffers.textureCoord, programInfo.attribLocations.textureCoord)
   gl.activeTexture(gl.TEXTURE0)
@@ -226,20 +272,26 @@ const loadTexture = (gl, url) => {
   return texture
 }
 
+const setupVideo = url => {
+  const video = document.createElement('video')
+}
+
 const main = () => {
   const canvas = document.querySelector('#glCanvas')
   const gl = canvas.getContext('webgl')
-  const shaderProgram = initShaderProgram(gl, VsSource, FsSource)
+  const shaderProgram = initShaderProgram(gl, VertexShader, FragmentShader)
 
   const programInfo = {
     program: shaderProgram,
     attribLocations: {
       vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
+      vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
       textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord')
     },
     uniformLocations: {
       projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
       modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+      normalMatrix: gl.getUniformLocation(shaderProgram, 'uNormalMatrix'),
       uSampler: gl.getUniformLocation(shaderProgram, 'uSampler')
     }
   }
