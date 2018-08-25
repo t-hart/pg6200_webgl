@@ -55,34 +55,80 @@ const loadShader = (gl, type, source) => {
 }
 
 const initBuffers = (gl) => {
-  const createBuffer = (arr) => {
+  const createBuffer = bufferType => ArrayInitialiser => arr => {
     const buffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.STATIC_DRAW)
+    gl.bindBuffer(bufferType, buffer)
+    gl.bufferData(bufferType, new ArrayInitialiser(arr), gl.STATIC_DRAW)
     return buffer
   }
 
+  const createArrayBuffer = createBuffer(gl.ARRAY_BUFFER)(Float32Array)
+  const createElementArrayBuffer = createBuffer(gl.ELEMENT_ARRAY_BUFFER)(Uint16Array)
+
   const positions = [
-    -1.0, 1.0,
-    1.0, 1.0,
-    -1.0, -1.0,
-    1.0, -1.0
+    // Front face
+    -1.0, -1.0, 1.0,
+    1.0, -1.0, 1.0,
+    1.0, 1.0, 1.0,
+    -1.0, 1.0, 1.0,
+
+    // Back face
+    -1.0, -1.0, -1.0,
+    -1.0, 1.0, -1.0,
+    1.0, 1.0, -1.0,
+    1.0, -1.0, -1.0,
+
+    // Top face
+    -1.0, 1.0, -1.0,
+    -1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0,
+    1.0, 1.0, -1.0,
+
+    // Bottom face
+    -1.0, -1.0, -1.0,
+    1.0, -1.0, -1.0,
+    1.0, -1.0, 1.0,
+    -1.0, -1.0, 1.0,
+
+    // Right face
+    1.0, -1.0, -1.0,
+    1.0, 1.0, -1.0,
+    1.0, 1.0, 1.0,
+    1.0, -1.0, 1.0,
+
+    // Left face
+    -1.0, -1.0, -1.0,
+    -1.0, -1.0, 1.0,
+    -1.0, 1.0, 1.0,
+    -1.0, 1.0, -1.0
   ]
 
   const colors = [
-    1.0, 1.0, 1.0, 1.0, // white
-    1.0, 0.0, 0.0, 1.0, // red
-    0.0, 1.0, 0.0, 1.0, // green
-    0.0, 0.0, 1.0, 1.0 // blue
+    [1.0, 1.0, 1.0, 1.0], // Front face: white
+    [1.0, 0.0, 0.0, 1.0], // Back face: red
+    [0.0, 1.0, 0.0, 1.0], // Top face: green
+    [0.0, 0.0, 1.0, 1.0], // Bottom face: blue
+    [1.0, 1.0, 0.0, 1.0], // Right face: yellow
+    [1.0, 0.0, 1.0, 1.0] // Left face: purple
+  ].flatMap(x => [].concat(...Array(4).fill(x)))
+
+  const indices = [
+    0, 1, 2, 0, 2, 3, // front
+    4, 5, 6, 4, 6, 7, // back
+    8, 9, 10, 8, 10, 11, // top
+    12, 13, 14, 12, 14, 15, // bottom
+    16, 17, 18, 16, 18, 19, // right
+    20, 21, 22, 20, 22, 23 // left
   ]
 
   return {
-    position: createBuffer(positions),
-    color: createBuffer(colors)
+    position: createArrayBuffer(positions),
+    color: createArrayBuffer(colors),
+    indices: createElementArrayBuffer(indices)
   }
 }
 
-const drawScene = (gl, programInfo, buffers, squareRotation) => {
+const drawScene = (gl, programInfo, buffers, cubeRotation) => {
   gl.clearColor(0, 0, 0, 1)
   gl.clearDepth(1)
   gl.enable(gl.DEPTH_TEST)
@@ -100,7 +146,8 @@ const drawScene = (gl, programInfo, buffers, squareRotation) => {
   const modelViewMatrix = mat4.create()
 
   mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -6])
-  mat4.rotate(modelViewMatrix, modelViewMatrix, squareRotation, [0, 0, 1])
+  mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation, [0, 0, 1])
+  mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation * 0.7, [0, 1, 0])
 
   const bindBuffer = (numComponents, buffer, attribLocs) => {
     const type = gl.FLOAT
@@ -120,7 +167,15 @@ const drawScene = (gl, programInfo, buffers, squareRotation) => {
   }
 
   bindBuffer(4, buffers.color, programInfo.attribLocations.vertexColor)
-  bindBuffer(2, buffers.position, programInfo.attribLocations.vertexPosition)
+  bindBuffer(3, buffers.position, programInfo.attribLocations.vertexPosition)
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices)
+
+  {
+    const vertexCount = 36
+    const type = gl.UNSIGNED_SHORT
+    const offset = 0
+    gl.drawElements(gl.TRIANGLES, vertexCount, type, offset)
+  }
 
   gl.useProgram(programInfo.program)
 
@@ -162,12 +217,12 @@ const main = () => {
 
   const buffers = initBuffers(gl)
 
-  const render = squareRotation => then => now => {
+  const render = cubeRotation => then => now => {
     const nowSeconds = now * 0.001
     const deltaTime = nowSeconds - then
-    drawScene(gl, programInfo, buffers, squareRotation)
+    drawScene(gl, programInfo, buffers, cubeRotation)
 
-    requestAnimationFrame(render(squareRotation + deltaTime)(nowSeconds))
+    requestAnimationFrame(render(cubeRotation + deltaTime)(nowSeconds))
   }
   requestAnimationFrame(render(0)(0))
 }
