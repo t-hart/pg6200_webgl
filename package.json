@@ -1,0 +1,14 @@
+{
+  "name": "pg6200_01",
+  "version": "1.0.0",
+  "description": "\"Coursework for graphics programming\"",
+  "main": "src/main.js",
+  "author": "Thomas Hartmann <thomas.o.hartmann@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "gl-matrix": "^2.7.1"
+  }
+}

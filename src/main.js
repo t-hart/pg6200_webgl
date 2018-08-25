@@ -1,4 +1,5 @@
 /* global alert */
+import 'babel-polyfill'
 import { mat4 } from 'gl-matrix'
 
 const vsSource = `
