@@ -1,6 +1,7 @@
-/* global alert, requestAnimationFrame */
+/* global alert, Image, requestAnimationFrame */
 import 'babel-polyfill'
 import { mat4 } from 'gl-matrix'
+import Texture from './textures/cubetexture.png'
 
 const vsSource = `
   attribute vec4 aVertexPosition;
@@ -170,13 +171,6 @@ const drawScene = (gl, programInfo, buffers, cubeRotation) => {
   bindBuffer(3, buffers.position, programInfo.attribLocations.vertexPosition)
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices)
 
-  {
-    const vertexCount = 36
-    const type = gl.UNSIGNED_SHORT
-    const offset = 0
-    gl.drawElements(gl.TRIANGLES, vertexCount, type, offset)
-  }
-
   gl.useProgram(programInfo.program)
 
   gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix)
@@ -184,13 +178,48 @@ const drawScene = (gl, programInfo, buffers, cubeRotation) => {
   gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix)
 
   {
+    const vertexCount = 36
+    const type = gl.UNSIGNED_SHORT
     const offset = 0
-    const vertexCount = 4
-    gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount)
+    gl.drawElements(gl.TRIANGLES, vertexCount, type, offset)
   }
 }
 
-const main = () => {
+const loadTexture = (gl, url) => {
+  const texture = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+
+  const level = 0
+  const internalFormat = gl.RGBA
+  const width = 1
+  const height = 1
+  const border = 0
+  const srcFormat = gl.RGBA
+  const srcType = gl.UNSIGNED_BYTE
+  const pixel = new Uint8Array([0, 0, 255, 255]) // opaque blue
+  gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, srcFormat, srcType, pixel)
+
+  const image = new Image()
+  image.onLoad = () => {
+    gl.bindTexture(gl.TEXTURE_2D, texture)
+    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, image)
+
+    const isPowerOf2 = value => (value & (value - 1)) === 0
+
+    if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+      gl.generateMipmap(gl.TEXTURE_2D)
+    } else {
+      gl.texParamateri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+      gl.texParamateri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+      gl.texParamateri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    }
+  }
+
+  image.src = url
+  return texture
+}
+
+const main = async () => {
   const canvas = document.querySelector('#glCanvas')
   const gl = canvas.getContext('webgl')
   const shaderProgram = initShaderProgram(gl, vsSource, fsSource)
@@ -216,6 +245,7 @@ const main = () => {
   gl.clear(gl.COLOR_BUFFER_BIT)
 
   const buffers = initBuffers(gl)
+  const texture = loadTexture(gl, Texture)
 
   const render = cubeRotation => then => now => {
     const nowSeconds = now * 0.001
