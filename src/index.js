@@ -1,30 +1,9 @@
 /* global alert, Image, requestAnimationFrame */
 import 'babel-polyfill'
 import { mat4 } from 'gl-matrix'
-import Texture from './textures/cubetexture.png'
-
-const vsSource = `
-  attribute vec4 aVertexPosition;
-  attribute vec4 aVertexColor;
-
-  uniform mat4 uModelViewMatrix;
-  uniform mat4 uProjectionMatrix;
-
-  varying highp vec4 vColor;
-
-  void main() {
-    gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-    vColor = aVertexColor;
-  }
-`
-
-const fsSource = `
-  varying highp vec4 vColor;
-
-  void main() {
-    gl_FragColor = vColor;
-  }
-`
+import CubeTexture from './textures/cubetexture.png'
+import VsSource from './vsSource.glsl'
+import FsSource from './fsSource.glsl'
 
 const initShaderProgram = (gl, vsSource, fsSource) => {
   const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource)
@@ -104,14 +83,38 @@ const initBuffers = (gl) => {
     -1.0, 1.0, -1.0
   ]
 
-  const colors = [
-    [1.0, 1.0, 1.0, 1.0], // Front face: white
-    [1.0, 0.0, 0.0, 1.0], // Back face: red
-    [0.0, 1.0, 0.0, 1.0], // Top face: green
-    [0.0, 0.0, 1.0, 1.0], // Bottom face: blue
-    [1.0, 1.0, 0.0, 1.0], // Right face: yellow
-    [1.0, 0.0, 1.0, 1.0] // Left face: purple
-  ].flatMap(x => [].concat(...Array(4).fill(x)))
+  const textureCoordinates = [
+    // Front
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    // Back
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    // Top
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    // Bottom
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    // Right
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    // Left
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0
+  ]
 
   const indices = [
     0, 1, 2, 0, 2, 3, // front
@@ -124,12 +127,12 @@ const initBuffers = (gl) => {
 
   return {
     position: createArrayBuffer(positions),
-    color: createArrayBuffer(colors),
+    textureCoord: createArrayBuffer(textureCoordinates),
     indices: createElementArrayBuffer(indices)
   }
 }
 
-const drawScene = (gl, programInfo, buffers, cubeRotation) => {
+const drawScene = (gl, programInfo, buffers, texture, cubeRotation) => {
   gl.clearColor(0, 0, 0, 1)
   gl.clearDepth(1)
   gl.enable(gl.DEPTH_TEST)
@@ -150,6 +153,12 @@ const drawScene = (gl, programInfo, buffers, cubeRotation) => {
   mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation, [0, 0, 1])
   mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation * 0.7, [0, 1, 0])
 
+  gl.useProgram(programInfo.program)
+
+  gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix)
+
+  gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix)
+
   const bindBuffer = (numComponents, buffer, attribLocs) => {
     const type = gl.FLOAT
     const normalize = false
@@ -167,15 +176,14 @@ const drawScene = (gl, programInfo, buffers, cubeRotation) => {
     gl.enableVertexAttribArray(attribLocs)
   }
 
-  bindBuffer(4, buffers.color, programInfo.attribLocations.vertexColor)
   bindBuffer(3, buffers.position, programInfo.attribLocations.vertexPosition)
+
+  bindBuffer(2, buffers.textureCoord, programInfo.attribLocations.textureCoord)
+  gl.activeTexture(gl.TEXTURE0)
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.uniform1i(programInfo.uniformLocations.uSampler, 0)
+
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices)
-
-  gl.useProgram(programInfo.program)
-
-  gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix)
-
-  gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix)
 
   {
     const vertexCount = 36
@@ -200,7 +208,7 @@ const loadTexture = (gl, url) => {
   gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, width, height, border, srcFormat, srcType, pixel)
 
   const image = new Image()
-  image.onLoad = () => {
+  image.onload = () => {
     gl.bindTexture(gl.TEXTURE_2D, texture)
     gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, image)
 
@@ -214,25 +222,25 @@ const loadTexture = (gl, url) => {
       gl.texParamateri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
     }
   }
-
   image.src = url
   return texture
 }
 
-const main = async () => {
+const main = () => {
   const canvas = document.querySelector('#glCanvas')
   const gl = canvas.getContext('webgl')
-  const shaderProgram = initShaderProgram(gl, vsSource, fsSource)
+  const shaderProgram = initShaderProgram(gl, VsSource, FsSource)
 
   const programInfo = {
     program: shaderProgram,
     attribLocations: {
       vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-      vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor')
+      textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord')
     },
     uniformLocations: {
       projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-      modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix')
+      modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+      uSampler: gl.getUniformLocation(shaderProgram, 'uSampler')
     }
   }
 
@@ -245,12 +253,12 @@ const main = async () => {
   gl.clear(gl.COLOR_BUFFER_BIT)
 
   const buffers = initBuffers(gl)
-  const texture = loadTexture(gl, Texture)
+  const texture = loadTexture(gl, CubeTexture)
 
   const render = cubeRotation => then => now => {
     const nowSeconds = now * 0.001
     const deltaTime = nowSeconds - then
-    drawScene(gl, programInfo, buffers, cubeRotation)
+    drawScene(gl, programInfo, buffers, texture, cubeRotation)
 
     requestAnimationFrame(render(cubeRotation + deltaTime)(nowSeconds))
   }
