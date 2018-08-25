@@ -1,4 +1,4 @@
-/* global alert */
+/* global alert, requestAnimationFrame */
 import 'babel-polyfill'
 import { mat4 } from 'gl-matrix'
 
@@ -82,7 +82,7 @@ const initBuffers = (gl) => {
   }
 }
 
-const drawScene = (gl, programInfo, buffers) => {
+const drawScene = (gl, programInfo, buffers, squareRotation) => {
   gl.clearColor(0, 0, 0, 1)
   gl.clearDepth(1)
   gl.enable(gl.DEPTH_TEST)
@@ -100,6 +100,7 @@ const drawScene = (gl, programInfo, buffers) => {
   const modelViewMatrix = mat4.create()
 
   mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -6])
+  mat4.rotate(modelViewMatrix, modelViewMatrix, squareRotation, [0, 0, 1])
 
   const bindBuffer = (numComponents, buffer, attribLocs) => {
     const type = gl.FLOAT
@@ -161,7 +162,14 @@ const main = () => {
 
   const buffers = initBuffers(gl)
 
-  drawScene(gl, programInfo, buffers)
+  const render = squareRotation => then => now => {
+    const nowSeconds = now * 0.001
+    const deltaTime = nowSeconds - then
+    drawScene(gl, programInfo, buffers, squareRotation)
+
+    requestAnimationFrame(render(squareRotation + deltaTime)(nowSeconds))
+  }
+  requestAnimationFrame(render(0)(0))
 }
 
 main()
