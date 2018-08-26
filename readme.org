@@ -2,13 +2,14 @@
   This repo contains code relating to the initial WebGL content of the PG6200 course.
 
 ** How to run the project / view the output
-   The project is built using Parcel and npm. The dev server can be run with the ~npm run dev~ command, and the 'production build' can be made with ~npm run build~. The built product will then be available in the ~dist~ directory, though CORS may cause you some grief if you're trying to run it from your filesystem. If you just need a quick server set up to view it, try changing to the directory and running the ~python -m SimpleHTTPServer~ command.
+   The project is built using Parcel and npm. As with all npm projects, run ~npm install~ (or ~yarn~ if you're so inclined) to set it up initially. The dev server can be run with the ~npm run dev~ command, and the 'production build' can be made with ~npm run build~. The built product will then be available in the ~dist~ directory, though CORS may cause you some grief if you're trying to run it from your filesystem. If you just need a quick server set up to view it, try changing to the directory and running the ~python -m SimpleHTTPServer~ command.
 
 ** Structure
    At the time of writing (after finishing the initial tutorial and before getting any real idea about the scope of things), the source code lives in ~src~, with the scripts and the HTML in said direcory, with assets in various subdirectories. This is likely to change as my understanding of the project improves.
 
 ** Ecosystem choices, or 'why would you drag in npm and bundlers?'
    Regarding the use of npm and Parcel, it was entirely motivated by quality of life things. The initial idea was to set up a dev server that would live reload to save me the hassle of switching applications and reloading manually to see any changes I might have made. I'd heard a lot about Parcel and its zero-config efforts, so this was a good opportunity to test it out. With parcel and the automatic dependency resolution it became a lot easier to use npm for the ~gl-matrix~ library than to take care of any manual integration.
+   Furtermore, using Parcel, I get Babel for free, and not having to worry about browser compatibility is always a net positive.
 
 ** Author
    Thomas Hartmann
