@@ -1,9 +1,9 @@
-// bsconfig.json
 {
     "name": "graph_prog_ui",
     "reason": {
         "react-jsx": 2
     },
+    "license": "MIT",
     "sources": {
         "dir": "src",
         "subdirs": true

@@ -184,3 +184,14 @@ $RECYCLE.BIN/
 
 
 # End of https://www.gitignore.io/api/node,macos,emacs,windows,visualstudiocode
+#
+# reason
+.merlin
+/node_modules/
+/lib/*
+!/lib/js/*
+/bundledOutputs/
+npm-debug.log
+.DS_Store
+.bsb.lock
+.tern-port
