@@ -1,0 +1,40 @@
+bs_package_flags = -bs-package-map graph_prog_ui
+src_root_dir = /Users/Thomas/MEGA/Westerdals/Spillprogrammering/2018-2019/PG6200/project
+bsc = /Users/Thomas/MEGA/Westerdals/Spillprogrammering/2018-2019/PG6200/project/node_modules/bs-platform/lib/bsc.exe
+bsdep = /Users/Thomas/MEGA/Westerdals/Spillprogrammering/2018-2019/PG6200/project/node_modules/bs-platform/lib/bsb_helper.exe
+warnings = -w -30-40+6+7+27+32..39+44+45+101 -warn-error +101
+bsc_flags = -bs-suffix -nostdlib -I '/Users/Thomas/MEGA/Westerdals/Spillprogrammering/2018-2019/PG6200/project/node_modules/bs-platform/lib/ocaml' -color always
+ppx_flags = 
+bs_package_includes = -I /Users/Thomas/MEGA/Westerdals/Spillprogrammering/2018-2019/PG6200/node_modules/reason-react/lib/ocaml
+bs_package_dev_includes = 
+namespace = -ns Graphprogui
+bsb_dir_group = 0
+refmt = /Users/Thomas/MEGA/Westerdals/Spillprogrammering/2018-2019/PG6200/project/node_modules/bs-platform/lib/refmt.exe
+reason_react_jsx = -ppx '/Users/Thomas/MEGA/Westerdals/Spillprogrammering/2018-2019/PG6200/project/node_modules/bs-platform/lib/reactjs_jsx_ppx_2.exe'
+refmt_flags = --print binary
+bsc_lib_includes = -I . -I src/ui
+rule build_ast_and_module_sets_from_re
+  command = ${bsc} -pp "${refmt} ${refmt_flags}" ${reason_react_jsx}  ${ppx_flags} ${warnings} ${bsc_flags} -c -o ${out} -bs-syntax-only -bs-binary-ast -impl ${in}
+  description = [34mBuilding[39m [2m${out}[22m
+build src/ui/Index.mlast : build_ast_and_module_sets_from_re $src_root_dir/src/ui/Index.re
+rule build_deps
+  command = ${bsdep} ${namespace} -g ${bsb_dir_group} -MD ${in}
+  description = [34mBuilding[39m [2m${out}[22m
+build src/ui/Index.mlast.d : build_deps src/ui/Index.mlast
+rule build_cmj_cmi
+  command = ${bsc} ${bs_package_flags} -bs-assume-no-mli -bs-no-builtin-ppx-ml -bs-no-implicit-include ${bs_package_includes} ${bsc_lib_includes} ${bsc_extra_includes} ${warnings} ${bsc_flags} -o ${out} -c  ${in} $postbuild
+  depfile = ${in}.d
+  description = [34mBuilding[39m [2m${out}[22m
+build src/ui/Index-Graphprogui.cmj |  $src_root_dir/src/ui/Index.bs.js src/ui/Index-Graphprogui.cmi : build_cmj_cmi src/ui/Index.mlast
+  bsc_flags = $bsc_flags -bs-re-out -bs-super-errors
+  bs_package_flags = $bs_package_flags  -bs-package-output commonjs:src/ui
+build src/ui/Greeting.mlast : build_ast_and_module_sets_from_re $src_root_dir/src/ui/Greeting.re
+build src/ui/Greeting.mlast.d : build_deps src/ui/Greeting.mlast
+build src/ui/Greeting-Graphprogui.cmj |  $src_root_dir/src/ui/Greeting.bs.js src/ui/Greeting-Graphprogui.cmi : build_cmj_cmi src/ui/Greeting.mlast
+  bsc_flags = $bsc_flags -bs-re-out -bs-super-errors
+  bs_package_flags = $bs_package_flags  -bs-package-output commonjs:src/ui
+rule build_package
+  command = ${bsc} -w -49 -no-alias-deps -c ${in}
+  description = [34mBuilding[39m [2m${out}[22m
+build Graphprogui.cmi : build_package Graphprogui.mlmap
+build build.ninja : phony  ||  Graphprogui.cmi src/ui/Greeting.mlast.d src/ui/Index.mlast.d

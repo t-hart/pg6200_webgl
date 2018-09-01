@@ -1,0 +1,12 @@
+# ninja log v5
+1	129	1535790440	Graphprogui.cmi	93be0b4e0a46cc35
+0	186	1535790440	src/ui/Index.mlast	fe6633fcb8e1a007
+1	186	1535790440	src/ui/Greeting.mlast	28174f616b87ebd3
+186	204	1535790440	src/ui/Index.mlast.d	f9ed5c4911abb909
+186	204	1535790440	src/ui/Greeting.mlast.d	575d4b2f51a0fe56
+0	15	1535790440	src/ui/Index-Graphprogui.cmj	b41f011e3c2a245d
+0	15	1535790440	/Users/Thomas/MEGA/Westerdals/Spillprogrammering/2018-2019/PG6200/project/src/ui/Index.bs.js	b41f011e3c2a245d
+0	15	1535790440	src/ui/Index-Graphprogui.cmi	b41f011e3c2a245d
+0	83	1535790851	Graphprogui.cmi	93be0b4e0a46cc35
+1	32	1535791245	src/ui/Index.mlast	fe6633fcb8e1a007
+32	71	1535791245	src/ui/Index.mlast.d	f9ed5c4911abb909

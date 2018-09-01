@@ -8,6 +8,9 @@ import { initBuffers } from './bufferUtils.js'
 import { initTexture, updateTexture } from './textureUtils.js'
 import { drawScene } from './renderUtils.js'
 import { setupVideo } from './videoUtils.js'
+import { parseObj } from './objParser.js'
+import bunny from './obj_files/bunny.obj'
+// import './ui/Index.re'
 
 const main = async () => {
   const canvas = document.querySelector('#glCanvas')
@@ -36,10 +39,14 @@ const main = async () => {
       gl.clearColor(0, 0, 0, 1)
       gl.clear(gl.COLOR_BUFFER_BIT)
 
-      const buffers = initBuffers(gl)
+      const bunnyParsed = await parseObj(bunny)
+      console.log(bunnyParsed)
+
+      const buffers = initBuffers(gl, bunnyParsed)
       const texture = initTexture(gl)
       const video = await setupVideo(Video)
 
+      console.log(buffers)
       const render = cubeRotation => then => now => {
         const nowSeconds = now * 0.001
         const deltaTime = nowSeconds - then
