@@ -195,3 +195,4 @@ npm-debug.log
 .DS_Store
 .bsb.lock
 .tern-port
+./lib/
