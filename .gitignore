@@ -196,3 +196,4 @@ npm-debug.log
 .bsb.lock
 .tern-port
 ./lib/
+*.bs.js
