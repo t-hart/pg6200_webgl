@@ -1,1 +1,1 @@
-Js.log("Hello from Reason");
+ReactDOMRe.renderToElementWithId(<App />, "reason-app");

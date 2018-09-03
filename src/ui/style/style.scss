@@ -1,0 +1,53 @@
+@import 'normalize';
+
+
+$navy: #001f3f;
+$blue: #0074d9;
+$aqua: #7fdbff;
+$teal: #39cccc;
+$olive: #3d9970;
+$green: #2ecc40;
+$lime: #01ff79;
+$yellow: #ffdc00;
+$orange: #ff851b;
+$red: #ff4136;
+$maroon: #85144b;
+$fuchsia: #f012be;
+$purple: #b10dc9;
+$black: #111;
+$gray: #aaa;
+$silver: #ddd;
+$white: #fff;
+
+$system-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+             Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+
+html {
+  background-color: $black;
+  box-sizing: border-box;
+  color: $gray;
+  font-family: $system-font;
+}
+
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+.app {
+  display: grid;
+  grid-template-rows: 1fr 3em;
+  height: 100vh;
+  width: 100vw;
+}
+
+.canvas {
+  border: .1em solid $maroon;
+}
+
+
+.footer {
+  border-top: .1em solid $yellow;
+}
