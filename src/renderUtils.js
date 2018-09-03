@@ -53,7 +53,9 @@ export const drawScene = (gl, programInfo, buffers, texture, cubeRotation) => {
 
   bindBuffer(3, buffers.normal, programInfo.attribLocations.vertexNormal)
 
-  // bindBuffer(2, buffers.textureCoord, programInfo.attribLocations.textureCoord)
+  bindBuffer(4, buffers.color, programInfo.attribLocations.vertexColor)
+
+  bindBuffer(2, buffers.textureCoord, programInfo.attribLocations.textureCoord)
 
   gl.activeTexture(gl.TEXTURE0)
   gl.bindTexture(gl.TEXTURE_2D, texture)
@@ -62,7 +64,7 @@ export const drawScene = (gl, programInfo, buffers, texture, cubeRotation) => {
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices)
 
   {
-    const vertexCount = 36
+    const vertexCount = 36 // num faces
     const type = gl.UNSIGNED_SHORT
     const offset = 0
     gl.drawElements(gl.TRIANGLES, vertexCount, type, offset)
