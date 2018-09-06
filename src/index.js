@@ -3,17 +3,21 @@ import 'babel-polyfill'
 import Video from './videos/Firefox.mp4'
 import VertexShader from './shaders/vertex.glsl'
 import FragmentShader from './shaders/fragment.glsl'
+import SimpleFragmentShader from './shaders/simple_fragment.glsl'
+import SimpleVertexShader from './shaders/simple_vertex.glsl'
 import { initShaderProgram } from './shaderUtils.js'
 import { initBuffers } from './bufferUtils.js'
 import { initTexture, updateTexture } from './textureUtils.js'
 import { drawScene } from './renderUtils.js'
 import { setupVideo } from './videoUtils.js'
 import { bunny, cube } from './objs.ts'
+import { boundingCube, dists, centeringTranslation } from './vector'
 
 export const renderTo = async (canvasId) => {
   const canvas = document.querySelector('#' + canvasId)
   const gl = canvas.getContext('webgl')
-  initShaderProgram(gl, VertexShader, FragmentShader)
+  // initShaderProgram(gl, VertexShader, FragmentShader)
+  initShaderProgram(gl, SimpleVertexShader, SimpleFragmentShader)
     .then(async (shaderProgram) => {
       if (!gl) {
         throw Error('Unable to init webgl')
@@ -23,23 +27,44 @@ export const renderTo = async (canvasId) => {
         program: shaderProgram,
         attribLocations: {
           vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-          vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
-          textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
           vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor')
         },
         uniformLocations: {
           projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-          modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
-          normalMatrix: gl.getUniformLocation(shaderProgram, 'uNormalMatrix'),
-          uSampler: gl.getUniformLocation(shaderProgram, 'uSampler')
+          modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix')
         }
       }
+      // const programInfo = {
+      //   program: shaderProgram,
+      //   attribLocations: {
+      //     vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
+      //     vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
+      //     textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
+      //     vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor')
+      //   },
+      //   uniformLocations: {
+      //     projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
+      //     modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+      //     normalMatrix: gl.getUniformLocation(shaderProgram, 'uNormalMatrix'),
+      //     uSampler: gl.getUniformLocation(shaderProgram, 'uSampler')
+      //   }
+      // }
 
       gl.clearColor(0, 0, 0, 1)
       gl.clear(gl.COLOR_BUFFER_BIT)
 
+      Promise.all([cube(), bunny()])
+        .then(([c, b]) => console.log(c, b))
+
       const dataPoints = await cube()
+      // const dataPoints = await bunny()
       console.log(dataPoints)
+
+      console.log(boundingCube(dataPoints.min, dataPoints.max))
+      const lengths = dists(dataPoints.min, dataPoints.max)
+      const t = centeringTranslation(dataPoints.max, lengths)
+      const s = 1 / Math.max(...dataPoints.max, ...dataPoints.min.map(Math.abs))
+      console.log(lengths, t, s)
 
       const buffers = initBuffers(gl, dataPoints)
       const texture = initTexture(gl)
@@ -53,6 +78,7 @@ export const renderTo = async (canvasId) => {
 
         // requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds))
       }
+      // requestAnimationFrame(render(0.7)(0))
       requestAnimationFrame(render(0)(0))
     })
     .catch(alert)

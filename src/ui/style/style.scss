@@ -22,10 +22,13 @@ $white: #fff;
 $system-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
              Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 
+$border-color: transparentize($fuchsia, .2);
+$text-color: darken($teal, 10%);
+
 html {
   background-color: $black;
   box-sizing: border-box;
-  color: $gray;
+  color: $text-color;
   font-family: $system-font;
 }
 
@@ -38,16 +41,27 @@ html {
 
 .app {
   display: grid;
-  grid-template-rows: 1fr 3em;
+  grid-template-rows: 5em 1fr 3em;
   height: 100vh;
   width: 100vw;
 }
 
-.canvas {
-  border: .1em solid $maroon;
+.content {
+  display: grid;
+  height: 100%;
+  place-items: center;
 }
 
+.canvas {
+  border: .1em solid $border-color;
+}
 
-.footer {
-  border-top: .1em solid $yellow;
+.page-header {
+  border-bottom: .1em solid $border-color;
+  text-align: center;
+}
+
+footer {
+  border-top: .1em solid $border-color;
+  text-align: center;
 }

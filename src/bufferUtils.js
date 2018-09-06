@@ -11,6 +11,7 @@ export const initBuffers = (gl, bufferObj) => {
 
   return {
     position: createArrayBuffer(bufferObj.vertices),
+    color: createArrayBuffer(bufferObj.colors),
     normal: createArrayBuffer(bufferObj.vertexNormals),
     textureCoord: createArrayBuffer(bufferObj.vertexTextures),
     indices: createElementArrayBuffer(bufferObj.faces)

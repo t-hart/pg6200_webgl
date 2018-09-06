@@ -127,5 +127,7 @@ export const cube = async () => ({
     [0.0, 0.0, 1.0, 1.0],    // Bottom face: blue
     [1.0, 1.0, 0.0, 1.0],    // Right face: yellow
     [1.0, 0.0, 1.0, 1.0],    // Left face: purple
-  ].flatMap(x => [].concat(...Array(4).fill(x)))
+  ].flatMap(x => [].concat(...Array(4).fill(x))),
+  min: [-1, -1, -1],
+  max: [1, 1, 1],
 })

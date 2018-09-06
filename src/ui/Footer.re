@@ -3,7 +3,5 @@ let component = ReasonReact.statelessComponent("Footer");
 let make = _children => {
   ...component,
   render: _self =>
-    <footer className="footer">
-      <h3> (ReasonReact.string("Thomas Hartmann")) </h3>
-    </footer>,
+    <footer> <h3> (ReasonReact.string("Thomas Hartmann")) </h3> </footer>,
 };
