@@ -22,7 +22,8 @@ $white: #fff;
 $system-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
              Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 
-$border-color: transparentize($fuchsia, .2);
+// $border-color: transparentize($fuchsia, .2);
+$border-color: $fuchsia;
 $text-color: darken($teal, 10%);
 
 html {
@@ -64,4 +65,34 @@ html {
 footer {
   border-top: .1em solid $border-color;
   text-align: center;
+}
+
+.buttons {
+  display: grid;
+  gap: .5em .5em;
+  grid-template-columns: 1fr 1fr 1fr;
+  width: 640px;
+}
+
+button {
+  background-color: inherit;
+  border-color: $border-color;
+  border-radius: 25em;
+  border-style: solid;
+  color: $border-color;
+  font-weight: lighter;
+  text-align: center;
+
+  &.active {
+    background-color: $fuchsia;
+    color: $black;
+    font-weight: normal;
+  }
+
+  &:hover,
+  &:focus,
+  &:active {
+    box-shadow: 0 0 1em $fuchsia;
+  }
+
 }

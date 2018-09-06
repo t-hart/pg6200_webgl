@@ -1,3 +1,5 @@
+import { boundingBox } from './vector'
+
 export const initBuffers = (gl, bufferObj) => {
   const createBuffer = bufferType => ArrayInitialiser => arr => {
     const buffer = gl.createBuffer()
@@ -14,6 +16,7 @@ export const initBuffers = (gl, bufferObj) => {
     color: createArrayBuffer(bufferObj.colors),
     normal: createArrayBuffer(bufferObj.vertexNormals),
     textureCoord: createArrayBuffer(bufferObj.vertexTextures),
-    indices: createElementArrayBuffer(bufferObj.faces)
+    indices: createElementArrayBuffer(bufferObj.faces),
+    boundingBox: createArrayBuffer(boundingBox(bufferObj.min, bufferObj.max))
   }
 }

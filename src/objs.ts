@@ -1,9 +1,12 @@
 import { parse } from './objParser'
 import bunnyRaw from './obj_files/bunny.obj'
+import bunnyHigh from './obj_files/bunny_10k.obj'
 
-export const all = async () => Promise.all([bunny(), cube()])
+console.log(bunnyRaw)
 
 export const bunny = async () => parse(bunnyRaw)
+
+export const bunnyHighRes = async () => parse(bunnyHigh)
 
 export const cube = async () => ({
   vertices: [
@@ -131,3 +134,8 @@ export const cube = async () => ({
   min: [-1, -1, -1],
   max: [1, 1, 1],
 })
+
+export const all = [
+  { name: 'bunny', data: bunny },
+  { name: 'cube', data: cube }
+]

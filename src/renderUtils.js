@@ -1,6 +1,6 @@
-import { mat4 } from 'gl-matrix'
+import { mat4 } from 'gl-matrix-ts'
 
-export const drawScene = (gl, programInfo, buffers, texture, cubeRotation) => {
+export const drawScene = (gl, programInfo, buffers, texture, cubeRotation, centeringTranslation, normalizingScale, numFaces, boundingBox) => {
   gl.clearColor(0, 0, 0, 1)
   gl.clearDepth(1)
   gl.enable(gl.DEPTH_TEST)
@@ -18,7 +18,12 @@ export const drawScene = (gl, programInfo, buffers, texture, cubeRotation) => {
   const modelViewMatrix = mat4.create()
   mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -6])
   mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation * 0.75, [0.3, 0.7, 0.5])
-  mat4.scale(modelViewMatrix, modelViewMatrix, [10, 10, 10])
+
+  // normalize
+  mat4.scale(modelViewMatrix, modelViewMatrix, Array(3).fill(normalizingScale))
+
+  // center
+  mat4.translate(modelViewMatrix, modelViewMatrix, centeringTranslation)
 
   // const normalMatrix = mat4.create()
   // mat4.invert(normalMatrix, modelViewMatrix)
@@ -45,6 +50,7 @@ export const drawScene = (gl, programInfo, buffers, texture, cubeRotation) => {
 
   bindBuffer(3, buffers.position, programInfo.attribLocations.vertexPosition)
 
+  // bindBuffer(3, buffers.boundingBox, programInfo.attribLocations.vertexPosition)
   // bindBuffer(3, buffers.normal, programInfo.attribLocations.vertexNormal)
 
   bindBuffer(4, buffers.color, programInfo.attribLocations.vertexColor)
@@ -64,10 +70,9 @@ export const drawScene = (gl, programInfo, buffers, texture, cubeRotation) => {
   gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix)
 
   {
-    const vertexCount = 1359 / 3
+    const vertexCount = numFaces
     const type = gl.UNSIGNED_SHORT
     const offset = 0
-    gl.drawElements(gl.POINTS, vertexCount, type, offset)
-    // gl.drawElements(gl.TRIANGLES, vertexCount, type, offset)
+    gl.drawElements(gl.TRIANGLES, vertexCount, type, offset)
   }
 }

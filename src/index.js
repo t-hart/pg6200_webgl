@@ -5,15 +5,17 @@ import VertexShader from './shaders/vertex.glsl'
 import FragmentShader from './shaders/fragment.glsl'
 import SimpleFragmentShader from './shaders/simple_fragment.glsl'
 import SimpleVertexShader from './shaders/simple_vertex.glsl'
-import { initShaderProgram } from './shaderUtils.js'
-import { initBuffers } from './bufferUtils.js'
-import { initTexture, updateTexture } from './textureUtils.js'
-import { drawScene } from './renderUtils.js'
-import { setupVideo } from './videoUtils.js'
-import { bunny, cube } from './objs.ts'
-import { boundingCube, dists, centeringTranslation } from './vector'
+import { initShaderProgram } from './shaderUtils'
+import { initBuffers } from './bufferUtils'
+import { initTexture, updateTexture } from './textureUtils'
+import { drawScene } from './renderUtils'
+import { setupVideo } from './videoUtils'
+import { bunny, bunnyHighRes, cube } from './objs'
+import { boundingBox, dists, centeringTranslation, offset, scale } from './vector'
+// import bunny from './obj_files/bunny.obj'
 
 export const renderTo = async (canvasId) => {
+// export const renderTo = (canvasId) => async (model) => {
   const canvas = document.querySelector('#' + canvasId)
   const gl = canvas.getContext('webgl')
   // initShaderProgram(gl, VertexShader, FragmentShader)
@@ -56,15 +58,19 @@ export const renderTo = async (canvasId) => {
       Promise.all([cube(), bunny()])
         .then(([c, b]) => console.log(c, b))
 
-      const dataPoints = await cube()
-      // const dataPoints = await bunny()
+      // const dataPoints = await cube()
+      const dataPoints = await bunny()
+      // const dataPoints = await bunnyHighRes()
       console.log(dataPoints)
 
-      console.log(boundingCube(dataPoints.min, dataPoints.max))
+      const bb = boundingBox(dataPoints.min, dataPoints.max)
+      console.log(bb)
       const lengths = dists(dataPoints.min, dataPoints.max)
       const t = centeringTranslation(dataPoints.max, lengths)
-      const s = 1 / Math.max(...dataPoints.max, ...dataPoints.min.map(Math.abs))
+      const o = offset(dataPoints.max, lengths)
+      const s = 1 / Math.max(...scale(0.5)(lengths))
       console.log(lengths, t, s)
+      console.log(o, t, o.map((x, i) => x === -t[i]))
 
       const buffers = initBuffers(gl, dataPoints)
       const texture = initTexture(gl)
@@ -74,12 +80,12 @@ export const renderTo = async (canvasId) => {
         const nowSeconds = now * 0.001
         const deltaS = nowSeconds - then
 
-        drawScene(gl, programInfo, buffers, texture, cubeRotation)
+        drawScene(gl, programInfo, buffers, texture, cubeRotation, t, s, dataPoints.faces.length, bb)
 
-        // requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds))
+        requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds))
       }
-      // requestAnimationFrame(render(0.7)(0))
-      requestAnimationFrame(render(0)(0))
+      requestAnimationFrame(render(0.7)(0))
+      // requestAnimationFrame(render(0)(0))
     })
     .catch(alert)
 }
