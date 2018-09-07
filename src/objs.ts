@@ -1,4 +1,3 @@
-import { parse } from './objParser'
 import bunny from './obj_files/bunny.obj'
 import bunnyHiRes from './obj_files/bunny_10k.obj'
 
@@ -129,7 +128,7 @@ const cube = {
   max: [1, 1, 1],
 }
 
-export const models = new Map([
+export default new Map([
   ['bunny', bunny],
   ['bunny (hi res)', bunnyHiRes],
   ['cube', cube]
