@@ -19,9 +19,8 @@
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.stat/-/fs.stat-1.1.1.tgz#53f349bb986ab273d601175aa1b25a655ab90ee3"
 
-"@t-hart/parcel-plugin-obj@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@t-hart/parcel-plugin-obj/-/parcel-plugin-obj-1.0.0.tgz#6c70ca44016899247c1f5f31e8b37793d0ab97e9"
+"@t-hart/parcel-plugin-obj@../parcel-plugin-obj/":
+  version "0.1.0"
   dependencies:
     parcel-assert-bundle-tree "^1.0.0"
 

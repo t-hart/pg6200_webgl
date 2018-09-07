@@ -12,11 +12,11 @@ export const initBuffers = (gl, bufferObj) => {
   const createElementArrayBuffer = createBuffer(gl.ELEMENT_ARRAY_BUFFER)(Uint16Array)
 
   return {
-    position: createArrayBuffer(bufferObj.vertices),
+    position: createArrayBuffer(bufferObj.v),
     color: createArrayBuffer(bufferObj.colors),
-    normal: createArrayBuffer(bufferObj.vertexNormals),
-    textureCoord: createArrayBuffer(bufferObj.vertexTextures),
-    indices: createElementArrayBuffer(bufferObj.faces),
+    normal: createArrayBuffer(bufferObj.vn),
+    textureCoord: createArrayBuffer(bufferObj.vt),
+    indices: createElementArrayBuffer(bufferObj.f),
     boundingBox: createArrayBuffer(boundingBox(bufferObj.min, bufferObj.max))
   }
 }

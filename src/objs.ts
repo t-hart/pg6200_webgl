@@ -1,15 +1,9 @@
 import { parse } from './objParser'
-import bunnyRaw from './obj_files/bunny.obj'
-import bunnyHigh from './obj_files/bunny_10k.obj'
+import bunny from './obj_files/bunny.obj'
+import bunnyHiRes from './obj_files/bunny_10k.obj'
 
-console.log(bunnyRaw)
-
-export const bunny = async () => parse(bunnyRaw)
-
-export const bunnyHighRes = async () => parse(bunnyHigh)
-
-export const cube = async () => ({
-  vertices: [
+const cube = {
+  v: [
     // Front face
     -1.0, -1.0, 1.0,
     1.0, -1.0, 1.0,
@@ -46,7 +40,7 @@ export const cube = async () => ({
     -1.0, 1.0, 1.0,
     -1.0, 1.0, -1.0
   ],
-  vertexTextures: [
+  vt: [
     // Front
     0.0, 0.0,
     1.0, 0.0,
@@ -115,7 +109,7 @@ export const cube = async () => ({
     -1.0, 0.0, 0.0,
     -1.0, 0.0, 0.0
   ],
-  faces: [
+  f: [
     0, 1, 2, 0, 2, 3, // front
     4, 5, 6, 4, 6, 7, // back
     8, 9, 10, 8, 10, 11, // top
@@ -133,9 +127,10 @@ export const cube = async () => ({
   ].flatMap(x => [].concat(...Array(4).fill(x))),
   min: [-1, -1, -1],
   max: [1, 1, 1],
-})
+}
 
-export const all = [
-  { name: 'bunny', data: bunny },
-  { name: 'cube', data: cube }
-]
+export const models = new Map([
+  ['bunny', bunny],
+  ['bunny (hi res)', bunnyHiRes],
+  ['cube', cube]
+])

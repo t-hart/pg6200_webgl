@@ -10,9 +10,11 @@ import { initBuffers } from './bufferUtils'
 import { initTexture, updateTexture } from './textureUtils'
 import { drawScene } from './renderUtils'
 import { setupVideo } from './videoUtils'
-import { bunny, bunnyHighRes, cube } from './objs'
+import { models } from './objs'
 import { boundingBox, dists, centeringTranslation, offset, scale } from './vector'
 // import bunny from './obj_files/bunny.obj'
+import bunny from './obj_files/bunny.obj'
+import bunnyHiRes from './obj_files/bunny_10k.obj'
 
 export const renderTo = async (canvasId) => {
 // export const renderTo = (canvasId) => async (model) => {
@@ -55,13 +57,11 @@ export const renderTo = async (canvasId) => {
       gl.clearColor(0, 0, 0, 1)
       gl.clear(gl.COLOR_BUFFER_BIT)
 
-      Promise.all([cube(), bunny()])
-        .then(([c, b]) => console.log(c, b))
-
       // const dataPoints = await cube()
-      const dataPoints = await bunny()
+      // const dataPoints = await bunny()
+      const dataPoints = models.get('bunny (hi res)')
       // const dataPoints = await bunnyHighRes()
-      console.log(dataPoints)
+      console.log('Data points: ', dataPoints)
 
       const bb = boundingBox(dataPoints.min, dataPoints.max)
       console.log(bb)
@@ -80,7 +80,7 @@ export const renderTo = async (canvasId) => {
         const nowSeconds = now * 0.001
         const deltaS = nowSeconds - then
 
-        drawScene(gl, programInfo, buffers, texture, cubeRotation, t, s, dataPoints.faces.length, bb)
+        drawScene(gl, programInfo, buffers, texture, cubeRotation, t, s, dataPoints.f.length, bb)
 
         requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds))
       }

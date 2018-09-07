@@ -11,6 +11,7 @@
   "author": "Thomas Hartmann <thomas.o.hartmann@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@t-hart/parcel-plugin-obj": "../parcel-plugin-obj/",
     "babel-cli": "^6.26.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.7.0",
