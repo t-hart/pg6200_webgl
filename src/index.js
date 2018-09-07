@@ -57,25 +57,17 @@ export const renderTo = async (canvasId) => {
       gl.clearColor(0, 0, 0, 1)
       gl.clear(gl.COLOR_BUFFER_BIT)
 
-      // const dataPoints = await cube()
-      // const dataPoints = await bunny()
       const dataPoints = models.get('bunny (hi res)')
-      // const dataPoints = await bunnyHighRes()
-      console.log('Data points: ', dataPoints)
 
       const bb = boundingBox(dataPoints.min, dataPoints.max)
-      console.log(bb)
       const lengths = dists(dataPoints.min, dataPoints.max)
       const t = centeringTranslation(dataPoints.max, lengths)
       const o = offset(dataPoints.max, lengths)
       const s = 1 / Math.max(...scale(0.5)(lengths))
-      console.log(lengths, t, s)
-      console.log(o, t, o.map((x, i) => x === -t[i]))
 
       const buffers = initBuffers(gl, dataPoints)
       const texture = initTexture(gl)
 
-      console.log(buffers)
       const render = cubeRotation => then => now => {
         const nowSeconds = now * 0.001
         const deltaS = nowSeconds - then

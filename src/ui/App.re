@@ -1,6 +1,10 @@
 [@bs.module "../index"] external renderTo : string => unit = "";
-[@bs.module "../objs"] external bunny : unit => Js.Promise.t(string) = "";
+[@bs.module "../objs"] external models : string = "default";
+/* [@bs.module "../objs"] external bunny : unit => Js.Promise.t(string) = ""; */
 let component = ReasonReact.statelessComponent("App");
+
+Js.log(models);
+Js.log(models.bunny);
 
 let canvasId = "reCanvas";
 let load = (promise, _event, _self) =>
@@ -24,9 +28,7 @@ let make = _children => {
         <div className="content">
           <canvas id=canvasId className="canvas" width="640" height="480" />
           <div className="buttons">
-            <button onClick=(self.handle(load(bunny)))>
-              (ReasonReact.string("Load me!"))
-            </button>
+            <button> (ReasonReact.string("Load me!")) </button>
             <button className="active">
               (ReasonReact.string("I am active!"))
             </button>
