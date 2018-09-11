@@ -128,8 +128,12 @@ const cube = {
   max: [1, 1, 1],
 }
 
-export default new Map([
+const objs = new Map([
   ['bunny', bunny],
   ['bunny (hi res)', bunnyHiRes],
   ['cube', cube]
 ])
+
+export const keys = Array.from(objs.keys()).sort()
+console.log(keys)
+export default objs

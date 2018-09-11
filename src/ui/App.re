@@ -1,20 +1,19 @@
 [@bs.module "../index"] external renderTo : string => unit = "";
-[@bs.module "../objs"] external models : string = "default";
-/* [@bs.module "../objs"] external bunny : unit => Js.Promise.t(string) = ""; */
-let component = ReasonReact.statelessComponent("App");
+[@bs.module "../objs"] external models : Js.Dict.t(string) = "default";
+[@bs.module "../objs"] external keys : list(string) = "";
 
 Js.log(models);
-Js.log(models.bunny);
+Js.log(keys);
 
 let canvasId = "reCanvas";
-let load = (promise, _event, _self) =>
-  promise()
-  |> Js.Promise.then_(x => {
-       Js.log(x);
-       Js.Promise.resolve(x);
-     })
-  |> ignore;
-/* let render = renderTo(canvasId) */
+
+let modelButton = text =>
+  <button key=text> (ReasonReact.string(text)) </button>;
+let buttons = Array.of_list(List.map(modelButton, keys));
+
+Js.log(buttons);
+
+let component = ReasonReact.statelessComponent("App");
 
 let make = _children => {
   ...component,
@@ -28,6 +27,7 @@ let make = _children => {
         <div className="content">
           <canvas id=canvasId className="canvas" width="640" height="480" />
           <div className="buttons">
+            (ReasonReact.array(buttons))
             <button> (ReasonReact.string("Load me!")) </button>
             <button className="active">
               (ReasonReact.string("I am active!"))
