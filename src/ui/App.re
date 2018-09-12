@@ -1,17 +1,13 @@
 [@bs.module "../index"] external renderTo : string => unit = "";
-[@bs.module "../objs"] external models : Js.Dict.t(string) = "default";
-[@bs.module "../objs"] external keys : list(string) = "";
-
-Js.log(models);
-Js.log(keys);
+[@bs.module "../objs"] external keys : array(string) = "";
 
 let canvasId = "reCanvas";
 
-let modelButton = text =>
-  <button key=text> (ReasonReact.string(text)) </button>;
-let buttons = Array.of_list(List.map(modelButton, keys));
-
-Js.log(buttons);
+let buttons =
+  Array.map(
+    text => <button key=text> (ReasonReact.string(text)) </button>,
+    keys,
+  );
 
 let component = ReasonReact.statelessComponent("App");
 
@@ -26,13 +22,7 @@ let make = _children => {
       <main>
         <div className="content">
           <canvas id=canvasId className="canvas" width="640" height="480" />
-          <div className="buttons">
-            (ReasonReact.array(buttons))
-            <button> (ReasonReact.string("Load me!")) </button>
-            <button className="active">
-              (ReasonReact.string("I am active!"))
-            </button>
-          </div>
+          <div className="buttons"> (ReasonReact.array(buttons)) </div>
         </div>
       </main>
       <footer> <h3> (ReasonReact.string("Thomas Hartmann")) </h3> </footer>

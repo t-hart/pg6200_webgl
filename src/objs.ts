@@ -135,5 +135,4 @@ const objs = new Map([
 ])
 
 export const keys = Array.from(objs.keys()).sort()
-console.log(keys)
 export default objs
