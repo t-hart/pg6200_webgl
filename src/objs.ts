@@ -1,6 +1,16 @@
 import bunny from './obj_files/bunny.obj'
 import bunnyHiRes from './obj_files/bunny_10k.obj'
 
+export type ModelData = {
+  v: number[],
+  vt: number[],
+  vn: number[],
+  f: number[],
+  colors: number[],
+  min: number[],
+  max: number[]
+}
+
 const cube = {
   v: [
     // Front face
@@ -128,11 +138,8 @@ const cube = {
   max: [1, 1, 1],
 }
 
-const objs = new Map([
-  ['bunny', bunny],
-  ['bunny (hi res)', bunnyHiRes],
-  ['cube', cube]
-])
-
-export const keys = Array.from(objs.keys()).sort()
-export default objs
+export default {
+  bunny,
+  'bunny (hi res)': bunnyHiRes,
+  cube
+}

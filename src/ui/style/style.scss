@@ -97,10 +97,12 @@ button {
     font-weight: normal;
   }
 
-  &:hover,
-  &:focus,
-  &:active {
-    box-shadow: 0 0 1em $main-color;
+  &:enabled {
+    cursor: pointer;
+    &:hover,
+    &:focus {
+      box-shadow: 0 0 1em $main-color;
+    }
   }
 
 }
