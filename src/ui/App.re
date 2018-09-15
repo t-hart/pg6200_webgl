@@ -32,7 +32,7 @@ let reducer = (action, state) =>
     | Some(gl) =>
       ReasonReact.UpdateWithSideEffects(
         Ready({
-          models,
+          models: models |> toMap,
           renderFunc: render(gl),
           model: None,
           modelCache: StringMap.empty,
@@ -60,7 +60,7 @@ let reducer = (action, state) =>
             currentShader: defaultShader,
           };
           let modelCache =
-            update(name, Maybe.default(model), data.modelCache);
+            update(name, Option.default(model), data.modelCache);
           (
             Ready({...data, model: Some(name), modelCache}),
             Some(modelData),

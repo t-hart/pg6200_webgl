@@ -18,15 +18,17 @@ let make = (~data, ~selectedModel, ~modelSelect, ~shaderSelect, _children) => {
           (
             ReasonReact.array(
               data.models
-              |> Js.Dict.entries
-              |> Array.map(((name, modelData)) =>
+              |> entries
+              |> List.sort(compare)
+              |> List.map(((name, modelData)) =>
                    <button
                      key=name
                      className=(isSelected(name, data.model) ? "active" : "")
                      onClick=(_ => modelSelect(name, modelData))>
                      (ReasonReact.string(name))
                    </button>
-                 ),
+                 )
+              |> Array.of_list,
             )
           )
         </div>

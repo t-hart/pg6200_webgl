@@ -69,7 +69,7 @@ type model = {
 };
 
 type renderData = {
-  models: Js.Dict.t(modelData),
+  models: StringMap.t(modelData),
   model: option(string),
   renderFunc: option(modelData) => unit,
   modelCache: StringMap.t(model),
