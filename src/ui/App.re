@@ -29,11 +29,18 @@ type model = {
   data: modelData,
 };
 
-type state = {
-  model: option(model),
+type renderData = {
   models: Js.Dict.t(modelData),
-  renderFunc: option(modelData => unit),
+  model: option(model),
+  renderFunc: modelData => unit,
 };
+
+type glState =
+  | Uninitialized
+  | Error(string)
+  | Ready(renderData);
+
+type _state = {glState};
 
 let isSelected = (key, optionModel) =>
   switch (optionModel) {
@@ -43,9 +50,9 @@ let isSelected = (key, optionModel) =>
 
 type action =
   | SetModel(model)
-  | SetRenderFunc(modelData => unit);
+  | InitGl(option(webGlRenderingContext));
 
-let initialState = () => {model: None, models, renderFunc: None};
+let initialState = () => {glState: Uninitialized};
 let component = ReasonReact.reducerComponent("App");
 
 let make = _children => {
@@ -53,33 +60,39 @@ let make = _children => {
   initialState,
   reducer: (action, state) =>
     switch (action) {
-    | SetRenderFunc(renderFunc) =>
-      ReasonReact.Update({...state, renderFunc: Some(renderFunc)})
+    | InitGl(optionGl) =>
+      switch (optionGl) {
+      | Some(gl) =>
+        ReasonReact.Update({
+          ...state,
+          glState: Ready({models, renderFunc: render(gl), model: None}),
+        })
+      | None =>
+        ReasonReact.Update(
+          Error(
+            "Unable to initialize GL: Couldn't find the rendering context.",
+          ),
+        )
+      }
     | SetModel(model) =>
-      ReasonReact.UpdateWithSideEffects(
-        {...state, model: Some(model)},
-        (
-          self =>
-            switch (self.state.renderFunc, self.state.model) {
-            | (Some(f), Some(m)) =>
-              Js.log(
-                "We have rendering function, and we have the model:" ++ m.name,
-              );
-              f(m.data);
-            | (None, _) =>
-              alert("We don't have a renderFunc. Something's gone wrong.")
-            | (_, None) =>
-              alert("We don't have a model. How did this happen?")
-            }
-        ),
-      )
+      switch (state) {
+      | Ready(data) =>
+        ReasonReact.UpdateWithSideEffects(
+          Ready({...data, model}),
+          (_ => data.renderFunc(model)),
+        )
+      | _ =>
+        ReasonReact.SideEffects(
+          (
+            _ =>
+              alert(
+                "The rendering context is not available. Something's gone wrong somewhere.",
+              )
+          ),
+        )
+      }
     },
-  didMount: self =>
-    switch (getGlContext(canvasId) |> toOption) {
-    | Some(gl) => self.send(SetRenderFunc(render(gl)))
-    | None =>
-      alert("Unable to initialize GL: Couldn't find the rendering context.")
-    },
+  didMount: self => self.send(InitGl(getGlContext(canvasId) |> toOption)),
   render: self =>
     <div className="app">
       <div className="page-header">
