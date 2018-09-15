@@ -1,19 +1,12 @@
 /* global alert, requestAnimationFrame */
 import 'babel-polyfill'
-// @ts-ignore
-// import VertexShader from './shaders/vertex.glsl'
-// @ts-ignore
-// import FragmentShader from './shaders/fragment.glsl'
-// @ts-ignore
-import SimpleFragmentShader from './shaders/simple_fragment.glsl'
-// @ts-ignore
-import SimpleVertexShader from './shaders/simple_vertex.glsl'
 import { initShaderProgram } from './shaderUtils'
 import { initBuffers } from './bufferUtils'
 import { initTexture } from './textureUtils'
-import { drawScene } from './renderUtils'
+import { drawScene, drawEmptyScene } from './renderUtils'
 import { ModelData } from './objs'
 import { boundingBox, dists, centeringTranslation, scale } from './vector'
+import shaders from './shaders'
 
 export const getGlContext = (canvasId: string) => {
   const canvas: HTMLCanvasElement | null = document.querySelector('#' + canvasId)
@@ -37,66 +30,51 @@ export type ProgramInfo = {
 }
 
 
-let getProgramInfo = (gl: WebGLRenderingContext) => async (vertexShader: string, fragmentShader: string) => initShaderProgram(gl, vertexShader, fragmentShader)
+export const initGL = (gl: WebGLRenderingContext) => drawEmptyScene(gl)
 
-export const initGL = (gl: WebGLRenderingContext) => {
-  gl.clearColor(0, 0, 0, 1)
-  gl.clear(gl.COLOR_BUFFER_BIT)
-}
+export const render = (gl: WebGLRenderingContext, model: ModelData | undefined) =>
+  !model
+    ? drawEmptyScene(gl)
+    : initShaderProgram(gl, shaders.color)
+      .then(shaderProgram => {
 
-export const render = (gl: WebGLRenderingContext, model: ModelData) =>
-  initShaderProgram(gl, SimpleVertexShader, SimpleFragmentShader)
-    .then(shaderProgram => {
-
-      const programInfo = {
-        program: shaderProgram,
-        attribLocations: {
-          vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-          vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor')
-        },
-        uniformLocations: {
-          projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-          modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix')
+        const programInfo = {
+          program: shaderProgram,
+          attribLocations: {
+            vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
+            vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
+            textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
+            vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor')
+          },
+          uniformLocations: {
+            projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
+            modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+            normalMatrix: gl.getUniformLocation(shaderProgram, 'uNormalMatrix'),
+            uSampler: gl.getUniformLocation(shaderProgram, 'uSampler')
+          }
         }
-      }
 
-      // const programInfo = {
-      //   program: shaderProgram,
-      //   attribLocations: {
-      //     vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-      //     vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
-      //     textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
-      //     vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor')
-      //   },
-      //   uniformLocations: {
-      //     projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-      //     modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
-      //     normalMatrix: gl.getUniformLocation(shaderProgram, 'uNormalMatrix'),
-      //     uSampler: gl.getUniformLocation(shaderProgram, 'uSampler')
-      //   }
-      // }
+        const bb = boundingBox(model.min, model.max)
+        const lengths = dists(model.min, model.max)
+        const t = centeringTranslation(model.max, lengths)
+        // const o = offset(model.max, lengths)
+        const s = 1 / Math.max(...scale(0.5)(lengths))
 
-      const bb = boundingBox(model.min, model.max)
-      const lengths = dists(model.min, model.max)
-      const t = centeringTranslation(model.max, lengths)
-      // const o = offset(model.max, lengths)
-      const s = 1 / Math.max(...scale(0.5)(lengths))
+        const buffers = initBuffers(gl, model)
+        const texture = initTexture(gl)
 
-      const buffers = initBuffers(gl, model)
-      const texture = initTexture(gl)
+        const render = (cubeRotation: number) => (then: number) => (now: number) => {
+          const nowSeconds = now * 0.001
+          const deltaS = nowSeconds - then
 
-      const render = (cubeRotation: number) => (then: number) => (now: number) => {
-        const nowSeconds = now * 0.001
-        const deltaS = nowSeconds - then
+          drawScene(gl, programInfo, buffers, texture, cubeRotation, t, s, model.f.length, bb)
 
-        drawScene(gl, programInfo, buffers, texture, cubeRotation, t, s, model.f.length, bb)
-
-        // requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds))
-      }
-      requestAnimationFrame(render(0.7)(0))
-      // requestAnimationFrame(render(0)(0))
-    })
-    .catch(alert)
+          // requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds))
+        }
+        requestAnimationFrame(render(0.7)(0))
+        // requestAnimationFrame(render(0)(0))
+      })
+      .catch(alert)
 
 
 
@@ -108,19 +86,15 @@ Legg til funksjonalitet som overfører de innlastede dataene til GPUen med WebGL
 Legg til funksjonalitet for enkel manipulasjon av innlastet objekt. Applikasjonen skal for nå utelukkende støtte visning av et objekt og hvis et nytt objekt lastes inn, skal nåværende objekt fjernes. Applikasjonen burde liste en pre-definert liste av objekter som støttes og som brukeren kan velge mellom.
   Videre, burde applikasjonen støtte valg som å endre på farge for objektet og slå av/på modus som tekstur-rendering.
   */
-// fancy program info
+// simple program info
       // const programInfo = {
       //   program: shaderProgram,
       //   attribLocations: {
       //     vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-      //     vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
-      //     textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
       //     vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor')
       //   },
       //   uniformLocations: {
       //     projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-      //     modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
-      //     normalMatrix: gl.getUniformLocation(shaderProgram, 'uNormalMatrix'),
-      //     uSampler: gl.getUniformLocation(shaderProgram, 'uSampler')
+      //     modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix')
       //   }
       // }

@@ -1,5 +1,7 @@
-export const initShaderProgram = (gl: WebGLRenderingContext, vsSource: string, fsSource: string) => {
-  return Promise.all([loadShader(gl, gl.VERTEX_SHADER, vsSource), loadShader(gl, gl.FRAGMENT_SHADER, fsSource)])
+import { ShaderSet } from './shaders'
+
+export const initShaderProgram = (gl: WebGLRenderingContext, shaders: ShaderSet) => {
+  return Promise.all([loadShader(gl, gl.VERTEX_SHADER, shaders.vertex), loadShader(gl, gl.FRAGMENT_SHADER, shaders.fragment)])
     .then(([vertexShader, fragmentShader]) => {
       const shaderProgram = gl.createProgram()
       gl.attachShader(shaderProgram, vertexShader)

@@ -1,47 +1,16 @@
-[@bs.deriving abstract]
-type modelData = {
-  v: array(float),
-  vt: array(float),
-  vn: array(float),
-  f: array(float),
-  colors: array(float),
-  min: array(float),
-  max: array(float),
-};
-
-[@bs.deriving abstract]
-type webGlRenderingContext = {
-  canvas: string,
-  drawingBufferHeight: int,
-  drawingBufferWidth: int,
-};
-
+open Types;
 [@bs.module "../objs"] external models : Js.Dict.t(modelData) = "default";
+[@bs.module "../shaders"]
+external availableShaders : modelData => Js.Dict.t(shaderSet) = "";
+[@bs.module "../shaders"] external defaultShader : string = "";
 [@bs.val] external alert : string => unit = "";
 [@bs.module "../index"]
-external render : (webGlRenderingContext, modelData) => unit = "";
+external render : (webGlRenderingContext, option(modelData)) => unit = "";
 [@bs.module "../index"] external initGL : webGlRenderingContext => unit = "";
 [@bs.module "../index"]
 external getGlContext : string => Js.Nullable.t(webGlRenderingContext) = "";
 
 let toOption = Js.Nullable.toOption;
-
-type model = {
-  name: string,
-  data: modelData,
-};
-
-type renderData = {
-  models: Js.Dict.t(modelData),
-  model: option(model),
-  renderFunc: modelData => unit,
-};
-
-let isSelected = (name, optionModel) =>
-  switch (optionModel) {
-  | Some(a) when a.name === name => true
-  | _ => false
-  };
 
 type state =
   | Uninitialized
@@ -49,8 +18,10 @@ type state =
   | Ready(renderData);
 
 type action =
-  | SetModel(model)
-  | InitGl(option(webGlRenderingContext));
+  | InitGl(option(webGlRenderingContext))
+  | SelectShader(string)
+  | SelectModel(string, modelData)
+  | DeselectModel;
 
 let component = ReasonReact.reducerComponent("App");
 
@@ -60,7 +31,12 @@ let reducer = (action, state) =>
     switch (optionGl) {
     | Some(gl) =>
       ReasonReact.UpdateWithSideEffects(
-        Ready({models, renderFunc: render(gl), model: None}),
+        Ready({
+          models,
+          renderFunc: render(gl),
+          model: None,
+          modelCache: StringMap.empty,
+        }),
         (_ => initGL(gl)),
       )
     | None =>
@@ -70,13 +46,30 @@ let reducer = (action, state) =>
         ),
       )
     }
-  | SetModel((model: model)) =>
+  | SelectModel(name, modelData) =>
     switch (state) {
     | Ready(data) =>
+      let (nextState, model) =
+        switch (data.model) {
+        | Some(n) when n === name => (Ready({...data, model: None}), None)
+        | _ =>
+          let model = {
+            name,
+            data: modelData,
+            shaders: availableShaders(modelData) |> toMap,
+            currentShader: defaultShader,
+          };
+          let modelCache =
+            update(name, Maybe.default(model), data.modelCache);
+          (
+            Ready({...data, model: Some(name), modelCache}),
+            Some(modelData),
+          );
+        };
       ReasonReact.UpdateWithSideEffects(
-        Ready({...data, model: Some(model)}),
-        (_ => data.renderFunc(model.data)),
-      )
+        nextState,
+        (_ => data.renderFunc(model)),
+      );
     | _ =>
       let errormsg = "The rendering context is not available, but you tried to select a model. Something's gone wrong somewhere.";
       ReasonReact.UpdateWithSideEffects(
@@ -99,30 +92,21 @@ let make = (~canvasId, _children) => {
       <main>
         <div className="content">
           <canvas id=canvasId className="canvas" width="640" height="480" />
-          <div className="buttons">
-            (
-              switch (self.state) {
-              | Ready(data) =>
-                ReasonReact.array(
-                  data.models
-                  |> Js.Dict.entries
-                  |> Array.map(((name, modelData)) => {
-                       let selected = isSelected(name, data.model);
-                       <button
-                         key=name
-                         className=(selected ? "active" : "")
-                         disabled=selected
-                         onClick=(
-                           _ => self.send(SetModel({name, data: modelData}))
-                         )>
-                         (ReasonReact.string(name))
-                       </button>;
-                     }),
+          (
+            switch (self.state) {
+            | Ready(data) =>
+              <Controls
+                data
+                selectedModel=data.model
+                modelSelect=(
+                  (name, modelData) =>
+                    self.send(SelectModel(name, modelData))
                 )
-              | _ => ReasonReact.null
-              }
-            )
-          </div>
+                shaderSelect=(name => self.send(SelectShader(name)))
+              />
+            | _ => ReasonReact.null
+            }
+          )
         </div>
       </main>
       <footer> <h3> (ReasonReact.string("Thomas Hartmann")) </h3> </footer>

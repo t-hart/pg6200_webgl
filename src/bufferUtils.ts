@@ -1,19 +1,20 @@
 import { boundingBox } from './vector'
+import { ModelData } from './objs'
 
 export type BufferObj = {
-  position: WebGLBuffer,
-  color: WebGLBuffer,
-  normal: WebGLBuffer,
-  textureCoord: WebGLBuffer,
-  indices: WebGLBuffer,
-  boundingBox: WebGLBuffer
+  position: WebGLBuffer | null,
+  color: WebGLBuffer | null,
+  normal: WebGLBuffer | null,
+  textureCoord: WebGLBuffer | null,
+  indices: WebGLBuffer | null,
+  boundingBox: WebGLBuffer | null
 }
 
-export const initBuffers = (gl, bufferObj) => {
-  const createBuffer = bufferType => ArrayInitialiser => arr => {
+export const initBuffers = (gl: WebGLRenderingContext, bufferObj: ModelData) => {
+  const createBuffer = (bufferType: number) => (arrayConstructor: Uint16ArrayConstructor | Float32ArrayConstructor) => (arr: number[]) => {
     const buffer = gl.createBuffer()
     gl.bindBuffer(bufferType, buffer)
-    gl.bufferData(bufferType, new ArrayInitialiser(arr), gl.STATIC_DRAW)
+    gl.bufferData(bufferType, new arrayConstructor(arr), gl.STATIC_DRAW)
     return buffer
   }
 

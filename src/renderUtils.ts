@@ -2,7 +2,16 @@ import { mat4 } from 'gl-matrix-ts'
 import { ProgramInfo } from './index'
 import { BufferObj } from './bufferUtils'
 
-export const drawScene = (gl: WebGLRenderingContext, programInfo: ProgramInfo, buffers: BufferObj, texture: WebGLTexture, rotation: number, centeringTranslation: number[], normalizingScale: number, numFaces: number, boundingBox: number[]) => {
+export const drawEmptyScene = (gl: WebGLRenderingContext) => {
+  gl.clearColor(0, 0, 0, 1)
+  gl.clearDepth(1)
+  gl.enable(gl.DEPTH_TEST)
+  gl.depthFunc(gl.LEQUAL)
+
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+}
+
+export const drawScene = (gl: WebGLRenderingContext, programInfo: ProgramInfo, buffers: BufferObj, texture: WebGLTexture | null, rotation: number, centeringTranslation: number[], normalizingScale: number, numFaces: number, boundingBox: number[]) => {
   gl.clearColor(0, 0, 0, 1)
   gl.clearDepth(1)
   gl.enable(gl.DEPTH_TEST)
@@ -33,7 +42,7 @@ export const drawScene = (gl: WebGLRenderingContext, programInfo: ProgramInfo, b
 
   // gl.uniformMatrix4fv(programInfo.uniformLocations.normalMatrix, false, normalMatrix)
 
-  const bindBuffer = (numComponents, buffer, attribLocs) => {
+  const bindBuffer = (numComponents: number, buffer: WebGLBuffer | null, attribLocs: number) => {
     const type = gl.FLOAT
     const normalize = false
     const stride = 0

@@ -1,4 +1,4 @@
-export const initTexture = (gl) => {
+export const initTexture = (gl: WebGLRenderingContext) => {
   const texture = gl.createTexture()
   gl.bindTexture(gl.TEXTURE_2D, texture)
 
@@ -19,7 +19,8 @@ export const initTexture = (gl) => {
   return texture
 }
 
-export const updateTexture = (gl, texture, video) => {
+
+export const updateTexture = (gl: WebGLRenderingContext, texture: WebGLTexture, video: ImageBitmap | ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement) => {
   const level = 0
   const internalFormat = gl.RGBA
   const srcFormat = gl.RGBA

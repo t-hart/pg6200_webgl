@@ -25,6 +25,7 @@ $system-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
 $main-color: $fuchsia;
 $secondary-color: darken($teal, 10%);
 $background-color: $black;
+$disabled-color: $gray;
 
 html {
   background-color: $background-color;
@@ -82,6 +83,11 @@ footer {
   width: 640px;
 }
 
+.button-grid {
+  display: grid;
+  gap: 1.5em 0;
+}
+
 button {
   background-color: inherit;
   border-color: $main-color;
@@ -89,6 +95,7 @@ button {
   border-style: solid;
   color: inherit;
   font-weight: lighter;
+  line-height: 1.5;
   text-align: center;
 
   &.active {
@@ -105,4 +112,27 @@ button {
     }
   }
 
+}
+
+.span-all {
+  grid-column-end: -1;
+  grid-column-start: 1;
+}
+
+fieldset {
+  border: 0;
+
+  &:disabled {
+    opacity: .3;
+
+    * {
+      border-color: $disabled-color;
+      color: $disabled-color;
+    }
+  }
+}
+
+legend {
+  color: $secondary-color;
+  font-size: larger;
 }
