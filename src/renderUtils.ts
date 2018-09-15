@@ -1,6 +1,8 @@
 import { mat4 } from 'gl-matrix-ts'
+import { ProgramInfo } from './index'
+import { BufferObj } from './bufferUtils'
 
-export const drawScene = (gl, programInfo, buffers, texture, cubeRotation, centeringTranslation, normalizingScale, numFaces, boundingBox) => {
+export const drawScene = (gl: WebGLRenderingContext, programInfo: ProgramInfo, buffers: BufferObj, texture: WebGLTexture, rotation: number, centeringTranslation: number[], normalizingScale: number, numFaces: number, boundingBox: number[]) => {
   gl.clearColor(0, 0, 0, 1)
   gl.clearDepth(1)
   gl.enable(gl.DEPTH_TEST)
@@ -17,7 +19,7 @@ export const drawScene = (gl, programInfo, buffers, texture, cubeRotation, cente
 
   const modelViewMatrix = mat4.create()
   mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -6])
-  mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation * 0.75, [0.3, 0.7, 0.5])
+  mat4.rotate(modelViewMatrix, modelViewMatrix, rotation * 0.75, [0.3, 0.7, 0.5])
 
   // normalize
   mat4.scale(modelViewMatrix, modelViewMatrix, Array(3).fill(normalizingScale))

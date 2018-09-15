@@ -1,4 +1,4 @@
-export const initShaderProgram = (gl, vsSource, fsSource) => {
+export const initShaderProgram = (gl: WebGLRenderingContext, vsSource: string, fsSource: string) => {
   return Promise.all([loadShader(gl, gl.VERTEX_SHADER, vsSource), loadShader(gl, gl.FRAGMENT_SHADER, fsSource)])
     .then(([vertexShader, fragmentShader]) => {
       const shaderProgram = gl.createProgram()
@@ -14,7 +14,7 @@ export const initShaderProgram = (gl, vsSource, fsSource) => {
     })
 }
 
-const loadShader = (gl, type, source) => {
+const loadShader = (gl: WebGLRenderingContext, type: number, source: string) => {
   const shader = gl.createShader(type)
   gl.shaderSource(shader, source)
   gl.compileShader(shader)

@@ -1,5 +1,14 @@
 import { boundingBox } from './vector'
 
+export type BufferObj = {
+  position: WebGLBuffer,
+  color: WebGLBuffer,
+  normal: WebGLBuffer,
+  textureCoord: WebGLBuffer,
+  indices: WebGLBuffer,
+  boundingBox: WebGLBuffer
+}
+
 export const initBuffers = (gl, bufferObj) => {
   const createBuffer = bufferType => ArrayInitialiser => arr => {
     const buffer = gl.createBuffer()

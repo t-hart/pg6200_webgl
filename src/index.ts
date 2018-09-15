@@ -1,14 +1,18 @@
 /* global alert, requestAnimationFrame */
 import 'babel-polyfill'
+// @ts-ignore
 // import VertexShader from './shaders/vertex.glsl'
+// @ts-ignore
 // import FragmentShader from './shaders/fragment.glsl'
+// @ts-ignore
 import SimpleFragmentShader from './shaders/simple_fragment.glsl'
+// @ts-ignore
 import SimpleVertexShader from './shaders/simple_vertex.glsl'
 import { initShaderProgram } from './shaderUtils'
 import { initBuffers } from './bufferUtils'
 import { initTexture } from './textureUtils'
 import { drawScene } from './renderUtils'
-import models, { ModelData } from './objs'
+import { ModelData } from './objs'
 import { boundingBox, dists, centeringTranslation, scale } from './vector'
 
 export const getGlContext = (canvasId: string) => {
@@ -16,57 +20,34 @@ export const getGlContext = (canvasId: string) => {
   return canvas ? canvas.getContext('webgl') : null
 }
 
-type ProgramInfo = {
-  program: WebGLShader,
+export type ProgramInfo = {
+  program: WebGLProgram | null,
   attribLocations: {
-    vertexPosition: any,
-    vertexNormal: any,
-    textureCoord: any,
-    vertexColor: any
+    vertexPosition: number,
+    vertexNormal?: number,
+    textureCoord?: number,
+    vertexColor: number
   },
   uniformLocations: {
-    projectionMatrix: any,
-    modelViewMatrix: any,
-    normalMatrix: any,
-    uSampler: any
+    projectionMatrix: WebGLUniformLocation | null,
+    modelViewMatrix: WebGLUniformLocation | null,
+    normalMatrix?: WebGLUniformLocation | null,
+    uSampler?: WebGLUniformLocation | null
   }
 }
 
-let renderFunc = (_rotation: number) => (_then: number) => (_now: number) => { }
 
 let getProgramInfo = (gl: WebGLRenderingContext) => async (vertexShader: string, fragmentShader: string) => initShaderProgram(gl, vertexShader, fragmentShader)
 
-export const setModel = (gl: WebGLRenderingContext) => (model: ModelData) => getProgramInfo(gl)(SimpleVertexShader, SimpleFragmentShader).then(
-  programInfo => render__(gl)(programInfo)(model)
-)
-
-export const render__ = (gl: WebGLRenderingContext) => (programInfo: ProgramInfo) => (model: ModelData) => {
+export const initGL = (gl: WebGLRenderingContext) => {
   gl.clearColor(0, 0, 0, 1)
   gl.clear(gl.COLOR_BUFFER_BIT)
-
-
-  const bb = boundingBox(model.min, model.max)
-  const lengths = dists(model.min, model.max)
-  const t = centeringTranslation(model.max, lengths)
-  const s = 1 / Math.max(...scale(0.5)(lengths))
-
-  const buffers = initBuffers(gl, model)
-  const texture = initTexture(gl)
-
-  renderFunc = (cubeRotation: number) => (then: number) => (now: number) => {
-    const nowSeconds = now * 0.001
-    const deltaS = nowSeconds - then
-
-    drawScene(gl, programInfo, buffers, texture, cubeRotation, t, s, model.f.length, bb)
-    // requestAnimationFrame(renderFunc(cubeRotation + deltaS)(nowSeconds))
-  }
-  requestAnimationFrame(renderFunc(0.7)(0))
 }
 
-export const render = (gl: WebGLRenderingContext) => (model: ModelData) =>
+export const render = (gl: WebGLRenderingContext, model: ModelData) =>
   initShaderProgram(gl, SimpleVertexShader, SimpleFragmentShader)
     .then(shaderProgram => {
-      console.log("calling render")
+
       const programInfo = {
         program: shaderProgram,
         attribLocations: {
@@ -79,20 +60,29 @@ export const render = (gl: WebGLRenderingContext) => (model: ModelData) =>
         }
       }
 
-      gl.clearColor(0, 0, 0, 1)
-      gl.clear(gl.COLOR_BUFFER_BIT)
+      // const programInfo = {
+      //   program: shaderProgram,
+      //   attribLocations: {
+      //     vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
+      //     vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
+      //     textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
+      //     vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor')
+      //   },
+      //   uniformLocations: {
+      //     projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
+      //     modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+      //     normalMatrix: gl.getUniformLocation(shaderProgram, 'uNormalMatrix'),
+      //     uSampler: gl.getUniformLocation(shaderProgram, 'uSampler')
+      //   }
+      // }
 
-      // const dataPoints = models.get('bunny (hi res)')
-      const dataPoints = models['bunny (hi res)']
-
-
-      const bb = boundingBox(dataPoints.min, dataPoints.max)
-      const lengths = dists(dataPoints.min, dataPoints.max)
-      const t = centeringTranslation(dataPoints.max, lengths)
-      // const o = offset(dataPoints.max, lengths)
+      const bb = boundingBox(model.min, model.max)
+      const lengths = dists(model.min, model.max)
+      const t = centeringTranslation(model.max, lengths)
+      // const o = offset(model.max, lengths)
       const s = 1 / Math.max(...scale(0.5)(lengths))
 
-      const buffers = initBuffers(gl, dataPoints)
+      const buffers = initBuffers(gl, model)
       const texture = initTexture(gl)
 
       const render = (cubeRotation: number) => (then: number) => (now: number) => {
