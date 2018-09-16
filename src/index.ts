@@ -6,7 +6,7 @@ import { initTexture } from './textureUtils'
 import { drawScene, drawEmptyScene } from './renderUtils'
 import { ModelData } from './objs'
 import { boundingBox, dists, centeringTranslation, scale } from './vector'
-import shaders from './shaders'
+import { ShaderSet } from './shaders'
 
 export const getGlContext = (canvasId: string) => {
   const canvas: HTMLCanvasElement | null = document.querySelector('#' + canvasId)
@@ -32,10 +32,10 @@ export type ProgramInfo = {
 
 export const initGL = (gl: WebGLRenderingContext) => drawEmptyScene(gl)
 
-export const render = (gl: WebGLRenderingContext, model: ModelData | undefined) =>
-  !model
+export const render = (gl: WebGLRenderingContext, model: ModelData | undefined, shaders: ShaderSet | undefined) =>
+  !model || !shaders
     ? drawEmptyScene(gl)
-    : initShaderProgram(gl, shaders.color)
+    : initShaderProgram(gl, shaders)
       .then(shaderProgram => {
 
         const programInfo = {

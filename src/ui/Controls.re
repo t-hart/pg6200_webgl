@@ -10,7 +10,7 @@ let component = ReasonReact.statelessComponent("Controls");
 
 let make = (~data, ~selectedModel, ~modelSelect, ~shaderSelect, _children) => {
   ...component,
-  render: self =>
+  render: _self =>
     <div className="button-grid">
       <fieldset>
         <legend> {ReasonReact.string("Models")} </legend>
@@ -18,13 +18,13 @@ let make = (~data, ~selectedModel, ~modelSelect, ~shaderSelect, _children) => {
           {
             ReasonReact.array(
               data.models
-              |> entries
-              |> List.sort(compare)
-              |> List.map(((name, modelData)) =>
+              |> keys
+              |> List.fast_sort(compare)
+              |> List.map(name =>
                    <button
                      key=name
                      className={isSelected(name, data.model) ? "active" : ""}
-                     onClick={_ => modelSelect(name, modelData)}>
+                     onClick={_ => modelSelect(name)}>
                      {ReasonReact.string(name)}
                    </button>
                  )
@@ -38,14 +38,20 @@ let make = (~data, ~selectedModel, ~modelSelect, ~shaderSelect, _children) => {
         <div className="buttons">
           {
             switch (data.model) {
-            | Some(m) =>
-              switch (get(m, data.modelCache)) {
-              | Some(data) =>
+            | Some(name) =>
+              switch (get(name, data.modelCache)) {
+              | Some(model) =>
                 ReasonReact.array(
-                  data->(x => x.shaders)->keys
+                  model.shaders->keys
                   |> List.fast_sort(compare)
                   |> List.map(key =>
-                       <button key> {ReasonReact.string(key)} </button>
+                       <button
+                         onClick={_ => shaderSelect(key, name)}
+                         key
+                         disabled={model.shader === key}
+                         className={model.shader === key ? "active" : ""}>
+                         {ReasonReact.string(key)}
+                       </button>
                      )
                   |> Array.of_list,
                 )
@@ -60,7 +66,7 @@ let make = (~data, ~selectedModel, ~modelSelect, ~shaderSelect, _children) => {
                 </button>
               }
             | None =>
-              <button className="span-all" disabled=true>
+              <button className="span-all alert" disabled=true>
                 {ReasonReact.string("Please select a model first")}
               </button>
             }

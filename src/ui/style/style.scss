@@ -26,6 +26,7 @@ $main-color: $fuchsia;
 $secondary-color: darken($teal, 10%);
 $background-color: $black;
 $disabled-color: $gray;
+$error-color: $red;
 
 html {
   background-color: $background-color;
@@ -86,6 +87,11 @@ footer {
 .button-grid {
   display: grid;
   gap: 1.5em 0;
+}
+
+.alert {
+  border-color: $error-color;
+  color: $error-color;
 }
 
 button {

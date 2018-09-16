@@ -49,14 +49,13 @@ let entries = map =>
 
 type model = {
   name: string,
-  data: modelData,
   shaders: StringMap.t(shaderSet),
-  currentShader: string,
+  shader: string,
 };
 
 type renderData = {
   models: StringMap.t(modelData),
   model: option(string),
-  renderFunc: option(modelData) => unit,
+  renderFunc: option(model) => unit,
   modelCache: StringMap.t(model),
 };
