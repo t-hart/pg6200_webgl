@@ -13,9 +13,9 @@ let make = (~data, ~selectedModel, ~modelSelect, ~shaderSelect, _children) => {
   render: self =>
     <div className="button-grid">
       <fieldset>
-        <legend> (ReasonReact.string("Models")) </legend>
+        <legend> {ReasonReact.string("Models")} </legend>
         <div className="buttons">
-          (
+          {
             ReasonReact.array(
               data.models
               |> entries
@@ -23,49 +23,48 @@ let make = (~data, ~selectedModel, ~modelSelect, ~shaderSelect, _children) => {
               |> List.map(((name, modelData)) =>
                    <button
                      key=name
-                     className=(isSelected(name, data.model) ? "active" : "")
-                     onClick=(_ => modelSelect(name, modelData))>
-                     (ReasonReact.string(name))
+                     className={isSelected(name, data.model) ? "active" : ""}
+                     onClick={_ => modelSelect(name, modelData)}>
+                     {ReasonReact.string(name)}
                    </button>
                  )
               |> Array.of_list,
             )
-          )
+          }
         </div>
       </fieldset>
-      <fieldset disabled=(data.model === None)>
-        <legend> (ReasonReact.string("Shaders")) </legend>
+      <fieldset disabled={data.model === None}>
+        <legend> {ReasonReact.string("Shaders")} </legend>
         <div className="buttons">
-          (
+          {
             switch (data.model) {
+            | Some(m) =>
+              switch (get(m, data.modelCache)) {
+              | Some(data) =>
+                ReasonReact.array(
+                  data->(x => x.shaders)->keys
+                  |> List.fast_sort(compare)
+                  |> List.map(key =>
+                       <button key> {ReasonReact.string(key)} </button>
+                     )
+                  |> Array.of_list,
+                )
+              | None =>
+                <button
+                  key="no-shaders" className="span-all alert" disabled=true>
+                  {
+                    ReasonReact.string(
+                      "Unable to find data for this model in the cache. Something's gone wrong somewhere.",
+                    )
+                  }
+                </button>
+              }
             | None =>
               <button className="span-all" disabled=true>
-                (ReasonReact.string("Please select a model first"))
+                {ReasonReact.string("Please select a model first")}
               </button>
-            | Some(m) =>
-              ReasonReact.array(
-                Option.default(
-                  Array.of_list([
-                    <button
-                      key="unique" className="span-all alert" disabled=true>
-                      (ReasonReact.string("This model has no shaders"))
-                    </button>,
-                  ]),
-                  m
-                  |> get(data.modelCache)
-                  |> Option.map(x => x.shaders)
-                  |> Option.map(keys)
-                  |> Option.map(List.fast_sort(compare))
-                  |> Option.map(
-                       List.map(key =>
-                         <button key> (ReasonReact.string(key)) </button>
-                       ),
-                     )
-                  |> Option.map(Array.of_list),
-                ),
-              )
             }
-          )
+          }
         </div>
       </fieldset>
     </div>,

@@ -60,7 +60,7 @@ let reducer = (action, state) =>
             currentShader: defaultShader,
           };
           let modelCache =
-            update(name, Option.default(model), data.modelCache);
+            update(name, Belt.Option.getWithDefault(_, model), data.modelCache);
           (
             Ready({...data, model: Some(name), modelCache}),
             Some(modelData),

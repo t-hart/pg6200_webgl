@@ -36,30 +36,16 @@ let toMap = jsDict =>
        StringMap.empty,
      );
 
-let get = (map, key) =>
+let get = (key, map) =>
   StringMap.exists((k, _) => k === key, map) ?
-    StringMap.find(key, map) |. Some : None;
+    StringMap.find(key, map)->Some : None;
 
-let update = (key, f, map) => StringMap.add(key, get(map, key) |> f, map);
+let update = (key, f, map) => StringMap.add(key, get(key, map)->f, map);
 
 let keys = map => StringMap.fold((k, _, acc) => [k, ...acc], map, []);
 
 let entries = map =>
   StringMap.fold((k, v, acc) => [(k, v), ...acc], map, []);
-
-module Option = {
-  let default = (defaultVal, opt) =>
-    switch (opt) {
-    | Some(x) => x
-    | None => defaultVal
-    };
-
-  let map = (f, opt) =>
-    switch (opt) {
-    | Some(x) => Some(f(x))
-    | None => None
-    };
-};
 
 type model = {
   name: string,
