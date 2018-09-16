@@ -56,8 +56,7 @@ let make = (~data, ~selectedModel, ~modelSelect, ~shaderSelect, _children) => {
                   |> Array.of_list,
                 )
               | None =>
-                <button
-                  key="no-shaders" className="span-all alert" disabled=true>
+                <button className="span-all alert" disabled=true>
                   {
                     ReasonReact.string(
                       "Unable to find data for this model in the cache. Something's gone wrong somewhere.",

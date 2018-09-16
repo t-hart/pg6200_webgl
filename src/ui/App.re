@@ -1,5 +1,4 @@
 open Types;
-[@bs.module "../objs"] external models: Js.Dict.t(modelData) = "default";
 [@bs.module "../shaders"]
 external availableShaders: modelData => Js.Dict.t(shaderSet) = "";
 [@bs.module "../shaders"] external defaultShader: string = "";
@@ -25,7 +24,7 @@ type shaderKey = string;
 type modelKey = string;
 
 type action =
-  | InitGl(option(webGlRenderingContext))
+  | InitGl(option(webGlRenderingContext), StringMap.t(modelData))
   | SelectShader(shaderKey, modelKey)
   | SelectModel(modelKey)
   | Render;
@@ -39,32 +38,29 @@ let render' = (models, f, model: option(model)) =>
   };
 
 let reducer = (action, state) =>
-  switch (action) {
-  | Render =>
-    switch (state) {
-    | Ready(data) =>
-      ReasonReact.SideEffects(
-        (
-          _ =>
-            Belt.Option.flatMap(data.model, get(_, data.modelCache))
-            |> data.renderFunc
-        ),
-      )
-    | _ => ReasonReact.NoUpdate
-    }
-  | InitGl(optionGl) =>
+  switch (action, state) {
+  | (Render, Ready(data)) =>
+    ReasonReact.SideEffects(
+      (
+        _ =>
+          Belt.Option.flatMap(data.model, get(_, data.modelCache))
+          |> data.renderFunc
+      ),
+    )
+  | (Render, Uninitialized | Error(_)) => ReasonReact.NoUpdate
+
+  | (InitGl(optionGl, models), _) =>
     switch (optionGl) {
     | Some(gl) =>
-      let modelMap = models |> toMap;
       ReasonReact.UpdateWithSideEffects(
         Ready({
-          models: modelMap,
-          renderFunc: render'(modelMap, render(gl)),
+          models,
+          renderFunc: render'(models, render(gl)),
           model: None,
           modelCache: StringMap.empty,
         }),
         (self => self.send(Render)),
-      );
+      )
     | None =>
       ReasonReact.Update(
         Error(
@@ -72,58 +68,59 @@ let reducer = (action, state) =>
         ),
       )
     }
-  | SelectModel(name) =>
-    switch (state) {
-    | Ready(data) =>
-      let nextState =
-        switch (data.model) {
-        | Some(n) when n === name => Ready({...data, model: None})
-        | _ =>
-          let model = {
-            name,
-            shaders:
-              availableShaders(StringMap.find(name, data.models)) |> toMap,
-            shader: defaultShader,
-          };
-          let modelCache =
-            update(
-              name,
-              Belt.Option.getWithDefault(_, model),
-              data.modelCache,
-            );
-          Ready({...data, model: Some(name), modelCache});
+
+  | (SelectModel(name), Ready(data)) =>
+    let nextState =
+      switch (data.model) {
+      | Some(n) when n === name => Ready({...data, model: None})
+      | _ =>
+        let model = {
+          name,
+          shaders:
+            availableShaders(StringMap.find(name, data.models)) |> toMap,
+          shader: defaultShader,
         };
-      ReasonReact.UpdateWithSideEffects(
-        nextState,
-        (self => self.send(Render)),
-      );
-    | _ =>
-      let errormsg = "The rendering context is not available, but you tried to select a model. Something's gone wrong somewhere.";
-      ReasonReact.UpdateWithSideEffects(
-        Error(errormsg),
-        (_ => alert(errormsg)),
-      );
-    }
-  | SelectShader(shader, modelKey) =>
-    switch (state) {
-    | Ready(data) =>
-      let model = {...StringMap.find(modelKey, data.modelCache), shader};
-      Js.log(model);
-      ReasonReact.UpdateWithSideEffects(
-        Ready({
-          ...data,
-          modelCache: update(modelKey, const(model), data.modelCache),
-        }),
-        (self => self.send(Render)),
-      );
-    }
+        let modelCache =
+          update(
+            name,
+            Belt.Option.getWithDefault(_, model),
+            data.modelCache,
+          );
+        Ready({...data, model: Some(name), modelCache});
+      };
+    ReasonReact.UpdateWithSideEffects(
+      nextState,
+      (self => self.send(Render)),
+    );
+  | (SelectModel(_), Uninitialized | Error(_)) =>
+    let errormsg = "The rendering context is not available, but you tried to select a model. Something's gone wrong somewhere.";
+    ReasonReact.UpdateWithSideEffects(
+      Error(errormsg),
+      (_ => alert(errormsg)),
+    );
+
+  | (SelectShader(shader, modelKey), Ready(data)) =>
+    ReasonReact.UpdateWithSideEffects(
+      Ready({
+        ...data,
+        modelCache:
+          update(
+            modelKey,
+            {...StringMap.find(modelKey, data.modelCache), shader}->const,
+            data.modelCache,
+          ),
+      }),
+      (self => self.send(Render)),
+    )
+  | (SelectShader(_, _), Uninitialized | Error(_)) => ReasonReact.NoUpdate
   };
 
-let make = (~canvasId, _children) => {
+let make = (~canvasId, ~models, _children) => {
   ...component,
   initialState: () => Uninitialized,
   reducer,
-  didMount: self => self.send(InitGl(getGlContext(canvasId) |> toOption)),
+  didMount: self =>
+    self.send(InitGl(getGlContext(canvasId) |> toOption, models)),
   render: self =>
     <div className="app">
       <div className="page-header">
