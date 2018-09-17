@@ -134,14 +134,14 @@ let make = (~canvasId, ~models, _children) => {
             | Ready(data) =>
               <Controls
                 data
-                selectedModel={data.model}
                 modelSelect=(name => self.send(SelectModel(name)))
                 shaderSelect=(
                   (shaderKey, modelKey) =>
                     self.send(SelectShader(shaderKey, modelKey))
                 )
               />
-            | _ => ReasonReact.null
+            | Uninitialized
+            | Error(_) => ReasonReact.null
             }
           }
         </div>

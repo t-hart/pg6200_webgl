@@ -8,7 +8,7 @@ let isSelected = (name, optionString) =>
 
 let component = ReasonReact.statelessComponent("Controls");
 
-let make = (~data, ~selectedModel, ~modelSelect, ~shaderSelect, _children) => {
+let make = (~data, ~modelSelect, ~shaderSelect, _children) => {
   ...component,
   render: _self =>
     <div className="button-grid">

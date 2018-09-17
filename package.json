@@ -4,7 +4,7 @@
   "description": "\"Coursework for graphics programming\"",
   "main": "./src/index.html",
   "scripts": {
-    "dev": "concurrently \"./node_modules/.bin/parcel src/index.html --no-cache\" \"bsb -make-world -w\" ",
+    "dev": "node_modules/.bin/concurrently \"./node_modules/.bin/parcel src/index.html --no-cache\" \"bsb -make-world -w\" ",
     "build": "./node_modules/.bin/parcel build src/index.html --public-url=\"./\""
   },
   "private": true,
