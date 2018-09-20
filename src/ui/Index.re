@@ -1,2 +1,1 @@
-let canvasId = "reCanvas";
-ReactDOMRe.renderToElementWithId(<App canvasId />, "reason-app");
+ReactDOMRe.renderToElementWithId(<App />, "reason-app");
