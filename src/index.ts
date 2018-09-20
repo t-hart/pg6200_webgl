@@ -1,12 +1,9 @@
 /* global alert, requestAnimationFrame */
 import 'babel-polyfill'
-import { initShaderProgram } from './shaderUtils'
 import { initBuffers } from './bufferUtils'
-import { initTexture } from './textureUtils'
 import { drawScene, drawEmptyScene } from './renderUtils'
-import { ModelData } from './objs'
+import { ObjData } from './objs'
 import { boundingBox, dists, centeringTranslation, scale } from './vector'
-import { ShaderSet } from './shaders'
 
 export const getGlContext = (canvasId: string) => {
   const canvas: HTMLCanvasElement | null = document.querySelector('#' + canvasId)
@@ -17,65 +14,88 @@ export type ProgramInfo = {
   program: WebGLProgram | null,
   attribLocations: {
     vertexPosition: number,
-    vertexNormal?: number,
-    textureCoord?: number,
+    vertexNormal: number,
+    textureCoord: number,
     vertexColor: number
   },
   uniformLocations: {
     projectionMatrix: WebGLUniformLocation | null,
     modelViewMatrix: WebGLUniformLocation | null,
-    normalMatrix?: WebGLUniformLocation | null,
-    uSampler?: WebGLUniformLocation | null
+    normalMatrix: WebGLUniformLocation | null,
+    uSampler: WebGLUniformLocation | null
   }
 }
 
-
 export const initGL = (gl: WebGLRenderingContext) => drawEmptyScene(gl)
 
-export const render = (gl: WebGLRenderingContext, model: ModelData | undefined, shaders: ShaderSet | undefined) =>
-  !model || !shaders
-    ? drawEmptyScene(gl)
-    : initShaderProgram(gl, shaders)
-      .then(shaderProgram => {
+type MaybeData = {
+  objData: ObjData,
+  program: WebGLProgram,
+  texture: WebGLTexture | null
+} | null
 
-        const programInfo = {
-          program: shaderProgram,
-          attribLocations: {
-            vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-            vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
-            textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
-            vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor')
-          },
-          uniformLocations: {
-            projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-            modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
-            normalMatrix: gl.getUniformLocation(shaderProgram, 'uNormalMatrix'),
-            uSampler: gl.getUniformLocation(shaderProgram, 'uSampler')
-          }
-        }
+export const log = (a: any) => { console.log(a); return a }
 
-        const bb = boundingBox(model.min, model.max)
-        const lengths = dists(model.min, model.max)
-        const t = centeringTranslation(model.max, lengths)
-        // const o = offset(model.max, lengths)
-        const s = 1 / Math.max(...scale(0.5)(lengths))
+export const render = (gl: WebGLRenderingContext, data: MaybeData) => {
+  if (!data) {
+    drawEmptyScene(gl)
+    return
+  }
+  const { program, objData, texture } = data
 
-        const buffers = initBuffers(gl, model)
-        const texture = initTexture(gl)
+  const program_ = {
+    program: program,
+    attribLocations: {
+      vertexPosition: gl.getAttribLocation(program, 'aVertexPosition'),
+      vertexNormal: gl.getAttribLocation(program, 'aVertexNormal'),
+      textureCoord: gl.getAttribLocation(program, 'aTextureCoord'),
+      vertexColor: gl.getAttribLocation(program, 'aVertexColor')
+    },
+    uniformLocations: {
+      projectionMatrix: gl.getUniformLocation(program, 'uProjectionMatrix'),
+      modelViewMatrix: gl.getUniformLocation(program, 'uModelViewMatrix'),
+      normalMatrix: gl.getUniformLocation(program, 'uNormalMatrix'),
+      uSampler: gl.getUniformLocation(program, 'uSampler')
+    }
+  }
 
-        const render = (cubeRotation: number) => (then: number) => (now: number) => {
-          const nowSeconds = now * 0.001
-          const deltaS = nowSeconds - then
+  const bb = boundingBox(objData.min, objData.max)
+  const lengths = dists(objData.min, objData.max)
+  const t = centeringTranslation(objData.max, lengths)
+  // const o = offset(objData.max, lengths)
+  const s = 1 / Math.max(...scale(0.5)(lengths))
 
-          drawScene(gl, programInfo, buffers, texture, cubeRotation, t, s, model.f.length, bb)
+  const buffers = initBuffers(gl, objData)
 
-          // requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds))
-        }
-        requestAnimationFrame(render(0.7)(0))
-        // requestAnimationFrame(render(0)(0))
-      })
-      .catch(alert)
+  const render = (cubeRotation: number) => (then: number) => (now: number) => {
+    const nowSeconds = now * 0.001
+    const deltaS = nowSeconds - then
 
+    drawScene(gl, program_, buffers, texture, cubeRotation, t, s, objData.f.length, bb)
+
+    // requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds))
+  }
+  requestAnimationFrame(render(0.7)(0))
+  // requestAnimationFrame(render(0)(0))
+}
+
+// const program = initShaderProgram(gl, shaders)
+
+// const program = {
+//   program: program,
+//   attribLocations: {
+//     vertexPosition: gl.getAttribLocation(program, 'aVertexPosition'),
+//     vertexNormal: gl.getAttribLocation(program, 'aVertexNormal'),
+//     textureCoord: gl.getAttribLocation(program, 'aTextureCoord'),
+//     vertexColor: gl.getAttribLocation(program, 'aVertexColor')
+//   },
+//   uniformLocations: {
+//     projectionMatrix: gl.getUniformLocation(program, 'uProjectionMatrix'),
+//     modelViewMatrix: gl.getUniformLocation(program, 'uModelViewMatrix'),
+//     normalMatrix: gl.getUniformLocation(program, 'uNormalMatrix'),
+//     uSampler: gl.getUniformLocation(program, 'uSampler')
+//   }
+// }
 
 
 /*
@@ -87,14 +107,14 @@ Legg til funksjonalitet for enkel manipulasjon av innlastet objekt. Applikasjone
   Videre, burde applikasjonen støtte valg som å endre på farge for objektet og slå av/på modus som tekstur-rendering.
   */
 // simple program info
-      // const programInfo = {
-      //   program: shaderProgram,
+      // const program = {
+      //   program: program,
       //   attribLocations: {
-      //     vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-      //     vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor')
+      //     vertexPosition: gl.getAttribLocation(program, 'aVertexPosition'),
+      //     vertexColor: gl.getAttribLocation(program, 'aVertexColor')
       //   },
       //   uniformLocations: {
-      //     projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-      //     modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix')
+      //     projectionMatrix: gl.getUniformLocation(program, 'uProjectionMatrix'),
+      //     modelViewMatrix: gl.getUniformLocation(program, 'uModelViewMatrix')
       //   }
       // }

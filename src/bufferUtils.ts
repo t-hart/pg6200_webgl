@@ -1,5 +1,5 @@
 import { boundingBox } from './vector'
-import { ModelData } from './objs'
+import { ObjData } from './objs'
 
 export type BufferObj = {
   position: WebGLBuffer | null,
@@ -10,7 +10,7 @@ export type BufferObj = {
   boundingBox: WebGLBuffer | null
 }
 
-export const initBuffers = (gl: WebGLRenderingContext, bufferObj: ModelData) => {
+export const initBuffers = (gl: WebGLRenderingContext, bufferObj: ObjData) => {
   const createBuffer = (bufferType: number) => (arrayConstructor: Uint16ArrayConstructor | Float32ArrayConstructor) => (arr: number[]) => {
     const buffer = gl.createBuffer()
     gl.bindBuffer(bufferType, buffer)

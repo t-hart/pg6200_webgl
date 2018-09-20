@@ -1,4 +1,4 @@
-import { ModelData } from './objs'
+import { ObjData } from './objs'
 // @ts-ignore
 import ColorFragment from './shaders/simple_fragment.glsl'
 // @ts-ignore
@@ -17,6 +17,12 @@ export type ShaderSet = {
   fragment: string
 }
 
+export type Programs = {
+  color: WebGLProgram,
+  texture?: WebGLProgram,
+  lighting?: WebGLProgram
+}
+
 const shaders = {
   color: {
     vertex: ColorVertex,
@@ -32,8 +38,6 @@ const shaders = {
   }
 }
 
-export const defaultShader = 'color'
-
-export const availableShaders = (model: ModelData) => model.vt.length ? shaders : { color: shaders.color }
+export const availableShaders = (model: ObjData) => model.vt.length ? shaders : { color: shaders.color }
 
 export default shaders

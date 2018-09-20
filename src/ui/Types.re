@@ -1,5 +1,10 @@
+let debug = a => {
+  Js.log(a);
+  a;
+};
+
 [@bs.deriving abstract]
-type modelData = {
+type objData = {
   v: array(float),
   vt: array(float),
   vn: array(float),
@@ -17,9 +22,18 @@ type webGlRenderingContext = {
 };
 
 [@bs.deriving abstract]
-type shaderSet = {
-  vertex: string,
-  fragment: string,
+type webGlTexture =
+  | ();
+
+[@bs.deriving abstract]
+type webGlProgram =
+  | ();
+
+[@bs.deriving abstract]
+type renderArg = {
+  objData,
+  program: webGlProgram,
+  texture: option(webGlTexture),
 };
 
 module StringMap =
@@ -47,15 +61,27 @@ let keys = map => StringMap.fold((k, _, acc) => [k, ...acc], map, []);
 let entries = map =>
   StringMap.fold((k, v, acc) => [(k, v), ...acc], map, []);
 
+[@bs.deriving abstract]
 type model = {
-  name: string,
-  shaders: StringMap.t(shaderSet),
-  shader: string,
+  objData,
+  programs: Js.Dict.t(webGlProgram),
+  texture: option(webGlTexture),
 };
 
+let modelToRenderArgs = (model, programName) =>
+  renderArg(
+    ~objData=model->objDataGet,
+    /* ~program=StringMap.find(programName, model->programsGet), */
+    ~program=Js.Dict.unsafeGet(model->programsGet, programName),
+    ~texture=model->textureGet,
+  );
+
+type programName = string;
+type modelName = string;
+
 type renderData = {
-  models: StringMap.t(modelData),
-  model: option(string),
-  renderFunc: option(model) => unit,
-  modelCache: StringMap.t(model),
+  model: option(modelName),
+  models: StringMap.t(model),
+  selectedPrograms: StringMap.t(programName),
+  renderFunc: option(renderArg) => unit,
 };

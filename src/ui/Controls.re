@@ -39,23 +39,32 @@ let make = (~data, ~modelSelect, ~shaderSelect, _children) => {
           {
             switch (data.model) {
             | Some(name) =>
-              switch (get(name, data.modelCache)) {
-              | Some(model) =>
+              switch (
+                get(name, data.models),
+                get(name, data.selectedPrograms),
+              ) {
+              | (Some(model), Some(programName)) =>
                 ReasonReact.array(
-                  model.shaders->keys
-                  |> List.fast_sort(compare)
-                  |> List.map(key =>
-                       <button
-                         onClick={_ => shaderSelect(key, name)}
-                         key
-                         disabled={model.shader === key}
-                         className={model.shader === key ? "active" : ""}>
-                         {ReasonReact.string(key)}
-                       </button>
-                     )
-                  |> Array.of_list,
+                  model->programsGet->Js.Dict.keys
+                  /* model.programs->keys */
+                  |> (
+                    x =>
+                      {
+                        Array.fast_sort(compare, x);
+                        x;
+                      }
+                      |> Array.map(key =>
+                           <button
+                             onClick={_ => shaderSelect(key, name)}
+                             key
+                             disabled={programName === key}
+                             className={programName === key ? "active" : ""}>
+                             {ReasonReact.string(key)}
+                           </button>
+                         )
+                  ),
                 )
-              | None =>
+              | (_, _) =>
                 <button className="span-all alert" disabled=true>
                   {
                     ReasonReact.string(

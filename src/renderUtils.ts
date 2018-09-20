@@ -28,7 +28,8 @@ export const drawScene = (gl: WebGLRenderingContext, programInfo: ProgramInfo, b
 
   const modelViewMatrix = mat4.create()
   mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -6])
-  mat4.rotate(modelViewMatrix, modelViewMatrix, rotation * 0.75, [0.3, 0.7, 0.5])
+  // mat4.rotate(modelViewMatrix, modelViewMatrix, rotation * 0.75, [0.3, 0.7, 0.5])
+  mat4.rotate(modelViewMatrix, modelViewMatrix, rotation * 0.75, [0.1, 1, 0.2])
 
   // normalize
   mat4.scale(modelViewMatrix, modelViewMatrix, Array(3).fill(normalizingScale))
@@ -43,6 +44,7 @@ export const drawScene = (gl: WebGLRenderingContext, programInfo: ProgramInfo, b
   // gl.uniformMatrix4fv(programInfo.uniformLocations.normalMatrix, false, normalMatrix)
 
   const bindBuffer = (numComponents: number, buffer: WebGLBuffer | null, attribLocs: number) => {
+    if (attribLocs === -1) { return }
     const type = gl.FLOAT
     const normalize = false
     const stride = 0
@@ -59,18 +61,15 @@ export const drawScene = (gl: WebGLRenderingContext, programInfo: ProgramInfo, b
     gl.enableVertexAttribArray(attribLocs)
   }
 
+
   bindBuffer(3, buffers.position, programInfo.attribLocations.vertexPosition)
 
   // bindBuffer(3, buffers.boundingBox, programInfo.attribLocations.vertexPosition)
-  // bindBuffer(3, buffers.normal, programInfo.attribLocations.vertexNormal)
+  bindBuffer(3, buffers.normal, programInfo.attribLocations.vertexNormal)
 
   bindBuffer(4, buffers.color, programInfo.attribLocations.vertexColor)
 
-  // bindBuffer(2, buffers.textureCoord, programInfo.attribLocations.textureCoord)
-
-  // gl.activeTexture(gl.TEXTURE0)
-  // gl.bindTexture(gl.TEXTURE_2D, texture)
-  // gl.uniform1i(programInfo.uniformLocations.uSampler, 0)
+  bindBuffer(2, buffers.textureCoord, programInfo.attribLocations.textureCoord)
 
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices)
 
@@ -79,6 +78,10 @@ export const drawScene = (gl: WebGLRenderingContext, programInfo: ProgramInfo, b
   gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix)
 
   gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix)
+
+  gl.activeTexture(gl.TEXTURE0)
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.uniform1i(programInfo.uniformLocations.uSampler, 0)
 
   {
     const vertexCount = numFaces
