@@ -9,7 +9,8 @@ export type ModelData = {
   texture: WebGLTexture | null
 }
 
-const mapObject = (o: object, f: Function) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, f(v)]))
+const mapObject = (o: object, f: Function) =>
+  Object.entries(o).reduce((x, [k, v]) => { x[k] = f(v); return x }, {})
 
 export const defaultProgram = "color"
 

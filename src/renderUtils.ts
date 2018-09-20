@@ -37,12 +37,6 @@ export const drawScene = (gl: WebGLRenderingContext, programInfo: ProgramInfo, b
   // center
   mat4.translate(modelViewMatrix, modelViewMatrix, centeringTranslation)
 
-  // const normalMatrix = mat4.create()
-  // mat4.invert(normalMatrix, modelViewMatrix)
-  // mat4.transpose(normalMatrix, normalMatrix)
-
-  // gl.uniformMatrix4fv(programInfo.uniformLocations.normalMatrix, false, normalMatrix)
-
   const bindBuffer = (numComponents: number, buffer: WebGLBuffer | null, attribLocs: number) => {
     if (attribLocs === -1) { return }
     const type = gl.FLOAT
@@ -78,6 +72,11 @@ export const drawScene = (gl: WebGLRenderingContext, programInfo: ProgramInfo, b
   gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix)
 
   gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix)
+
+  const normalMatrix = mat4.create()
+  mat4.invert(normalMatrix, modelViewMatrix)
+  mat4.transpose(normalMatrix, normalMatrix)
+  gl.uniformMatrix4fv(programInfo.uniformLocations.normalMatrix, false, normalMatrix)
 
   gl.activeTexture(gl.TEXTURE0)
   gl.bindTexture(gl.TEXTURE_2D, texture)
