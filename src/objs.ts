@@ -87,7 +87,7 @@ const cube = {
     1.0, 1.0,
     0.0, 1.0
   ],
-  vertexNormals: [
+  vn: [
     // Front
     0.0, 0.0, 1.0,
     0.0, 0.0, 1.0,

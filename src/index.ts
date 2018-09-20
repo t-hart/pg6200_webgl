@@ -43,7 +43,7 @@ export const render = (gl: WebGLRenderingContext, data: MaybeData) => {
   }
   const { program, objData, texture } = data
 
-  const program_ = {
+  const programInfo = {
     program: program,
     attribLocations: {
       vertexPosition: gl.getAttribLocation(program, 'aVertexPosition'),
@@ -71,31 +71,13 @@ export const render = (gl: WebGLRenderingContext, data: MaybeData) => {
     const nowSeconds = now * 0.001
     const deltaS = nowSeconds - then
 
-    drawScene(gl, program_, buffers, texture, cubeRotation, t, s, objData.f.length, bb)
+    drawScene(gl, programInfo, buffers, texture, cubeRotation, t, s, objData.f.length, bb)
 
     // requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds))
   }
   requestAnimationFrame(render(0.7)(0))
   // requestAnimationFrame(render(0)(0))
 }
-
-// const program = initShaderProgram(gl, shaders)
-
-// const program = {
-//   program: program,
-//   attribLocations: {
-//     vertexPosition: gl.getAttribLocation(program, 'aVertexPosition'),
-//     vertexNormal: gl.getAttribLocation(program, 'aVertexNormal'),
-//     textureCoord: gl.getAttribLocation(program, 'aTextureCoord'),
-//     vertexColor: gl.getAttribLocation(program, 'aVertexColor')
-//   },
-//   uniformLocations: {
-//     projectionMatrix: gl.getUniformLocation(program, 'uProjectionMatrix'),
-//     modelViewMatrix: gl.getUniformLocation(program, 'uModelViewMatrix'),
-//     normalMatrix: gl.getUniformLocation(program, 'uNormalMatrix'),
-//     uSampler: gl.getUniformLocation(program, 'uSampler')
-//   }
-// }
 
 
 /*
@@ -106,15 +88,3 @@ Legg til funksjonalitet som overfører de innlastede dataene til GPUen med WebGL
 Legg til funksjonalitet for enkel manipulasjon av innlastet objekt. Applikasjonen skal for nå utelukkende støtte visning av et objekt og hvis et nytt objekt lastes inn, skal nåværende objekt fjernes. Applikasjonen burde liste en pre-definert liste av objekter som støttes og som brukeren kan velge mellom.
   Videre, burde applikasjonen støtte valg som å endre på farge for objektet og slå av/på modus som tekstur-rendering.
   */
-// simple program info
-      // const program = {
-      //   program: program,
-      //   attribLocations: {
-      //     vertexPosition: gl.getAttribLocation(program, 'aVertexPosition'),
-      //     vertexColor: gl.getAttribLocation(program, 'aVertexColor')
-      //   },
-      //   uniformLocations: {
-      //     projectionMatrix: gl.getUniformLocation(program, 'uProjectionMatrix'),
-      //     modelViewMatrix: gl.getUniformLocation(program, 'uModelViewMatrix')
-      //   }
-      // }
