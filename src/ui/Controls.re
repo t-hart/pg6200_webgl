@@ -45,24 +45,18 @@ let make = (~data, ~modelSelect, ~shaderSelect, _children) => {
               ) {
               | (Some(model), Some(programName)) =>
                 ReasonReact.array(
-                  model->programsGet->Js.Dict.keys
-                  /* model.programs->keys */
-                  |> (
-                    x =>
-                      {
-                        Array.fast_sort(compare, x);
-                        x;
-                      }
-                      |> Array.map(key =>
-                           <button
-                             onClick={_ => shaderSelect(key, name)}
-                             key
-                             disabled={programName === key}
-                             className={programName === key ? "active" : ""}>
-                             {ReasonReact.string(key)}
-                           </button>
-                         )
-                  ),
+                  model.programs->keys
+                  |> List.fast_sort(compare)
+                  |> List.map(key =>
+                       <button
+                         onClick={_ => shaderSelect(key, name)}
+                         key
+                         disabled={programName === key}
+                         className={programName === key ? "active" : ""}>
+                         {ReasonReact.string(key)}
+                       </button>
+                     )
+                  |> Array.of_list,
                 )
               | (_, _) =>
                 <button className="span-all alert" disabled=true>

@@ -55,7 +55,7 @@ let reducer = (action, state) =>
     | Some(gl) =>
       ReasonReact.UpdateWithSideEffects(
         Ready({
-          models: getModels(gl) |> toMap,
+          models: getModels(gl) |> toMap |> StringMap.map(modelToModelRe),
           renderFunc: render(gl),
           model: None,
           selectedPrograms: StringMap.empty,

@@ -20,7 +20,6 @@
 // }
 
 export const initTexture2D = (gl: WebGLRenderingContext) => (imageUrl: string) => {
-  console.log('init texture')
   const texture = gl.createTexture()
   gl.bindTexture(gl.TEXTURE_2D, texture)
 

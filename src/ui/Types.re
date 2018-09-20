@@ -68,12 +68,23 @@ type model = {
   texture: option(webGlTexture),
 };
 
+type modelRe = {
+  objData,
+  programs: StringMap.t(webGlProgram),
+  texture: option(webGlTexture),
+};
+
+let modelToModelRe = model => {
+  objData: model->objDataGet,
+  programs: model->programsGet |> toMap,
+  texture: model->textureGet,
+};
+
 let modelToRenderArgs = (model, programName) =>
   renderArg(
-    ~objData=model->objDataGet,
-    /* ~program=StringMap.find(programName, model->programsGet), */
-    ~program=Js.Dict.unsafeGet(model->programsGet, programName),
-    ~texture=model->textureGet,
+    ~objData=model.objData,
+    ~program=StringMap.find(programName, model.programs),
+    ~texture=model.texture,
   );
 
 type programName = string;
@@ -81,7 +92,7 @@ type modelName = string;
 
 type renderData = {
   model: option(modelName),
-  models: StringMap.t(model),
+  models: StringMap.t(modelRe),
   selectedPrograms: StringMap.t(programName),
   renderFunc: option(renderArg) => unit,
 };
