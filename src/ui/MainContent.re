@@ -13,6 +13,28 @@ let toOption = Js.Nullable.toOption;
 
 let const = (a, _) => a;
 
+let isSelected = (name, optionString) =>
+  switch (optionString) {
+  | Some(a) when a === name => true
+  | _ => false
+  };
+
+let toButtonArray = (xs, isActive, disabled, onClick) =>
+  xs
+  |> keys
+  |> List.fast_sort(compare)
+  |> List.map(key =>
+       <button
+         key
+         className={key->isActive ? "active" : ""}
+         disabled={disabled(key)}
+         onClick={_ => onClick(key)}>
+         {ReasonReact.string(key)}
+       </button>
+     )
+  |> Array.of_list
+  |> ReasonReact.array;
+
 type state =
   | Uninitialized
   | Error(string)
@@ -23,7 +45,7 @@ type modelName = string;
 
 type action =
   | InitGl(option(webGlRenderingContext))
-  | SelectShader(shaderKey, modelName)
+  | SelectShader(modelName, shaderKey)
   | SelectModel(modelName)
   | Render;
 
@@ -94,7 +116,7 @@ let reducer = (action, state) =>
       (_ => alert(errormsg)),
     );
 
-  | (SelectShader(programName, modelName), Ready(data)) =>
+  | (SelectShader(modelName, programName), Ready(data)) =>
     ReasonReact.UpdateWithSideEffects(
       Ready({
         ...data,
@@ -104,6 +126,34 @@ let reducer = (action, state) =>
       (self => self.send(Render)),
     )
   | (SelectShader(_, _), Uninitialized | Error(_)) => ReasonReact.NoUpdate
+  };
+
+let modelButtons = (send, data) =>
+  toButtonArray(
+    data.models,
+    x =>
+      Belt.Option.map(data.model, m => m === x)
+      ->Belt.Option.getWithDefault(false),
+    false->const,
+    x => SelectModel(x) |> send,
+  );
+
+let shaderButtons = (send, data) =>
+  switch (data.model) {
+  | Some(name) =>
+    let selectedProgram = key =>
+      key === StringMap.find(name, data.selectedPrograms);
+    toButtonArray(
+      StringMap.find(name, data.models).programs,
+      selectedProgram,
+      selectedProgram,
+      x =>
+      SelectShader(name, x)->send
+    );
+  | None =>
+    <button className="span-all alert" disabled=true>
+      {ReasonReact.string("Please select a model first")}
+    </button>
   };
 
 let make = (~canvasId, _children) => {
@@ -118,12 +168,9 @@ let make = (~canvasId, _children) => {
         switch (self.state) {
         | Ready(data) =>
           <Controls
-            data
-            modelSelect=(name => self.send(SelectModel(name)))
-            shaderSelect=(
-              (shaderKey, modelName) =>
-                self.send(SelectShader(shaderKey, modelName))
-            )
+            models={modelButtons(self.send, data)}
+            shaders={shaderButtons(self.send, data)}
+            disableShaders={data.model === None}
           />
         | Uninitialized
         | Error(_) => ReasonReact.null
