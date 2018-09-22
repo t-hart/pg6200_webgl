@@ -1,16 +1,17 @@
+open Types;
 let component = ReasonReact.statelessComponent("Controls");
 
-let make = (~models, ~shaders, ~disableShaders, _children) => {
+let map = contents =>
+  contents
+  |> Array.map(x =>
+       <fieldset key={x.legend} disabled={x.disabled}>
+         <legend> {ReasonReact.string(x.legend)} </legend>
+         <div className="buttons"> {x.content} </div>
+       </fieldset>
+     )
+  |> ReasonReact.array;
+
+let make = (~contents: array(fieldset), _children) => {
   ...component,
-  render: _self =>
-    <div className="button-grid">
-      <fieldset>
-        <legend> {ReasonReact.string("Models")} </legend>
-        <div className="buttons"> models </div>
-      </fieldset>
-      <fieldset disabled=disableShaders>
-        <legend> {ReasonReact.string("Shaders")} </legend>
-        <div className="buttons"> shaders </div>
-      </fieldset>
-    </div>,
+  render: _self => <div className="button-grid"> {map(contents)} </div>,
 };

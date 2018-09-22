@@ -90,7 +90,7 @@ export const getRenderFunc = (gl: WebGLRenderingContext, data: MaybeData, opts: 
   return (opts: GlobalOptions) => requestAnimationFrame(render(0)(0)(opts))
 }
 
-export const render = (gl: WebGLRenderingContext, data: MaybeData) => {
+export const render = (gl: WebGLRenderingContext, data: MaybeData, opts: GlobalOptions) => {
   if (!data) {
     drawEmptyScene(gl)
     return
@@ -116,7 +116,7 @@ export const render = (gl: WebGLRenderingContext, data: MaybeData) => {
     const nowSeconds = now * 0.001
     const deltaS = nowSeconds - then
 
-    drawScene(drawArgs, cubeRotation, { scale: 1 })
+    drawScene(drawArgs, cubeRotation, opts)
 
     // requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds))
   }

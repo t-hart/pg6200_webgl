@@ -3,7 +3,9 @@ open Functions;
 [@bs.module "../models"] external defaultProgram: string = "";
 [@bs.val] external alert: string => unit = "";
 [@bs.module "../index"]
-external render: (webGlRenderingContext, option(renderArg)) => unit = "";
+external render:
+  (webGlRenderingContext, option(renderArg), globalOptionsAbstract) => unit =
+  "";
 [@bs.module "../index"] external initGL: webGlRenderingContext => unit = "";
 [@bs.module "../index"]
 external getGlContext: string => Js.Nullable.t(webGlRenderingContext) = "";
@@ -28,6 +30,7 @@ type action =
   | InitGl(option(webGlRenderingContext))
   | SelectShader(modelName, shaderKey)
   | SelectModel(modelName)
+  | SetScale(float)
   | Render;
 
 let component = ReasonReact.reducerComponent("Main content");
@@ -48,7 +51,7 @@ let reducer = (action, state) =>
       (
         _ =>
           getRenderArg(data.models, data.selectedPrograms, data.model)
-          |> data.renderFunc
+          |> data.renderFunc(_, data.globalOptions->globalOptsToAbstract)
       ),
     )
   | (Render, Uninitialized | Error(_)) => ReasonReact.NoUpdate
@@ -63,7 +66,8 @@ let reducer = (action, state) =>
           model: None,
           selectedPrograms: StringMap.empty,
           globalOptions: {
-            scale: 1,
+            scale: 1.0,
+            rotation: 0,
           },
         }),
         (self => self.send(Render)),
@@ -100,6 +104,19 @@ let reducer = (action, state) =>
       (_ => alert(errormsg)),
     );
 
+  | (SetScale(v), Ready(data)) =>
+    ReasonReact.UpdateWithSideEffects(
+      Ready({
+        ...data,
+        globalOptions: {
+          ...data.globalOptions,
+          scale: v,
+        },
+      }),
+      (self => self.send(Render)),
+    )
+  | (SetScale(_), Uninitialized | Error(_)) => ReasonReact.NoUpdate
+
   | (SelectShader(modelName, programName), Ready(data)) =>
     ReasonReact.UpdateWithSideEffects(
       Ready({
@@ -132,27 +149,59 @@ let modelButtons = (send, data) =>
     data.models,
   );
 
-let shaderButtons = (send, data) =>
-  switch (data.model) {
-  | Some(name) =>
-    let selectedProgram = key =>
-      key === StringMap.find(name, data.selectedPrograms);
-    elementArray(
-      key =>
-        <button
-          key
-          className={key->selectedProgram ? "active" : ""}
-          disabled=key->selectedProgram
-          onClick={_ => SelectShader(name, key)->send}>
-          {ReasonReact.string(key)}
-        </button>,
-      StringMap.find(name, data.models).programs,
-    );
-  | None =>
-    <div className="span-all alert button-style" disabled=true>
-      {ReasonReact.string("Please select a model first")}
-    </div>
+let selectModel =
+  <div className="span-all alert button-style" disabled=true>
+    {ReasonReact.string("Please select a model first")}
+  </div>;
+
+let ifSome = (opt, content) =>
+  switch (opt) {
+  | Some(x) => content(x)
+  | None => selectModel
   };
+
+let shaderButtons = (send, data) =>
+  (
+    name => {
+      let selectedProgram = key =>
+        key === StringMap.find(name, data.selectedPrograms);
+      elementArray(
+        key =>
+          <button
+            key
+            className={key->selectedProgram ? "active" : ""}
+            disabled=key->selectedProgram
+            onClick={_ => SelectShader(name, key)->send}>
+            {ReasonReact.string(key)}
+          </button>,
+        StringMap.find(name, data.models).programs,
+      );
+    }
+  )
+  |> ifSome(data.model);
+
+let slider = (send, data) =>
+  <div className="span-all button-style">
+    <input
+      className="slider"
+      type_="range"
+      min=0
+      max="2"
+      value=data.globalOptions.scale->string_of_float
+      step=0.01
+      onChange={event => send(event->value->float_of_string->SetScale)}
+    />
+  </div>;
+
+let fieldsets = (send, data) => [|
+  {disabled: false, content: modelButtons(send, data), legend: "Models"},
+  {
+    disabled: data.model === None,
+    content: shaderButtons(send, data),
+    legend: "Shaders",
+  },
+  {disabled: false, content: slider(send, data), legend: "Scale"},
+|];
 
 let make = (~canvasId, _children) => {
   ...component,
@@ -164,12 +213,7 @@ let make = (~canvasId, _children) => {
       <canvas id=canvasId className="canvas" width="640" height="480" />
       {
         switch (self.state) {
-        | Ready(data) =>
-          <Controls
-            models={modelButtons(self.send, data)}
-            shaders={shaderButtons(self.send, data)}
-            disableShaders={data.model === None}
-          />
+        | Ready(data) => <Controls contents={fieldsets(self.send, data)} />
         | Uninitialized
         | Error(_) => ReasonReact.null
         }

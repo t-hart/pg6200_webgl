@@ -31,6 +31,12 @@ type renderArg = {
   texture: option(webGlTexture),
 };
 
+type fieldset = {
+  disabled: bool,
+  content: ReasonReact.reactElement,
+  legend: string,
+};
+
 module StringMap =
   Map.Make({
     type t = string;
@@ -85,12 +91,24 @@ let modelToRenderArgs = (model, programName) =>
 type programName = string;
 type modelName = string;
 
-type globalOptions = {scale: int};
+[@bs.deriving abstract]
+type globalOptionsAbstract = {
+  scale: float,
+  rotation: int,
+};
+
+type globalOptions = {
+  scale: float,
+  rotation: int,
+};
+
+let globalOptsToAbstract = opts =>
+  globalOptionsAbstract(~scale=opts.scale, ~rotation=opts.rotation);
 
 type renderData = {
   model: option(modelName),
   models: StringMap.t(modelRe),
   selectedPrograms: StringMap.t(programName),
-  renderFunc: option(renderArg) => unit,
+  renderFunc: (option(renderArg), globalOptionsAbstract) => unit,
   globalOptions,
 };
