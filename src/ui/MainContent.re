@@ -31,6 +31,7 @@ type action =
   | SelectShader(modelName, shaderKey)
   | SelectModel(modelName)
   | SetScale(int)
+  | SetRotation(vector3)
   | Render;
 
 let component = ReasonReact.reducerComponent("Main content");
@@ -67,7 +68,11 @@ let reducer = (action, state) =>
           selectedPrograms: StringMap.empty,
           globalOptions: {
             scale: 100,
-            rotation: 0,
+            rotation: {
+              x: 100,
+              y: 100,
+              z: 100,
+            },
           },
         }),
         (self => self.send(Render)),
@@ -103,6 +108,19 @@ let reducer = (action, state) =>
       Error(errormsg),
       (_ => alert(errormsg)),
     );
+
+  | (SetRotation(rotation), Ready(data)) =>
+    ReasonReact.UpdateWithSideEffects(
+      Ready({
+        ...data,
+        globalOptions: {
+          ...data.globalOptions,
+          rotation,
+        },
+      }),
+      (self => self.send(Render)),
+    )
+  | (SetRotation(_), Uninitialized | Error(_)) => ReasonReact.NoUpdate
 
   | (SetScale(v), Ready(data)) =>
     ReasonReact.UpdateWithSideEffects(
@@ -180,27 +198,65 @@ let shaderButtons = (send, data) =>
   )
   |> ifSome(data.model);
 
-let slider = (send, data) =>
-  <div className="span-all button-style">
-    <input
-      className="slider"
-      type_="range"
-      min=0
-      max="200"
-      value=data.globalOptions.scale->string_of_int
-      step=1.0
-      onChange={
-        event =>
-          send(
-            event
-            ->value
-            ->debug("input event value", _)
-            ->int_of_string
-            ->SetScale,
+let rangeSlider = (value, onChange) =>
+  <input
+    className="button-style"
+    type_="range"
+    min=0
+    max="200"
+    value
+    step=1.0
+    onChange
+  />;
+
+let scaleRotation = (send, data) =>
+  <>
+    <fieldset className="span-all no-pad-h">
+      <legend> {ReasonReact.string("Scale")} </legend>
+      <div className="button-style">
+        {
+          rangeSlider(data.globalOptions.scale->string_of_int, event =>
+            send(event->value->int_of_string->SetScale)
           )
-      }
-    />
-  </div>;
+        }
+      </div>
+    </fieldset>
+    <fieldset className="span-all no-pad-h">
+      <legend> {ReasonReact.string("Rotation (X, Y, Z)")} </legend>
+      <div className="controls">
+        {
+          rangeSlider(data.globalOptions.rotation.x->string_of_int, event =>
+            send(
+              event
+              ->value
+              ->int_of_string
+              ->(x => SetRotation({...data.globalOptions.rotation, x})),
+            )
+          )
+        }
+        {
+          rangeSlider(data.globalOptions.rotation.y->string_of_int, event =>
+            send(
+              event
+              ->value
+              ->int_of_string
+              ->(y => SetRotation({...data.globalOptions.rotation, y})),
+            )
+          )
+        }
+        {
+          rangeSlider(data.globalOptions.rotation.z->string_of_int, event =>
+            send(
+              event
+              ->value
+              ->int_of_string
+              ->(z => SetRotation({...data.globalOptions.rotation, z})),
+            )
+          )
+        }
+      </div>
+    </fieldset>
+  </>;
 
 let handleKey = e => Js.log2("Key pressed", e);
 
@@ -211,7 +267,11 @@ let fieldsets = (send, data) => [|
     content: shaderButtons(send, data),
     legend: "Shaders",
   },
-  {disabled: false, content: slider(send, data), legend: "Scale"},
+  {
+    disabled: false,
+    content: scaleRotation(send, data),
+    legend: "Transforms",
+  },
 |];
 
 let make = (~canvasId, _children) => {

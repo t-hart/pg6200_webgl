@@ -78,20 +78,39 @@ footer {
   text-align: center;
 }
 
-.buttons {
+.controls {
   display: grid;
   gap: .5em .5em;
   grid-template-columns: 1fr 1fr 1fr;
   width: 640px;
 }
 
+.no-pad-h {
+  padding-left: 0;
+  padding-right: 0;
+}
+
 .span-all {
   grid-column: 1/-1;
 }
 
-.button-grid {
+@for $i from 2 through 12 {
+  .span-#{$i} {
+    grid-column-end: span $i;
+  }
+}
+
+fieldset {
+  font-weight: lighter;
+}
+
+.controls-grid {
   display: grid;
   gap: 1.5em 0;
+
+  > fieldset > legend {
+    font-weight: normal;
+  }
 }
 
 .alert {

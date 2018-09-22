@@ -1,3 +1,4 @@
+open Functions;
 [@bs.deriving abstract]
 type objData = {
   v: array(float),
@@ -36,6 +37,28 @@ type fieldset = {
   content: ReasonReact.reactElement,
   legend: string,
 };
+
+[@bs.deriving abstract]
+type vector3Abstract = {
+  x: float,
+  y: float,
+  z: float,
+};
+
+type vector3 = {
+  x: int,
+  y: int,
+  z: int,
+};
+
+let vector3AsArray = vec => Array.map(toDecimal, [|vec.x, vec.y, vec.z|]);
+
+let vector3ToAbstract = vec =>
+  vector3Abstract(
+    ~x=vec.x->toDecimal,
+    ~y=vec.y->toDecimal,
+    ~z=vec.z->toDecimal,
+  );
 
 module StringMap =
   Map.Make({
@@ -94,18 +117,18 @@ type modelName = string;
 [@bs.deriving abstract]
 type globalOptionsAbstract = {
   scale: float,
-  rotation: int,
+  rotation: array(float),
 };
 
 type globalOptions = {
   scale: int,
-  rotation: int,
+  rotation: vector3,
 };
 
 let globalOptsToAbstract = opts =>
   globalOptionsAbstract(
-    ~scale=opts.scale->float_of_int /. 100.0,
-    ~rotation=opts.rotation,
+    ~scale=opts.scale->toDecimal,
+    ~rotation=opts.rotation->vector3AsArray,
   );
 
 type renderData = {
