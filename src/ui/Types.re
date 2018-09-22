@@ -98,12 +98,15 @@ type globalOptionsAbstract = {
 };
 
 type globalOptions = {
-  scale: float,
+  scale: int,
   rotation: int,
 };
 
 let globalOptsToAbstract = opts =>
-  globalOptionsAbstract(~scale=opts.scale, ~rotation=opts.rotation);
+  globalOptionsAbstract(
+    ~scale=opts.scale->float_of_int /. 100.0,
+    ~rotation=opts.rotation,
+  );
 
 type renderData = {
   model: option(modelName),

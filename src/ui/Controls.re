@@ -11,7 +11,7 @@ let map = contents =>
      )
   |> ReasonReact.array;
 
-let make = (~contents: array(fieldset), _children) => {
+let make = (~contents, _children) => {
   ...component,
   render: _self => <div className="button-grid"> {map(contents)} </div>,
 };

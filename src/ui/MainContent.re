@@ -30,7 +30,7 @@ type action =
   | InitGl(option(webGlRenderingContext))
   | SelectShader(modelName, shaderKey)
   | SelectModel(modelName)
-  | SetScale(float)
+  | SetScale(int)
   | Render;
 
 let component = ReasonReact.reducerComponent("Main content");
@@ -66,7 +66,7 @@ let reducer = (action, state) =>
           model: None,
           selectedPrograms: StringMap.empty,
           globalOptions: {
-            scale: 1.0,
+            scale: 100,
             rotation: 0,
           },
         }),
@@ -186,12 +186,23 @@ let slider = (send, data) =>
       className="slider"
       type_="range"
       min=0
-      max="2"
-      value=data.globalOptions.scale->string_of_float
-      step=0.01
-      onChange={event => send(event->value->float_of_string->SetScale)}
+      max="200"
+      value=data.globalOptions.scale->string_of_int
+      step=1.0
+      onChange={
+        event =>
+          send(
+            event
+            ->value
+            ->debug("input event value", _)
+            ->int_of_string
+            ->SetScale,
+          )
+      }
     />
   </div>;
+
+let handleKey = e => Js.log2("Key pressed", e);
 
 let fieldsets = (send, data) => [|
   {disabled: false, content: modelButtons(send, data), legend: "Models"},
@@ -207,7 +218,11 @@ let make = (~canvasId, _children) => {
   ...component,
   initialState: () => Uninitialized,
   reducer,
-  didMount: self => self.send(InitGl(getGlContext(canvasId) |> toOption)),
+  didMount: self => {
+    addKeyboardEventListener(handleKey);
+    self.send(InitGl(getGlContext(canvasId) |> toOption));
+  },
+  willUnmount: _ => removeKeyboardEventListener(handleKey),
   render: self =>
     <div className="content">
       <canvas id=canvasId className="canvas" width="640" height="480" />
