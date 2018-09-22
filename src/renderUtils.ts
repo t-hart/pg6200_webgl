@@ -1,5 +1,5 @@
 import { mat4 } from 'gl-matrix-ts'
-import { ProgramInfo } from './index'
+import { ProgramInfo, GlobalOptions } from './index'
 import { BufferObj } from './bufferUtils'
 
 export const drawEmptyScene = (gl: WebGLRenderingContext) => {
@@ -11,7 +11,19 @@ export const drawEmptyScene = (gl: WebGLRenderingContext) => {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 }
 
-export const drawScene = (gl: WebGLRenderingContext, programInfo: ProgramInfo, buffers: BufferObj, texture: WebGLTexture | null, rotation: number, centeringTranslation: number[], normalizingScale: number, numFaces: number, boundingBox: number[]) => {
+type DrawArgs = {
+  gl: WebGLRenderingContext,
+  programInfo: ProgramInfo,
+  buffers: BufferObj
+  texture: WebGLTexture | null,
+  centeringTranslation: number[],
+  normalizingScale: number,
+  numFaces: number,
+  boundingBox: number[]
+}
+
+export const drawScene = (args: DrawArgs, rotation: number, opts: GlobalOptions) => {
+  const { gl, programInfo, buffers, texture, normalizingScale, centeringTranslation, numFaces, boundingBox } = args
   gl.clearColor(0, 0, 0, 1)
   gl.clearDepth(1)
   gl.enable(gl.DEPTH_TEST)
@@ -31,8 +43,8 @@ export const drawScene = (gl: WebGLRenderingContext, programInfo: ProgramInfo, b
   // mat4.rotate(modelViewMatrix, modelViewMatrix, rotation * 0.75, [0.3, 0.7, 0.5])
   mat4.rotate(modelViewMatrix, modelViewMatrix, rotation * 0.75, [0.1, 1, 0.2])
 
-  // normalize
-  mat4.scale(modelViewMatrix, modelViewMatrix, Array(3).fill(normalizingScale))
+  // normalize, then scale
+  mat4.scale(modelViewMatrix, modelViewMatrix, Array(3).fill(normalizingScale * opts.scale))
 
   // center
   mat4.translate(modelViewMatrix, modelViewMatrix, centeringTranslation)

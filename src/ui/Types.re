@@ -1,8 +1,3 @@
-let debug = a => {
-  Js.log(a);
-  a;
-};
-
 [@bs.deriving abstract]
 type objData = {
   v: array(float),
@@ -90,9 +85,12 @@ let modelToRenderArgs = (model, programName) =>
 type programName = string;
 type modelName = string;
 
+type globalOptions = {scale: int};
+
 type renderData = {
   model: option(modelName),
   models: StringMap.t(modelRe),
   selectedPrograms: StringMap.t(programName),
   renderFunc: option(renderArg) => unit,
+  globalOptions,
 };

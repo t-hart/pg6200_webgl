@@ -94,15 +94,21 @@ footer {
   color: $error-color;
 }
 
-button {
+.button-style {
   background-color: inherit;
   border-color: $main-color;
   border-radius: 25em;
   border-style: solid;
+  border-width: .1em;
   color: inherit;
   font-weight: lighter;
   line-height: 1.5;
+  padding: 1px;
   text-align: center;
+}
+
+button {
+  @extend .button-style;
 
   &.active {
     background-color: $main-color;
@@ -112,6 +118,7 @@ button {
 
   &:enabled {
     cursor: pointer;
+
     &:hover,
     &:focus {
       box-shadow: 0 0 1em $main-color;

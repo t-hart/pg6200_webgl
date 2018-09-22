@@ -26,15 +26,69 @@ export type ProgramInfo = {
   }
 }
 
+const createProgramInfo = (gl: WebGLRenderingContext, program: WebGLProgram) => ({
+  program: program,
+  attribLocations: {
+    vertexPosition: gl.getAttribLocation(program, 'aVertexPosition'),
+    vertexNormal: gl.getAttribLocation(program, 'aVertexNormal'),
+    textureCoord: gl.getAttribLocation(program, 'aTextureCoord'),
+    vertexColor: gl.getAttribLocation(program, 'aVertexColor')
+  },
+  uniformLocations: {
+    projectionMatrix: gl.getUniformLocation(program, 'uProjectionMatrix'),
+    modelViewMatrix: gl.getUniformLocation(program, 'uModelViewMatrix'),
+    normalMatrix: gl.getUniformLocation(program, 'uNormalMatrix'),
+    uSampler: gl.getUniformLocation(program, 'uSampler')
+  }
+})
+
 export const initGL = (gl: WebGLRenderingContext) => drawEmptyScene(gl)
 
-type MaybeData = {
+type RenderArgs = {
   objData: ObjData,
   program: WebGLProgram,
   texture: WebGLTexture | null
-} | null
+}
+
+type MaybeData = RenderArgs | null
+
+export type GlobalOptions = {
+  scale: number
+}
 
 export const log = (a: any) => { console.log(a); return a }
+
+export const getRenderFunc = (gl: WebGLRenderingContext, data: MaybeData, opts: GlobalOptions) => {
+  if (!data) {
+    drawEmptyScene(gl)
+    return null
+  }
+
+  const { program, objData, texture } = data
+  const programInfo = createProgramInfo(gl, program)
+  const lengths = dists(objData.min, objData.max)
+
+  const drawArgs = {
+    boundingBox: boundingBox(objData.min, objData.max),
+    buffers: initBuffers(gl, objData),
+    centeringTranslation: centeringTranslation(objData.max, lengths),
+    gl,
+    normalizingScale: 1 / Math.max(...scale(0.5)(lengths)),
+    numFaces: objData.f.length,
+    programInfo,
+    texture,
+  }
+
+  const render = (cubeRotation: number) => (then: number) => (opts: GlobalOptions) => (now: number): Function => {
+    const nowSeconds = now * 0.001
+    const deltaS = nowSeconds - then
+
+    drawScene(drawArgs, cubeRotation, opts)
+
+    return (opts: GlobalOptions) => requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds)(opts))
+  }
+  return (opts: GlobalOptions) => requestAnimationFrame(render(0)(0)(opts))
+}
 
 export const render = (gl: WebGLRenderingContext, data: MaybeData) => {
   if (!data) {
@@ -43,35 +97,26 @@ export const render = (gl: WebGLRenderingContext, data: MaybeData) => {
   }
   const { program, objData, texture } = data
 
-  const programInfo = {
-    program: program,
-    attribLocations: {
-      vertexPosition: gl.getAttribLocation(program, 'aVertexPosition'),
-      vertexNormal: gl.getAttribLocation(program, 'aVertexNormal'),
-      textureCoord: gl.getAttribLocation(program, 'aTextureCoord'),
-      vertexColor: gl.getAttribLocation(program, 'aVertexColor')
-    },
-    uniformLocations: {
-      projectionMatrix: gl.getUniformLocation(program, 'uProjectionMatrix'),
-      modelViewMatrix: gl.getUniformLocation(program, 'uModelViewMatrix'),
-      normalMatrix: gl.getUniformLocation(program, 'uNormalMatrix'),
-      uSampler: gl.getUniformLocation(program, 'uSampler')
-    }
-  }
+  const programInfo = createProgramInfo(gl, program)
 
-  const bb = boundingBox(objData.min, objData.max)
   const lengths = dists(objData.min, objData.max)
-  const t = centeringTranslation(objData.max, lengths)
-  // const o = offset(objData.max, lengths)
-  const s = 1 / Math.max(...scale(0.5)(lengths))
 
-  const buffers = initBuffers(gl, objData)
+  const drawArgs = {
+    boundingBox: boundingBox(objData.min, objData.max),
+    buffers: initBuffers(gl, objData),
+    centeringTranslation: centeringTranslation(objData.max, lengths),
+    gl,
+    normalizingScale: 1 / Math.max(...scale(0.5)(lengths)),
+    numFaces: objData.f.length,
+    programInfo,
+    texture,
+  }
 
   const render = (cubeRotation: number) => (then: number) => (now: number) => {
     const nowSeconds = now * 0.001
     const deltaS = nowSeconds - then
 
-    drawScene(gl, programInfo, buffers, texture, cubeRotation, t, s, objData.f.length, bb)
+    drawScene(drawArgs, cubeRotation, { scale: 1 })
 
     // requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds))
   }

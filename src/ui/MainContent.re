@@ -1,4 +1,5 @@
 open Types;
+open Functions;
 [@bs.module "../models"] external defaultProgram: string = "";
 [@bs.val] external alert: string => unit = "";
 [@bs.module "../index"]
@@ -9,31 +10,11 @@ external getGlContext: string => Js.Nullable.t(webGlRenderingContext) = "";
 [@bs.module "../models"]
 external getModels: webGlRenderingContext => Js.Dict.t(model) = "default";
 
-let toOption = Js.Nullable.toOption;
-
-let const = (a, _) => a;
-
 let isSelected = (name, optionString) =>
   switch (optionString) {
   | Some(a) when a === name => true
   | _ => false
   };
-
-let toButtonArray = (xs, isActive, disabled, onClick) =>
-  xs
-  |> keys
-  |> List.fast_sort(compare)
-  |> List.map(key =>
-       <button
-         key
-         className={key->isActive ? "active" : ""}
-         disabled={disabled(key)}
-         onClick={_ => onClick(key)}>
-         {ReasonReact.string(key)}
-       </button>
-     )
-  |> Array.of_list
-  |> ReasonReact.array;
 
 type state =
   | Uninitialized
@@ -81,6 +62,9 @@ let reducer = (action, state) =>
           renderFunc: render(gl),
           model: None,
           selectedPrograms: StringMap.empty,
+          globalOptions: {
+            scale: 1,
+          },
         }),
         (self => self.send(Render)),
       )
@@ -128,14 +112,24 @@ let reducer = (action, state) =>
   | (SelectShader(_, _), Uninitialized | Error(_)) => ReasonReact.NoUpdate
   };
 
+let elementArray = (toElement, xs) =>
+  xs
+  ->keys
+  ->List.fast_sort(compare, _)
+  ->List.map(toElement, _)
+  ->Array.of_list
+  ->ReasonReact.array;
+
 let modelButtons = (send, data) =>
-  toButtonArray(
+  elementArray(
+    key =>
+      <button
+        key
+        className={isSelected(key, data.model) ? "active" : ""}
+        onClick={_ => key->SelectModel->send}>
+        {ReasonReact.string(key)}
+      </button>,
     data.models,
-    x =>
-      Belt.Option.map(data.model, m => m === x)
-      ->Belt.Option.getWithDefault(false),
-    false->const,
-    x => SelectModel(x) |> send,
   );
 
 let shaderButtons = (send, data) =>
@@ -143,17 +137,21 @@ let shaderButtons = (send, data) =>
   | Some(name) =>
     let selectedProgram = key =>
       key === StringMap.find(name, data.selectedPrograms);
-    toButtonArray(
+    elementArray(
+      key =>
+        <button
+          key
+          className={key->selectedProgram ? "active" : ""}
+          disabled=key->selectedProgram
+          onClick={_ => SelectShader(name, key)->send}>
+          {ReasonReact.string(key)}
+        </button>,
       StringMap.find(name, data.models).programs,
-      selectedProgram,
-      selectedProgram,
-      x =>
-      SelectShader(name, x)->send
     );
   | None =>
-    <button className="span-all alert" disabled=true>
+    <div className="span-all alert button-style" disabled=true>
       {ReasonReact.string("Please select a model first")}
-    </button>
+    </div>
   };
 
 let make = (~canvasId, _children) => {
