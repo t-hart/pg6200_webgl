@@ -6,12 +6,12 @@ let map = contents =>
   |> Array.map(x =>
        <fieldset key={x.legend} disabled={x.disabled}>
          <legend> {ReasonReact.string(x.legend)} </legend>
-         <div className="buttons"> {x.content} </div>
+         <div className="controls"> {x.content} </div>
        </fieldset>
      )
   |> ReasonReact.array;
 
 let make = (~contents, _children) => {
   ...component,
-  render: _self => <div className="button-grid"> {map(contents)} </div>,
+  render: _self => <div className="controls-grid"> {map(contents)} </div>,
 };

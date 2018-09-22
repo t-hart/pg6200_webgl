@@ -5,6 +5,8 @@ let debug = (msg, a) => {
   a;
 };
 
+let toDecimal = x => float_of_int(x) /. 100.0;
+
 let value = event => event->ReactEvent.Form.target##value;
 
 let const = (a, _) => a;

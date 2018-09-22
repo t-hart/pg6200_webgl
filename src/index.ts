@@ -53,7 +53,8 @@ type RenderArgs = {
 type MaybeData = RenderArgs | null
 
 export type GlobalOptions = {
-  scale: number
+  scale: number,
+  rotation: number[]
 }
 
 export const log = (a: any) => { console.log(a); return a }
@@ -97,6 +98,7 @@ export const render = (gl: WebGLRenderingContext, data: MaybeData, opts: GlobalO
   }
   const { program, objData, texture } = data
 
+  console.log(opts)
   const programInfo = createProgramInfo(gl, program)
 
   const lengths = dists(objData.min, objData.max)
