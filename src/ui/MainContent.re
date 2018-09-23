@@ -50,7 +50,7 @@ type action =
   | SelectShader(modelName, shaderKey)
   | SelectModel(modelName)
   | SetScale(int)
-  | SetRotation(Vector.t)
+  | SetRotation(Vector.t(int))
   | Render;
 
 let getRenderArg = (models, programs, modelName) =>
@@ -236,43 +236,37 @@ let scaleRotation = (send, data) =>
       <legend> {ReasonReact.string("Scale")} </legend>
       {
         rangeSlider(data.globalOptions.scale->string_of_int, event =>
-          send(event->value->int_of_string->SetScale)
+          send(event->Event.value->int_of_string->SetScale)
         )
       }
     </fieldset>
     <fieldset className="span-all no-pad-h">
       <legend> {ReasonReact.string("Rotation (X, Y, Z)")} </legend>
       <div className="controls">
-        {
-          rangeSlider(data.globalOptions.rotation.x->string_of_int, event =>
-            send(
-              event
-              ->value
-              ->int_of_string
-              ->(x => SetRotation({...data.globalOptions.rotation, x})),
-            )
-          )
-        }
-        {
-          rangeSlider(data.globalOptions.rotation.y->string_of_int, event =>
-            send(
-              event
-              ->value
-              ->int_of_string
-              ->(y => SetRotation({...data.globalOptions.rotation, y})),
-            )
-          )
-        }
-        {
-          rangeSlider(data.globalOptions.rotation.z->string_of_int, event =>
-            send(
-              event
-              ->value
-              ->int_of_string
-              ->(z => SetRotation({...data.globalOptions.rotation, z})),
-            )
-          )
-        }
+        ...{
+             List.map2(
+               (f, a) =>
+                 rangeSlider(string_of_int(a), event =>
+                   send(
+                     event
+                     ->Event.value
+                     ->int_of_string
+                     ->(
+                         v =>
+                           SetRotation(
+                             Vector.update(
+                               data.globalOptions.rotation,
+                               f(v),
+                             ),
+                           )
+                       ),
+                   )
+                 ),
+               [Vector.x, Vector.y, Vector.z],
+               Vector.toList(data.globalOptions.rotation),
+             )
+             |> Array.of_list
+           }
       </div>
     </fieldset>
   </>;
@@ -299,10 +293,10 @@ let make = (~canvasId, _children) => {
   initialState: () => Uninitialized,
   reducer,
   didMount: self => {
-    addKeyboardEventListener(handleKey);
-    self.send(InitGl(getGlContext(canvasId) |> toOption));
+    Event.addKeyboardListener(handleKey);
+    self.send(InitGl(getGlContext(canvasId) |> Utils.toOption));
   },
-  willUnmount: _ => removeKeyboardEventListener(handleKey),
+  willUnmount: _ => Event.removeKeyboardListener(handleKey),
   render: self =>
     <div className="content">
       <canvas id=canvasId className="canvas" width="640" height="480" />

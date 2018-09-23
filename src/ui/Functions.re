@@ -1,28 +1,26 @@
-let toOption = Js.Nullable.toOption;
+let modelFromAbstract = abstract =>
+  AbstractTypes.{
+    Types.objData: abstract->objDataGet,
+    programs: abstract->programsGet |> StringMap.fromJsDict,
+    texture: abstract->textureGet,
+  };
 
-let debug = (msg, a) => {
-  Js.log2(msg, a);
-  a;
-};
+let modelToRenderArgs = (model, programName) =>
+  Types.(
+    AbstractTypes.renderArg(
+      ~objData=model.objData,
+      ~program=StringMap.find(programName, model.programs),
+      ~texture=model.texture,
+    )
+  );
 
-let toDecimal = x => float_of_int(x) /. 100.0;
-
-let value = event => event->ReactEvent.Form.target##value;
-
-let const = (a, _) => a;
-
-let eventRegistration = (f, event, handler) =>
-  f(event, handler, Webapi.Dom.Document.asEventTarget(Webapi.Dom.document));
-
-let addEventListener =
-  eventRegistration(Webapi.Dom.EventTarget.addEventListener);
-
-let removeEventListener =
-  eventRegistration(Webapi.Dom.EventTarget.removeEventListener);
-
-let addKeyboardEventListener = addEventListener("keypress");
-
-let removeKeyboardEventListener = removeEventListener("keypress");
+let globalOptsToAbstract = opts =>
+  Types.(
+    AbstractTypes.globalOptions(
+      ~scale=opts.scale->Utils.toDecimal,
+      ~rotation=opts.rotation->Vector.asArray,
+    )
+  );
 
 /* let render = */
 /*     ( */
