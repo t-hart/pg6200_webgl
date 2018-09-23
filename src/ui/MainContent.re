@@ -11,13 +11,10 @@ external getGlContext:
   string => Js.Nullable.t(AbstractTypes.webGlRenderingContext) =
   "";
 
-/* models */
-
-let isSelected = (name, optionString) =>
-  switch (optionString) {
+let isSelected = name =>
+  fun
   | Some(a) when a === name => true
-  | _ => false
-  };
+  | _ => false;
 
 let elementArray = (toElement, xs) =>
   xs
@@ -44,11 +41,10 @@ let selectModel =
     {ReasonReact.string("Please select a model first")}
   </div>;
 
-let ifSome = (opt, content) =>
-  switch (opt) {
+let ifSome = content =>
+  fun
   | Some(x) => content(x)
-  | None => selectModel
-  };
+  | None => selectModel;
 
 let shaderButtons = (send, data) =>
   (
@@ -68,7 +64,7 @@ let shaderButtons = (send, data) =>
       );
     }
   )
-  |> ifSome(data.model);
+  ->ifSome(_, data.model);
 
 let rangeSlider = (value, onChange) =>
   <input
@@ -81,12 +77,28 @@ let rangeSlider = (value, onChange) =>
     onChange
   />;
 
-let scaleRotation = (send, data) =>
+let rotationSliders = (send, rotation) =>
+  List.map2(
+    (f, a) =>
+      rangeSlider(string_of_int(a), event =>
+        send(
+          event
+          ->Event.value
+          ->int_of_string
+          ->(v => SetRotation(Vector.update(rotation, f(v)))),
+        )
+      ),
+    [Vector.x, Vector.y, Vector.z],
+    Vector.toList(rotation),
+  )
+  |> Array.of_list;
+
+let globalOptControls = (send, opts) =>
   <>
     <fieldset className="span-all no-pad-h">
       <legend> {ReasonReact.string("Scale")} </legend>
       {
-        rangeSlider(data.globalOptions.scale->string_of_int, event =>
+        rangeSlider(opts.scale->string_of_int, event =>
           send(event->Event.value->int_of_string->SetScale)
         )
       }
@@ -94,30 +106,7 @@ let scaleRotation = (send, data) =>
     <fieldset className="span-all no-pad-h">
       <legend> {ReasonReact.string("Rotation (X, Y, Z)")} </legend>
       <div className="controls">
-        ...{
-             List.map2(
-               (f, a) =>
-                 rangeSlider(string_of_int(a), event =>
-                   send(
-                     event
-                     ->Event.value
-                     ->int_of_string
-                     ->(
-                         v =>
-                           SetRotation(
-                             Vector.update(
-                               data.globalOptions.rotation,
-                               f(v),
-                             ),
-                           )
-                       ),
-                   )
-                 ),
-               [Vector.x, Vector.y, Vector.z],
-               Vector.toList(data.globalOptions.rotation),
-             )
-             |> Array.of_list
-           }
+        ...{rotationSliders(send, opts.rotation)}
       </div>
     </fieldset>
   </>;
@@ -133,7 +122,7 @@ let fieldsets = (send, data) => [|
   },
   {
     disabled: false,
-    content: scaleRotation(send, data),
+    content: globalOptControls(send, data.globalOptions),
     legend: "Transforms",
   },
 |];
