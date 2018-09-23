@@ -1,48 +1,9 @@
 open Functions;
-[@bs.deriving abstract]
-type objData = {
-  v: array(float),
-  vt: array(float),
-  vn: array(float),
-  f: array(float),
-  colors: array(float),
-  min: array(float),
-  max: array(float),
-};
-
-[@bs.deriving abstract]
-type webGlRenderingContext = {
-  canvas: string,
-  drawingBufferHeight: int,
-  drawingBufferWidth: int,
-};
-
-[@bs.deriving abstract]
-type webGlTexture =
-  | ();
-
-[@bs.deriving abstract]
-type webGlProgram =
-  | ();
-
-[@bs.deriving abstract]
-type renderArg = {
-  objData,
-  program: webGlProgram,
-  texture: option(webGlTexture),
-};
 
 type fieldset = {
   disabled: bool,
   content: ReasonReact.reactElement,
   legend: string,
-};
-
-[@bs.deriving abstract]
-type vector3Abstract = {
-  x: float,
-  y: float,
-  z: float,
 };
 
 type vector3 = {
@@ -51,14 +12,15 @@ type vector3 = {
   z: int,
 };
 
-let vector3AsArray = vec => Array.map(toDecimal, [|vec.x, vec.y, vec.z|]);
+let vec = (x, y, z) => {x, y, z};
 
-let vector3ToAbstract = vec =>
-  vector3Abstract(
-    ~x=vec.x->toDecimal,
-    ~y=vec.y->toDecimal,
-    ~z=vec.z->toDecimal,
-  );
+let vecRepeating = x => vec(x, x, x);
+
+let zeroVector = vecRepeating(0);
+
+let oneVector = vecRepeating(1);
+
+let vector3AsArray = vec => Array.map(toDecimal, [|vec.x, vec.y, vec.z|]);
 
 module StringMap =
   Map.Make({
@@ -80,32 +42,26 @@ let get = (key, map) =>
 
 let update = (key, f, map) => StringMap.add(key, get(key, map)->f, map);
 
-let keys = map => StringMap.fold((k, _, acc) => [k, ...acc], map, []);
+/* let keys = map => StringMap.fold((k, _, acc) => [k, ...acc], map, []); */
+let keys = map => StringMap.bindings(map) |> List.map(((k, _)) => k);
 
 let entries = map =>
   StringMap.fold((k, v, acc) => [(k, v), ...acc], map, []);
 
-[@bs.deriving abstract]
 type model = {
-  objData,
-  programs: Js.Dict.t(webGlProgram),
-  texture: option(webGlTexture),
+  objData: AbstractTypes.objData,
+  programs: StringMap.t(AbstractTypes.webGlProgram),
+  texture: option(AbstractTypes.webGlTexture),
 };
 
-type modelRe = {
-  objData,
-  programs: StringMap.t(webGlProgram),
-  texture: option(webGlTexture),
-};
-
-let modelToModelRe = model => {
-  objData: model->objDataGet,
-  programs: model->programsGet |> toMap,
-  texture: model->textureGet,
+let modelFromAbstract = abstract => {
+  objData: abstract->AbstractTypes.objDataGet,
+  programs: abstract->AbstractTypes.programsGet |> toMap,
+  texture: abstract->AbstractTypes.textureGet,
 };
 
 let modelToRenderArgs = (model, programName) =>
-  renderArg(
+  AbstractTypes.renderArg(
     ~objData=model.objData,
     ~program=StringMap.find(programName, model.programs),
     ~texture=model.texture,
@@ -114,27 +70,28 @@ let modelToRenderArgs = (model, programName) =>
 type programName = string;
 type modelName = string;
 
-[@bs.deriving abstract]
-type globalOptionsAbstract = {
-  scale: float,
-  rotation: array(float),
+type camera = {
+  position: vector3,
+  rotation: vector3,
 };
 
 type globalOptions = {
   scale: int,
   rotation: vector3,
+  camera,
 };
 
 let globalOptsToAbstract = opts =>
-  globalOptionsAbstract(
+  AbstractTypes.globalOptions(
     ~scale=opts.scale->toDecimal,
     ~rotation=opts.rotation->vector3AsArray,
   );
 
 type renderData = {
   model: option(modelName),
-  models: StringMap.t(modelRe),
+  models: StringMap.t(model),
   selectedPrograms: StringMap.t(programName),
-  renderFunc: (option(renderArg), globalOptionsAbstract) => unit,
+  renderFunc:
+    (option(AbstractTypes.renderArg), AbstractTypes.globalOptions) => unit,
   globalOptions,
 };

@@ -1,7 +1,8 @@
 /* global alert, requestAnimationFrame */
 import 'babel-polyfill'
+import { Vector } from './vector'
 import { initBuffers } from './bufferUtils'
-import { drawScene, drawEmptyScene } from './renderUtils'
+import { drawScene, drawEmptyScene, DrawArgs } from './renderUtils'
 import { ObjData } from './objs'
 import { boundingBox, dists, centeringTranslation, scale } from './vector'
 
@@ -42,8 +43,6 @@ const createProgramInfo = (gl: WebGLRenderingContext, program: WebGLProgram) => 
   }
 })
 
-export const initGL = (gl: WebGLRenderingContext) => drawEmptyScene(gl)
-
 type RenderArgs = {
   objData: ObjData,
   program: WebGLProgram,
@@ -52,24 +51,26 @@ type RenderArgs = {
 
 type MaybeData = RenderArgs | null
 
+export type Camera = {
+  position: Vector,
+  rotation: Vector
+}
+
 export type GlobalOptions = {
   scale: number,
-  rotation: number[]
+  rotation: Vector,
+  camera: Camera,
 }
 
 export const log = (a: any) => { console.log(a); return a }
 
-export const getRenderFunc = (gl: WebGLRenderingContext, data: MaybeData, opts: GlobalOptions) => {
-  if (!data) {
-    drawEmptyScene(gl)
-    return null
-  }
+export const renderBlank = (gl: WebGLRenderingContext) => drawEmptyScene(gl)
 
-  const { program, objData, texture } = data
+export const getDrawArgs = (gl: WebGLRenderingContext, { program, objData, texture }: RenderArgs): DrawArgs => {
   const programInfo = createProgramInfo(gl, program)
   const lengths = dists(objData.min, objData.max)
 
-  const drawArgs = {
+  return {
     boundingBox: boundingBox(objData.min, objData.max),
     buffers: initBuffers(gl, objData),
     centeringTranslation: centeringTranslation(objData.max, lengths),
@@ -79,26 +80,14 @@ export const getRenderFunc = (gl: WebGLRenderingContext, data: MaybeData, opts: 
     programInfo,
     texture,
   }
-
-  const render = (cubeRotation: number) => (then: number) => (opts: GlobalOptions) => (now: number): Function => {
-    const nowSeconds = now * 0.001
-    const deltaS = nowSeconds - then
-
-    drawScene(drawArgs, cubeRotation, opts)
-
-    return (opts: GlobalOptions) => requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds)(opts))
-  }
-  return (opts: GlobalOptions) => requestAnimationFrame(render(0)(0)(opts))
 }
 
 export const render = (gl: WebGLRenderingContext, data: MaybeData, opts: GlobalOptions) => {
   if (!data) {
-    drawEmptyScene(gl)
-    return
+    return renderBlank(gl)
   }
   const { program, objData, texture } = data
 
-  console.log(opts)
   const programInfo = createProgramInfo(gl, program)
 
   const lengths = dists(objData.min, objData.max)
@@ -117,11 +106,10 @@ export const render = (gl: WebGLRenderingContext, data: MaybeData, opts: GlobalO
   const render = (cubeRotation: number) => (then: number) => (now: number) => {
     const nowSeconds = now * 0.001
     const deltaS = nowSeconds - then
-
     drawScene(drawArgs, cubeRotation, opts)
-
     // requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds))
   }
+
   requestAnimationFrame(render(0.7)(0))
   // requestAnimationFrame(render(0)(0))
 }

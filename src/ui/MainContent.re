@@ -1,16 +1,35 @@
 open Types;
 open Functions;
-[@bs.module "../models"] external defaultProgram: string = "";
 [@bs.val] external alert: string => unit = "";
+
+/* index */
+
 [@bs.module "../index"]
 external render:
-  (webGlRenderingContext, option(renderArg), globalOptionsAbstract) => unit =
+  (
+    AbstractTypes.webGlRenderingContext,
+    option(AbstractTypes.renderArg),
+    AbstractTypes.globalOptions
+  ) =>
+  unit =
   "";
-[@bs.module "../index"] external initGL: webGlRenderingContext => unit = "";
+
 [@bs.module "../index"]
-external getGlContext: string => Js.Nullable.t(webGlRenderingContext) = "";
+external renderBlank: AbstractTypes.webGlRenderingContext => unit = "";
+
+[@bs.module "../index"]
+external getGlContext:
+  string => Js.Nullable.t(AbstractTypes.webGlRenderingContext) =
+  "";
+
+/* models */
+
+[@bs.module "../models"] external defaultProgram: string = "";
+
 [@bs.module "../models"]
-external getModels: webGlRenderingContext => Js.Dict.t(model) = "default";
+external getModels:
+  AbstractTypes.webGlRenderingContext => Js.Dict.t(AbstractTypes.model) =
+  "default";
 
 let isSelected = (name, optionString) =>
   switch (optionString) {
@@ -27,14 +46,12 @@ type shaderKey = string;
 type modelName = string;
 
 type action =
-  | InitGl(option(webGlRenderingContext))
+  | InitGl(option(AbstractTypes.webGlRenderingContext))
   | SelectShader(modelName, shaderKey)
   | SelectModel(modelName)
   | SetScale(int)
   | SetRotation(vector3)
   | Render;
-
-let component = ReasonReact.reducerComponent("Main content");
 
 let getRenderArg = (models, programs, modelName) =>
   Belt.Option.flatMap(modelName, x =>
@@ -55,23 +72,22 @@ let reducer = (action, state) =>
           |> data.renderFunc(_, data.globalOptions->globalOptsToAbstract)
       ),
     )
-  | (Render, Uninitialized | Error(_)) => ReasonReact.NoUpdate
 
   | (InitGl(optionGl), _) =>
     switch (optionGl) {
     | Some(gl) =>
       ReasonReact.UpdateWithSideEffects(
         Ready({
-          models: getModels(gl) |> toMap |> StringMap.map(modelToModelRe),
+          models: getModels(gl) |> toMap |> StringMap.map(modelFromAbstract),
           renderFunc: render(gl),
           model: None,
           selectedPrograms: StringMap.empty,
           globalOptions: {
             scale: 100,
-            rotation: {
-              x: 100,
-              y: 100,
-              z: 100,
+            rotation: vecRepeating(100),
+            camera: {
+              position: zeroVector,
+              rotation: zeroVector,
             },
           },
         }),
@@ -120,7 +136,6 @@ let reducer = (action, state) =>
       }),
       (self => self.send(Render)),
     )
-  | (SetRotation(_), Uninitialized | Error(_)) => ReasonReact.NoUpdate
 
   | (SetScale(v), Ready(data)) =>
     ReasonReact.UpdateWithSideEffects(
@@ -133,7 +148,6 @@ let reducer = (action, state) =>
       }),
       (self => self.send(Render)),
     )
-  | (SetScale(_), Uninitialized | Error(_)) => ReasonReact.NoUpdate
 
   | (SelectShader(modelName, programName), Ready(data)) =>
     ReasonReact.UpdateWithSideEffects(
@@ -144,7 +158,11 @@ let reducer = (action, state) =>
       }),
       (self => self.send(Render)),
     )
-  | (SelectShader(_, _), Uninitialized | Error(_)) => ReasonReact.NoUpdate
+
+  | (SelectShader(_, _), Uninitialized | Error(_))
+  | (SetScale(_), Uninitialized | Error(_))
+  | (SetRotation(_), Uninitialized | Error(_))
+  | (Render, Uninitialized | Error(_)) => ReasonReact.NoUpdate
   };
 
 let elementArray = (toElement, xs) =>
@@ -213,13 +231,11 @@ let scaleRotation = (send, data) =>
   <>
     <fieldset className="span-all no-pad-h">
       <legend> {ReasonReact.string("Scale")} </legend>
-      <div className="button-style">
-        {
-          rangeSlider(data.globalOptions.scale->string_of_int, event =>
-            send(event->value->int_of_string->SetScale)
-          )
-        }
-      </div>
+      {
+        rangeSlider(data.globalOptions.scale->string_of_int, event =>
+          send(event->value->int_of_string->SetScale)
+        )
+      }
     </fieldset>
     <fieldset className="span-all no-pad-h">
       <legend> {ReasonReact.string("Rotation (X, Y, Z)")} </legend>
@@ -274,6 +290,7 @@ let fieldsets = (send, data) => [|
   },
 |];
 
+let component = ReasonReact.reducerComponent("Main content");
 let make = (~canvasId, _children) => {
   ...component,
   initialState: () => Uninitialized,

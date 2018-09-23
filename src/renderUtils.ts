@@ -11,7 +11,7 @@ export const drawEmptyScene = (gl: WebGLRenderingContext) => {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 }
 
-type DrawArgs = {
+export type DrawArgs = {
   gl: WebGLRenderingContext,
   programInfo: ProgramInfo,
   buffers: BufferObj
