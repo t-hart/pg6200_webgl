@@ -50,12 +50,12 @@ type action =
   | SelectShader(modelName, shaderKey)
   | SelectModel(modelName)
   | SetScale(int)
-  | SetRotation(vector3)
+  | SetRotation(Vector.t)
   | Render;
 
 let getRenderArg = (models, programs, modelName) =>
   Belt.Option.flatMap(modelName, x =>
-    switch (get(x, models), get(x, programs)) {
+    switch (StringMap.get(x, models), StringMap.get(x, programs)) {
     | (Some(model), Some(programName)) =>
       Some(modelToRenderArgs(model, programName))
     | _ => None
@@ -78,16 +78,19 @@ let reducer = (action, state) =>
     | Some(gl) =>
       ReasonReact.UpdateWithSideEffects(
         Ready({
-          models: getModels(gl) |> toMap |> StringMap.map(modelFromAbstract),
+          models:
+            getModels(gl)
+            |> StringMap.fromJsDict
+            |> StringMap.map(modelFromAbstract),
           renderFunc: render(gl),
           model: None,
           selectedPrograms: StringMap.empty,
           globalOptions: {
             scale: 100,
-            rotation: vecRepeating(100),
+            rotation: Vector.fill(100),
             camera: {
-              position: zeroVector,
-              rotation: zeroVector,
+              position: Vector.zero,
+              rotation: Vector.zero,
             },
           },
         }),
@@ -107,7 +110,7 @@ let reducer = (action, state) =>
       | Some(n) when n === name => Ready({...data, model: None})
       | _ =>
         let selectedPrograms =
-          update(
+          StringMap.update(
             name,
             Belt.Option.getWithDefault(_, defaultProgram),
             data.selectedPrograms,
@@ -167,7 +170,7 @@ let reducer = (action, state) =>
 
 let elementArray = (toElement, xs) =>
   xs
-  ->keys
+  ->StringMap.keys
   ->List.fast_sort(compare, _)
   ->List.map(toElement, _)
   ->Array.of_list
