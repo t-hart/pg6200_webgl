@@ -143,8 +143,14 @@ let make = (~canvasId, _children) => {
       {
         switch (self.state) {
         | Ready(data) => <Controls contents={fieldsets(self.send, data)} />
-        | Uninitialized
-        | Error(_) => ReasonReact.null
+        | Uninitialized => ReasonReact.null
+        | Error(e) =>
+          <div className="alert">
+            <h1 className="alert text-center">
+              {ReasonReact.string("An error occurred:")}
+            </h1>
+            <p> {ReasonReact.string(e)} </p>
+          </div>
         }
       }
     </div>,
