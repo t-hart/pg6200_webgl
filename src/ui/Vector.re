@@ -31,3 +31,16 @@ let map = (f, v) => {x: f(v.x), y: f(v.y), z: f(v.z)};
 let toArray = v => [|v.x, v.y, v.z|];
 
 let toList = v => [v.x, v.y, v.z];
+
+let add = (v, u) => {x: v.x + u.x, y: v.y + u.y, z: v.z + u.z};
+
+let addMonoid =
+  fun
+  | Some(v) => v
+  | None => 0;
+
+let addSome = (v, u) => {
+  x: v.x + addMonoid(u.x),
+  y: v.y + addMonoid(u.y),
+  z: v.z + addMonoid(u.z),
+};

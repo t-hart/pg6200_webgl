@@ -16,6 +16,7 @@ type modelName = string;
 type camera = {
   position: Vector.t(int),
   rotation: Vector.t(int),
+  velocity: int,
 };
 
 type globalOptions = {

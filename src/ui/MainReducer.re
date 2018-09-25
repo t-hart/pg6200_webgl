@@ -40,9 +40,29 @@ type action =
   | InitGl(option(AbstractTypes.webGlRenderingContext))
   | SelectShader(modelName, shaderKey)
   | SelectModel(modelName)
+  | KeyPress(Webapi.Dom.KeyboardEvent.t)
   | SetScale(int)
   | SetRotation(Vector.t(int))
+  | SetCamera(Movement.t)
   | Render;
+
+let handleCameraUpdate = (mvmt, camera) => {
+  open Movement;
+  let (vec, axis, fill) =
+    switch (mvmt) {
+    | Translation(axis) => (
+        camera.position,
+        axis,
+        (position => {...camera, position}),
+      )
+    | Rotation(axis) => (
+        camera.rotation,
+        axis,
+        (rotation => {...camera, rotation}),
+      )
+    };
+  camera.velocity |> Input.move(axis) |> Vector.addSome(vec) |> fill;
+};
 
 let reducer = (action, state) =>
   switch (action, state) {
@@ -56,6 +76,25 @@ let reducer = (action, state) =>
                data.globalOptions->Functions.globalOptsToAbstract,
              )
       ),
+    )
+
+  | (KeyPress(e), Ready(_data)) =>
+    switch (Input.getMovement(Webapi.Dom.KeyboardEvent.code(e))) {
+    | Some(mvmt) =>
+      ReasonReact.SideEffects((self => self.send(SetCamera(mvmt))))
+    | None => ReasonReact.NoUpdate
+    }
+
+  | (SetCamera(mvmt), Ready(data)) =>
+    ReasonReact.UpdateWithSideEffects(
+      Ready({
+        ...data,
+        globalOptions: {
+          ...data.globalOptions,
+          camera: handleCameraUpdate(mvmt, data.globalOptions.camera),
+        },
+      }),
+      (self => self.send(Render)),
     )
 
   | (InitGl(optionGl), _) =>
@@ -76,6 +115,7 @@ let reducer = (action, state) =>
             camera: {
               position: Vector.zero,
               rotation: Vector.zero,
+              velocity: 1,
             },
           },
         }),
@@ -147,8 +187,10 @@ let reducer = (action, state) =>
       (self => self.send(Render)),
     )
 
-  | (SelectShader(_, _), Uninitialized | Error(_))
-  | (SetScale(_), Uninitialized | Error(_))
-  | (SetRotation(_), Uninitialized | Error(_))
-  | (Render, Uninitialized | Error(_)) => ReasonReact.NoUpdate
+  | (
+      KeyPress(_) | SetCamera(_) | SelectShader(_, _) | SetScale(_) |
+      SetRotation(_) |
+      Render,
+      Uninitialized | Error(_),
+    ) => ReasonReact.NoUpdate
   };

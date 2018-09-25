@@ -1,5 +1,5 @@
 open Types;
-open MainReducer;
+include MainReducer;
 
 /* index */
 
@@ -111,7 +111,7 @@ let globalOptControls = (send, opts) =>
     </fieldset>
   </>;
 
-let handleKey = e => Js.log2("Key pressed", e);
+let handleKey = (send, e) => KeyPress(e)->send;
 
 let fieldsets = (send, data) => [|
   {disabled: false, content: modelButtons(send, data), legend: "Models"},
@@ -133,10 +133,10 @@ let make = (~canvasId, _children) => {
   initialState: () => Uninitialized,
   reducer,
   didMount: self => {
-    Event.addKeyboardListener(handleKey);
+    Event.addKeyboardListener(handleKey(self.send));
     self.send(InitGl(getGlContext(canvasId) |> Utils.toOption));
   },
-  willUnmount: _ => Event.removeKeyboardListener(handleKey),
+  willUnmount: self => Event.removeKeyboardListener(handleKey(self.send)),
   render: self =>
     <div className="content">
       <canvas id=canvasId className="canvas" width="640" height="480" />

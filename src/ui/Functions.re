@@ -23,23 +23,19 @@ let globalOptsToAbstract = opts =>
   );
 
 /* let render = */
-/*     ( */
-/*       opts: Types.globalOptionsAbstract, */
-/*       drawArgs: Types.drawArgs, */
-/*       draw: (Types.drawArgs, float, Types.globalOptionsAbstract) => unit, */
-/*       rotation: float, */
-/*       previousTime: float, */
-/*       currentTime: float, */
-/*     ) => { */
-/*   let currentSeconds = currentTime * 0.001; */
-/*   let delta = currentSeconds - previousTime; */
-/*   draw(drawArgs, rotation, opts); */
-/*   render(opts, drawArgs, draw, rotation + delta, currentTime); */
-/* }; */
+/*   ( */
+/*   opts: AbstractTypes.globalOptions, */
+/*   drawArgs: AbstractTypes.drawArgs, */
+/*   draw: */
+/*     (AbstractTypes.drawArgs, float, AbstractTypes.globalOptions) => unit, */
+/*   rotation: float, */
+/*   previousTime: float, */
+/*   currentTime: float, */
+/* ) => { */
 
-/* const render = (cubeRotation: number) => (then: number) => (now: number) => { */
-/*   const nowSeconds = now * 0.001 */
-/*     const deltaS = nowSeconds - then */
-/*     drawScene(drawArgs, cubeRotation, opts) */
-/*     requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds)) */
-/* } */
+let render = (opts, drawArgs, draw, rotation, previousTime, currentTime) => {
+  let currentSeconds = currentTime *. 0.001;
+  let delta = currentSeconds -. previousTime;
+  draw(drawArgs, rotation, opts);
+  (rotation +. delta, currentTime);
+};

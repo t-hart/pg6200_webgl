@@ -49,3 +49,7 @@ type camera = {
   position: array(float),
   rotation: array(float),
 };
+
+[@bs.deriving abstract]
+type drawArgs =
+  | ();

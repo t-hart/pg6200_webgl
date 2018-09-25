@@ -1,12 +1,10 @@
-let registration = (f, event, handler) =>
-  f(event, handler, Webapi.Dom.Document.asEventTarget(Webapi.Dom.document));
+let registration = (f, handler) =>
+  f(handler, Webapi.Dom.Document.asEventTarget(Webapi.Dom.document));
 
-let addListener = registration(Webapi.Dom.EventTarget.addEventListener);
+let addKeyboardListener =
+  registration(Webapi.Dom.EventTarget.addKeyDownEventListener);
 
-let removeListener = registration(Webapi.Dom.EventTarget.removeEventListener);
-
-let addKeyboardListener = addListener("keypress");
-
-let removeKeyboardListener = removeListener("keypress");
+let removeKeyboardListener =
+  registration(Webapi.Dom.EventTarget.removeKeyDownEventListener);
 
 let value = event => event->ReactEvent.Form.target##value;
