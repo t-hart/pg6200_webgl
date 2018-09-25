@@ -1,3 +1,6 @@
+type programName = string;
+type modelName = string;
+
 type fieldset = {
   disabled: bool,
   content: ReasonReact.reactElement,
@@ -9,9 +12,6 @@ type model = {
   programs: StringMap.t(AbstractTypes.webGlProgram),
   texture: option(AbstractTypes.webGlTexture),
 };
-
-type programName = string;
-type modelName = string;
 
 type camera = {
   position: Vector.t(int),

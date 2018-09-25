@@ -1,148 +1,84 @@
-open Types;
-include MainReducer;
-
-/* index */
-
 [@bs.module "../index"]
 external renderBlank: AbstractTypes.webGlRenderingContext => unit = "";
-
 [@bs.module "../index"]
 external getGlContext:
   string => Js.Nullable.t(AbstractTypes.webGlRenderingContext) =
   "";
 
-let isSelected = name =>
-  fun
-  | Some(a) when a === name => true
-  | _ => false;
-
-let elementArray = (toElement, xs) =>
-  xs
-  ->StringMap.keys
-  ->List.fast_sort(compare, _)
-  ->List.map(toElement, _)
-  ->Array.of_list
-  ->ReasonReact.array;
-
-let modelButtons = (send, data) =>
-  elementArray(
-    key =>
-      <button
-        key
-        className={isSelected(key, data.model) ? "active" : ""}
-        onClick={_ => key->SelectModel->send}>
-        {ReasonReact.string(key)}
-      </button>,
-    data.models,
-  );
-
-let selectModel =
-  <div className="span-all alert button-style" disabled=true>
-    {ReasonReact.string("Please select a model first")}
-  </div>;
-
-let ifSome = content =>
-  fun
-  | Some(x) => content(x)
-  | None => selectModel;
-
-let shaderButtons = (send, data) =>
+[@bs.module "../models"]
+external getModels:
+  AbstractTypes.webGlRenderingContext => Js.Dict.t(AbstractTypes.model) =
+  "default";
+[@bs.module "../index"]
+external render:
   (
-    name => {
-      let selectedProgram = key =>
-        key === StringMap.find(name, data.selectedPrograms);
-      elementArray(
-        key =>
-          <button
-            key
-            className={key->selectedProgram ? "active" : ""}
-            disabled=key->selectedProgram
-            onClick={_ => SelectShader(name, key)->send}>
-            {ReasonReact.string(key)}
-          </button>,
-        StringMap.find(name, data.models).programs,
-      );
-    }
-  )
-  ->ifSome(_, data.model);
+    AbstractTypes.webGlRenderingContext,
+    option(AbstractTypes.renderArg),
+    AbstractTypes.globalOptions
+  ) =>
+  unit =
+  "";
 
-let rangeSlider = (value, onChange) =>
-  <input
-    className="button-style"
-    type_="range"
-    min=0
-    max="200"
-    value
-    step=1.0
-    onChange
-  />;
+let modelFromAbstract = abstract: Types.model =>
+  AbstractTypes.{
+    objData: abstract->objDataGet,
+    programs: abstract->programsGet |> StringMap.fromJsDict,
+    texture: abstract->textureGet,
+  };
 
-let rotationSliders = (send, rotation) =>
-  List.map2(
-    (f, a) =>
-      rangeSlider(string_of_int(a), event =>
-        send(
-          event
-          ->Event.value
-          ->int_of_string
-          ->(v => SetRotation(Vector.update(rotation, f(v)))),
-        )
-      ),
-    [Vector.x, Vector.y, Vector.z],
-    Vector.toList(rotation),
-  )
-  |> Array.of_list;
+type state =
+  | Uninitialized
+  | Error(string)
+  | Ready(Types.renderData);
 
-let globalOptControls = (send, opts) =>
-  <>
-    <fieldset className="span-all no-pad-h">
-      <legend> {ReasonReact.string("Scale")} </legend>
-      {
-        rangeSlider(opts.scale->string_of_int, event =>
-          send(event->Event.value->int_of_string->SetScale)
-        )
-      }
-    </fieldset>
-    <fieldset className="span-all no-pad-h">
-      <legend> {ReasonReact.string("Rotation (X, Y, Z)")} </legend>
-      <div className="controls">
-        ...{rotationSliders(send, opts.rotation)}
-      </div>
-    </fieldset>
-  </>;
-
-let handleKey = (send, e) => KeyPress(e)->send;
-
-let fieldsets = (send, data) => [|
-  {disabled: false, content: modelButtons(send, data), legend: "Models"},
-  {
-    disabled: data.model === None,
-    content: shaderButtons(send, data),
-    legend: "Shaders",
-  },
-  {
-    disabled: false,
-    content: globalOptControls(send, data.globalOptions),
-    legend: "Transforms",
-  },
-|];
+type action =
+  | InitGl(option(AbstractTypes.webGlRenderingContext));
 
 let component = ReasonReact.reducerComponent("Main content");
 let make = (~canvasId, _children) => {
   ...component,
   initialState: () => Uninitialized,
-  reducer,
-  didMount: self => {
-    Event.addKeyboardListener(handleKey(self.send));
-    self.send(InitGl(getGlContext(canvasId) |> Utils.toOption));
-  },
-  willUnmount: self => Event.removeKeyboardListener(handleKey(self.send)),
+  reducer: (action, state) =>
+    switch (action, state) {
+    | (InitGl(optionGl), _) =>
+      switch (optionGl) {
+      | Some(gl) =>
+        ReasonReact.Update(
+          Ready({
+            models:
+              getModels(gl)
+              |> StringMap.fromJsDict
+              |> StringMap.map(modelFromAbstract),
+            renderFunc: render(gl),
+            model: None,
+            selectedPrograms: StringMap.empty,
+            globalOptions: {
+              scale: 100,
+              rotation: Vector.fill(100),
+              camera: {
+                position: Vector.zero,
+                rotation: Vector.zero,
+                velocity: 1,
+              },
+            },
+          }),
+        )
+      | None =>
+        ReasonReact.Update(
+          Error(
+            "Unable to initialize GL: Couldn't find the rendering context.",
+          ),
+        )
+      }
+    },
+  didMount: self =>
+    self.send(InitGl(getGlContext(canvasId) |> Utils.toOption)),
   render: self =>
     <div className="content">
       <canvas id=canvasId className="canvas" width="640" height="480" />
       {
         switch (self.state) {
-        | Ready(data) => <Controls contents={fieldsets(self.send, data)} />
+        | Ready(data) => <GlHandler data />
         | Uninitialized => ReasonReact.null
         | Error(e) =>
           <div className="alert">
