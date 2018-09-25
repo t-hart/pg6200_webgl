@@ -1,3 +1,5 @@
+open Utils;
+
 [@bs.module "../models"] external defaultProgram: string = "";
 
 type shaderKey = string;
@@ -22,7 +24,7 @@ let modelToRenderArgs = (model: Types.model, programName) =>
 
 let globalOptsToAbstract = (opts: Types.globalOptions) =>
   AbstractTypes.globalOptions(
-    ~scale=opts.scale->Utils.toDecimal,
+    ~scale=opts.scale->toDecimal,
     ~rotation=opts.rotation->Vector.asArray,
   );
 
@@ -91,7 +93,7 @@ let reducer = (action, state: state) =>
         let selectedPrograms =
           StringMap.update(
             name,
-            Belt.Option.getWithDefault(_, defaultProgram),
+            default(defaultProgram),
             state.selectedPrograms,
           );
         {...state, model: Some(name), selectedPrograms};
@@ -252,6 +254,8 @@ let fieldsets = (send, data): array(Types.fieldset) => [|
   },
 |];
 
+let vecString = ({x, y, z}: Vector.t(int)) => {j|[ $x, $y, $z ]|j};
+
 let component = ReasonReact.reducerComponent("GL Handler");
 let make = (~data, _children) => {
   ...component,
@@ -263,5 +267,25 @@ let make = (~data, _children) => {
   },
   willUnmount: self => Event.removeKeyboardListener(handleKey(self.send)),
   render: self =>
-    <> <Controls contents={fieldsets(self.send, self.state)} /> </>,
+    <>
+      <div className="grid-2-cols full-width">
+        <fieldset>
+          <legend> {ReasonReact.string("Position")} </legend>
+          {
+            ReasonReact.string(
+              vecString(self.state.Types.globalOptions.Types.camera.position),
+            )
+          }
+        </fieldset>
+        <fieldset>
+          <legend> {ReasonReact.string("Rotation")} </legend>
+          {
+            ReasonReact.string(
+              vecString(self.state.Types.globalOptions.Types.camera.rotation),
+            )
+          }
+        </fieldset>
+      </div>
+      <Controls contents={fieldsets(self.send, self.state)} />
+    </>,
 };

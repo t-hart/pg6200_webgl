@@ -10,3 +10,5 @@ let toDecimal = x => float_of_int(x) /. 100.0;
 let const = (a, _) => a;
 
 let id = a => a;
+
+let default = (a, b) => Belt.Option.getWithDefault(b, a);

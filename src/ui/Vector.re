@@ -1,3 +1,5 @@
+open Utils;
+
 type t('a) = {
   x: 'a,
   y: 'a,
@@ -12,7 +14,7 @@ let zero = fill(0);
 
 let one = fill(1);
 
-let asArray = vec => Array.map(Utils.toDecimal, [|vec.x, vec.y, vec.z|]);
+let asArray = vec => Array.map(toDecimal, [|vec.x, vec.y, vec.z|]);
 
 let x = a => make(Some(a), None, None);
 
@@ -21,9 +23,9 @@ let y = a => make(None, Some(a), None);
 let z = a => make(None, None, Some(a));
 
 let update = (original: t('a), opt: t(option('a))) => {
-  x: Belt.Option.getWithDefault(opt.x, original.x),
-  y: Belt.Option.getWithDefault(opt.y, original.y),
-  z: Belt.Option.getWithDefault(opt.z, original.z),
+  x: opt.x |> default(original.x),
+  y: opt.y |> default(original.y),
+  z: opt.z |> default(original.z),
 };
 
 let map = (f, v) => {x: f(v.x), y: f(v.y), z: f(v.z)};
@@ -34,13 +36,8 @@ let toList = v => [v.x, v.y, v.z];
 
 let add = (v, u) => {x: v.x + u.x, y: v.y + u.y, z: v.z + u.z};
 
-let addMonoid =
-  fun
-  | Some(v) => v
-  | None => 0;
-
 let addSome = (v, u) => {
-  x: v.x + addMonoid(u.x),
-  y: v.y + addMonoid(u.y),
-  z: v.z + addMonoid(u.z),
+  x: v.x + (u.x |> default(0)),
+  y: v.y + (u.y |> default(0)),
+  z: v.z + (u.z |> default(0)),
 };
