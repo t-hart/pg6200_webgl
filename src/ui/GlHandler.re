@@ -257,7 +257,10 @@ let make = (~data, _children) => {
   ...component,
   initialState: () => data,
   reducer,
-  didMount: self => Event.addKeyboardListener(handleKey(self.send)),
+  didMount: self => {
+    Event.addKeyboardListener(handleKey(self.send));
+    self.send(Render);
+  },
   willUnmount: self => Event.removeKeyboardListener(handleKey(self.send)),
   render: self =>
     <> <Controls contents={fieldsets(self.send, self.state)} /> </>,
