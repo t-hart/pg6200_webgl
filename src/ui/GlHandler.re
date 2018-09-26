@@ -4,40 +4,27 @@ open Utils;
 
 type shaderKey = string;
 
-type state = Types.renderData;
+type state = RenderData.t;
 
 type action =
-  | SelectShader(Types.modelName, shaderKey)
-  | SelectModel(Types.modelName)
+  | SelectShader(RenderData.modelName, shaderKey)
+  | SelectModel(RenderData.modelName)
   | KeyPress(Webapi.Dom.KeyboardEvent.t)
   | SetScale(int)
   | SetRotation(Vector.t(int))
   | SetCamera(Movement.t)
   | Render;
 
-let modelToRenderArgs = (model: Types.model, programName) =>
-  AbstractTypes.renderArg(
-    ~objData=model.objData,
-    ~program=StringMap.find(programName, model.programs),
-    ~texture=model.texture,
-  );
-
-let globalOptsToAbstract = (opts: Types.globalOptions) =>
-  AbstractTypes.globalOptions(
-    ~scale=opts.scale->toDecimal,
-    ~rotation=opts.rotation->Vector.asDecimalArray,
-  );
-
 let getRenderArg = (models, programs, modelName) =>
   Belt.Option.flatMap(modelName, x =>
     switch (StringMap.get(x, models), StringMap.get(x, programs)) {
     | (Some(model), Some(programName)) =>
-      Some(modelToRenderArgs(model, programName))
+      Some(Model.toRenderArgs(model, programName))
     | _ => None
     }
   );
 
-let handleCameraUpdate = (mvmt, camera: Types.camera) => {
+let handleCameraUpdate = (mvmt, camera: Camera.t) => {
   open Movement;
   let (vec, axis, fill) =
     switch (mvmt) {
@@ -62,7 +49,10 @@ let reducer = (action, state: state) =>
       (
         _ =>
           getRenderArg(state.models, state.selectedPrograms, state.model)
-          |> state.renderFunc(_, state.globalOptions->globalOptsToAbstract)
+          |> state.renderFunc(
+               _,
+               state.globalOptions->GlobalOptions.toAbstract,
+             )
       ),
     )
 
@@ -220,7 +210,7 @@ let rotationSliders = (send, rotation) =>
   )
   |> Array.of_list;
 
-let globalOptControls = (send, opts: Types.globalOptions) =>
+let globalOptControls = (send, opts: GlobalOptions.t) =>
   <>
     <fieldset className="span-all no-pad-h">
       <legend> {ReasonReact.string("Scale")} </legend>
@@ -240,7 +230,7 @@ let globalOptControls = (send, opts: Types.globalOptions) =>
 
 let handleKey = (send, e) => KeyPress(e)->send;
 
-let fieldsets = (send, data): array(Types.fieldset) => [|
+let fieldsets = (send, data): array(Fieldset.t) => [|
   {disabled: false, content: modelButtons(send, data), legend: "Models"},
   {
     disabled: data.model === None,
@@ -271,17 +261,17 @@ let make = (~data, _children) => {
       <div className="grid-2-cols full-width">
         <fieldset>
           <legend> {ReasonReact.string("Position")} </legend>
-          {
+          RenderData.(
             ReasonReact.string(
-              vecString(self.state.Types.globalOptions.Types.camera.position),
+              vecString(self.state.globalOptions.camera.position),
             )
-          }
+          )
         </fieldset>
         <fieldset>
           <legend> {ReasonReact.string("Rotation")} </legend>
           {
             ReasonReact.string(
-              vecString(self.state.Types.globalOptions.Types.camera.rotation),
+              vecString(self.state.globalOptions.camera.rotation),
             )
           }
         </fieldset>

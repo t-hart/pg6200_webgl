@@ -19,17 +19,10 @@ external render:
   unit =
   "";
 
-let modelFromAbstract = abstract: Types.model =>
-  AbstractTypes.{
-    objData: abstract->objDataGet,
-    programs: abstract->programsGet |> StringMap.fromJsDict,
-    texture: abstract->textureGet,
-  };
-
 type state =
   | Uninitialized
   | Error(string)
-  | Ready(Types.renderData);
+  | Ready(RenderData.t);
 
 type action =
   | InitGl(option(AbstractTypes.webGlRenderingContext));
@@ -48,7 +41,7 @@ let make = (~canvasId, _children) => {
             models:
               getModels(gl)
               |> StringMap.fromJsDict
-              |> StringMap.map(modelFromAbstract),
+              |> StringMap.map(Model.fromAbstract),
             renderFunc: render(gl),
             model: None,
             selectedPrograms: StringMap.empty,

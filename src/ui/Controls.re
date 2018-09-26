@@ -1,9 +1,8 @@
-open Types;
 let component = ReasonReact.statelessComponent("Controls");
 
 let map = contents =>
   contents
-  |> Array.map(x =>
+  |> Array.map((x: Fieldset.t) =>
        <fieldset key={x.legend} disabled={x.disabled}>
          <legend> {ReasonReact.string(x.legend)} </legend>
          <div className="controls"> {x.content} </div>
