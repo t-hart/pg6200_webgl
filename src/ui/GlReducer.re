@@ -27,30 +27,6 @@ type renderStateUpdates = {
   nextTime: float => unit,
 };
 
-let rec render =
-        (
-          renderStateUpdates: renderStateUpdates,
-          opts,
-          drawArgs,
-          rotation,
-          previousTime,
-          nextTime,
-        ) => {
-  let currentSeconds = nextTime *. 0.001;
-  let delta = currentSeconds -. previousTime;
-  let nextRotation = rotation +. delta;
-  renderStateUpdates.modelRotation(delta);
-  renderStateUpdates.previousTime(previousTime);
-  renderStateUpdates.nextTime(currentSeconds);
-
-  drawScene(drawArgs, rotation, opts);
-
-  Webapi.requestCancellableAnimationFrame(
-    render(renderStateUpdates, opts, drawArgs, nextRotation, currentSeconds),
-  )
-  |> renderStateUpdates.rafId;
-};
-
 let cancelAnimation =
   fun
   | Some(id) => Webapi.cancelAnimationFrame(id)
@@ -79,7 +55,7 @@ let reducer = (action, state: state) =>
   | Render(modelName, currentTime) =>
     ReasonReact.UpdateWithSideEffects(
       {
-        let currentSeconds = currentTime *. 0.00000005;
+        let currentSeconds = currentTime *. 0.0000007;
         let delta = currentSeconds -. state.previousTime;
         let nextRotation = state.modelRotation +. delta;
         {...state, nextTime: currentSeconds, modelRotation: nextRotation};

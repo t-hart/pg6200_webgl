@@ -228,7 +228,7 @@ input[type="range"] {
     &:focus,
     &:active,
     &:hover {
-      background-color: transparentize($main-color, .91);
+      background-color: transparentize($main-color, .95);
     }
 
   }
