@@ -14,7 +14,7 @@ let zero = fill(0);
 
 let one = fill(1);
 
-let asArray = vec => Array.map(toDecimal, [|vec.x, vec.y, vec.z|]);
+let asDecimalArray = vec => Array.map(toDecimal, [|vec.x, vec.y, vec.z|]);
 
 let x = a => make(Some(a), None, None);
 

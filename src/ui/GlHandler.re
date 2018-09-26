@@ -25,7 +25,7 @@ let modelToRenderArgs = (model: Types.model, programName) =>
 let globalOptsToAbstract = (opts: Types.globalOptions) =>
   AbstractTypes.globalOptions(
     ~scale=opts.scale->toDecimal,
-    ~rotation=opts.rotation->Vector.asArray,
+    ~rotation=opts.rotation->Vector.asDecimalArray,
   );
 
 let getRenderArg = (models, programs, modelName) =>
