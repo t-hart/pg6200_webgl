@@ -1,132 +1,22 @@
-open Utils;
+open GlReducer;
 
-[@bs.module "../models"] external defaultProgram: string = "";
+[@bs.module "../index"]
+external renderBlank: AbstractTypes.webGlRenderingContext => unit = "";
 
-type shaderKey = string;
+[@bs.module "../index"]
+external render:
+  (
+    AbstractTypes.webGlRenderingContext,
+    option(AbstractTypes.renderArg),
+    AbstractTypes.globalOptions
+  ) =>
+  unit =
+  "";
 
-type state = RenderData.t;
-
-type action =
-  | SelectShader(RenderData.modelName, shaderKey)
-  | SelectModel(RenderData.modelName)
-  | KeyPress(Webapi.Dom.KeyboardEvent.t)
-  | SetScale(int)
-  | SetRotation(Vector.t(int))
-  | SetCamera(Movement.t)
-  | Render;
-
-let getRenderArg = (models, programs, modelName) =>
-  Belt.Option.flatMap(modelName, x =>
-    switch (StringMap.get(x, models), StringMap.get(x, programs)) {
-    | (Some(model), Some(programName)) =>
-      Some(Model.toRenderArgs(model, programName))
-    | _ => None
-    }
-  );
-
-let handleCameraUpdate = (mvmt, camera: Camera.t) => {
-  open Movement;
-  let (vec, axis, fill) =
-    switch (mvmt) {
-    | Translation(axis) => (
-        camera.position,
-        axis,
-        (position => {...camera, position}),
-      )
-    | Rotation(axis) => (
-        camera.rotation,
-        axis,
-        (rotation => {...camera, rotation}),
-      )
-    };
-  camera.velocity |> Input.move(axis) |> Vector.addSome(vec) |> fill;
-};
-
-let reducer = (action, state: state) =>
-  switch (action) {
-  | Render =>
-    ReasonReact.SideEffects(
-      (
-        _ =>
-          getRenderArg(state.models, state.selectedPrograms, state.model)
-          |> state.renderFunc(
-               _,
-               state.globalOptions->GlobalOptions.toAbstract,
-             )
-      ),
-    )
-
-  | KeyPress(e) =>
-    switch (Input.getMovement(Webapi.Dom.KeyboardEvent.code(e))) {
-    | Some(mvmt) =>
-      ReasonReact.SideEffects((self => self.send(SetCamera(mvmt))))
-    | None => ReasonReact.NoUpdate
-    }
-
-  | SetCamera(mvmt) =>
-    ReasonReact.UpdateWithSideEffects(
-      {
-        ...state,
-        globalOptions: {
-          ...state.globalOptions,
-          camera: handleCameraUpdate(mvmt, state.globalOptions.camera),
-        },
-      },
-      (self => self.send(Render)),
-    )
-
-  | SelectModel(name) =>
-    let nextState =
-      switch (state.model) {
-      | Some(n) when n === name => {...state, model: None}
-      | _ =>
-        let selectedPrograms =
-          StringMap.update(
-            name,
-            default(defaultProgram),
-            state.selectedPrograms,
-          );
-        {...state, model: Some(name), selectedPrograms};
-      };
-    ReasonReact.UpdateWithSideEffects(
-      nextState,
-      (self => self.send(Render)),
-    );
-
-  | SetRotation(rotation) =>
-    ReasonReact.UpdateWithSideEffects(
-      {
-        ...state,
-        globalOptions: {
-          ...state.globalOptions,
-          rotation,
-        },
-      },
-      (self => self.send(Render)),
-    )
-
-  | SetScale(v) =>
-    ReasonReact.UpdateWithSideEffects(
-      {
-        ...state,
-        globalOptions: {
-          ...state.globalOptions,
-          scale: v,
-        },
-      },
-      (self => self.send(Render)),
-    )
-
-  | SelectShader(modelName, programName) =>
-    ReasonReact.UpdateWithSideEffects(
-      {
-        ...state,
-        selectedPrograms:
-          StringMap.add(modelName, programName, state.selectedPrograms),
-      },
-      (self => self.send(Render)),
-    )
-  };
+[@bs.module "../models"]
+external getModels:
+  AbstractTypes.webGlRenderingContext => Js.Dict.t(AbstractTypes.model) =
+  "default";
 
 let isSelected = name =>
   fun
@@ -244,12 +134,28 @@ let fieldsets = (send, data): array(Fieldset.t) => [|
   },
 |];
 
-let vecString = ({x, y, z}: Vector.t(int)) => {j|[ $x, $y, $z ]|j};
-
 let component = ReasonReact.reducerComponent("GL Handler");
-let make = (~data, _children) => {
+let make = (~glRenderingContext, _children) => {
   ...component,
-  initialState: () => data,
+  initialState: () =>
+    RenderData.{
+      models:
+        getModels(glRenderingContext)
+        |> StringMap.fromJsDict
+        |> StringMap.map(Model.fromAbstract),
+      renderFunc: render(glRenderingContext),
+      model: None,
+      selectedPrograms: StringMap.empty,
+      globalOptions: {
+        scale: 100,
+        rotation: Vector.fill(100),
+        camera: {
+          position: Vector.zero,
+          rotation: Vector.zero,
+          velocity: 1,
+        },
+      },
+    },
   reducer,
   didMount: self => {
     Event.addKeyboardListener(handleKey(self.send));
@@ -263,7 +169,7 @@ let make = (~data, _children) => {
           <legend> {ReasonReact.string("Position")} </legend>
           RenderData.(
             ReasonReact.string(
-              vecString(self.state.globalOptions.camera.position),
+              Vector.toString(self.state.globalOptions.camera.position),
             )
           )
         </fieldset>
@@ -271,7 +177,7 @@ let make = (~data, _children) => {
           <legend> {ReasonReact.string("Rotation")} </legend>
           {
             ReasonReact.string(
-              vecString(self.state.globalOptions.camera.rotation),
+              Vector.toString(self.state.globalOptions.camera.rotation),
             )
           }
         </fieldset>

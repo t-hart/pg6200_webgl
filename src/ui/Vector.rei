@@ -22,6 +22,8 @@ let toArray: t('a) => array('a);
 
 let toList: t('a) => list('a);
 
+let toString: t('a) => string;
+
 let zero: t(int);
 
 let one: t(int);

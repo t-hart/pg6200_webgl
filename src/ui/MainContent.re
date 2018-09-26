@@ -1,28 +1,12 @@
 [@bs.module "../index"]
-external renderBlank: AbstractTypes.webGlRenderingContext => unit = "";
-[@bs.module "../index"]
 external getGlContext:
   string => Js.Nullable.t(AbstractTypes.webGlRenderingContext) =
-  "";
-
-[@bs.module "../models"]
-external getModels:
-  AbstractTypes.webGlRenderingContext => Js.Dict.t(AbstractTypes.model) =
-  "default";
-[@bs.module "../index"]
-external render:
-  (
-    AbstractTypes.webGlRenderingContext,
-    option(AbstractTypes.renderArg),
-    AbstractTypes.globalOptions
-  ) =>
-  unit =
   "";
 
 type state =
   | Uninitialized
   | Error(string)
-  | Ready(RenderData.t);
+  | Ready(AbstractTypes.webGlRenderingContext);
 
 type action =
   | InitGl(option(AbstractTypes.webGlRenderingContext));
@@ -35,27 +19,7 @@ let make = (~canvasId, _children) => {
     switch (action, state) {
     | (InitGl(optionGl), _) =>
       switch (optionGl) {
-      | Some(gl) =>
-        ReasonReact.Update(
-          Ready({
-            models:
-              getModels(gl)
-              |> StringMap.fromJsDict
-              |> StringMap.map(Model.fromAbstract),
-            renderFunc: render(gl),
-            model: None,
-            selectedPrograms: StringMap.empty,
-            globalOptions: {
-              scale: 100,
-              rotation: Vector.fill(100),
-              camera: {
-                position: Vector.zero,
-                rotation: Vector.zero,
-                velocity: 1,
-              },
-            },
-          }),
-        )
+      | Some(gl) => ReasonReact.Update(Ready(gl))
       | None =>
         ReasonReact.Update(
           Error(
@@ -71,7 +35,7 @@ let make = (~canvasId, _children) => {
       <canvas id=canvasId className="canvas" width="640" height="480" />
       {
         switch (self.state) {
-        | Ready(data) => <GlHandler data />
+        | Ready(glRenderingContext) => <GlHandler glRenderingContext />
         | Uninitialized => ReasonReact.null
         | Error(e) =>
           <div className="alert">
