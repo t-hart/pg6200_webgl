@@ -1,24 +1,32 @@
 open Utils;
-type shaderKey = string;
-type state = RenderData.t;
 [@bs.module "../models"] external defaultProgram: string = "";
 
+type shaderKey = string;
+type programName = string;
+type modelName = string;
+
+type state = {
+  model: option(modelName),
+  models: StringMap.t(Model.t),
+  selectedPrograms: StringMap.t(programName),
+  clear: unit => unit,
+  renderFunc: (AbstractTypes.renderArg, AbstractTypes.globalOptions) => unit,
+  globalOptions: GlobalOptions.t,
+};
+
 type action =
-  | SelectShader(RenderData.modelName, shaderKey)
-  | SelectModel(RenderData.modelName)
+  | SelectShader(modelName, shaderKey)
+  | SelectModel(modelName)
   | KeyPress(Webapi.Dom.KeyboardEvent.t)
   | SetScale(int)
   | SetRotation(Vector.t(int))
   | SetCamera(Movement.t)
   | Render;
 
-let getRenderArg = (models, programs, modelName) =>
-  Belt.Option.flatMap(modelName, x =>
-    switch (StringMap.get(x, models), StringMap.get(x, programs)) {
-    | (Some(model), Some(programName)) =>
-      Some(Model.toRenderArgs(model, programName))
-    | _ => None
-    }
+let getRenderArg = (models, programs, name) =>
+  Model.toRenderArgs(
+    StringMap.find(name, models),
+    StringMap.find(name, programs),
   );
 
 let handleCameraUpdate = (mvmt, camera: Camera.t) => {
@@ -43,14 +51,17 @@ let reducer = (action, state: state) =>
   switch (action) {
   | Render =>
     ReasonReact.SideEffects(
-      (
-        _ =>
-          getRenderArg(state.models, state.selectedPrograms, state.model)
-          |> state.renderFunc(
-               _,
-               state.globalOptions->GlobalOptions.toAbstract,
-             )
-      ),
+      switch (state.model) {
+      | Some(name) => (
+          _ =>
+            getRenderArg(state.models, state.selectedPrograms, name)
+            |> state.renderFunc(
+                 _,
+                 state.globalOptions->GlobalOptions.toAbstract,
+               )
+        )
+      | None => (_ => state.clear())
+      },
     )
 
   | KeyPress(e) =>

@@ -7,7 +7,7 @@ external renderBlank: AbstractTypes.webGlRenderingContext => unit = "";
 external render:
   (
     AbstractTypes.webGlRenderingContext,
-    option(AbstractTypes.renderArg),
+    AbstractTypes.renderArg,
     AbstractTypes.globalOptions
   ) =>
   unit =
@@ -137,25 +137,25 @@ let fieldsets = (send, data): array(Fieldset.t) => [|
 let component = ReasonReact.reducerComponent("GL Handler");
 let make = (~glRenderingContext, _children) => {
   ...component,
-  initialState: () =>
-    RenderData.{
-      models:
-        getModels(glRenderingContext)
-        |> StringMap.fromJsDict
-        |> StringMap.map(Model.fromAbstract),
-      renderFunc: render(glRenderingContext),
-      model: None,
-      selectedPrograms: StringMap.empty,
-      globalOptions: {
-        scale: 100,
-        rotation: Vector.fill(100),
-        camera: {
-          position: Vector.zero,
-          rotation: Vector.zero,
-          velocity: 1,
-        },
+  initialState: () => {
+    models:
+      getModels(glRenderingContext)
+      |> StringMap.fromJsDict
+      |> StringMap.map(Model.fromAbstract),
+    renderFunc: render(glRenderingContext),
+    clear: () => renderBlank(glRenderingContext),
+    model: None,
+    selectedPrograms: StringMap.empty,
+    globalOptions: {
+      scale: 100,
+      rotation: Vector.fill(100),
+      camera: {
+        position: Vector.zero,
+        rotation: Vector.zero,
+        velocity: 1,
       },
     },
+  },
   reducer,
   didMount: self => {
     Event.addKeyboardListener(handleKey(self.send));
@@ -167,11 +167,11 @@ let make = (~glRenderingContext, _children) => {
       <div className="grid-2-cols full-width">
         <fieldset>
           <legend> {ReasonReact.string("Position")} </legend>
-          RenderData.(
+          {
             ReasonReact.string(
               Vector.toString(self.state.globalOptions.camera.position),
             )
-          )
+          }
         </fieldset>
         <fieldset>
           <legend> {ReasonReact.string("Rotation")} </legend>
