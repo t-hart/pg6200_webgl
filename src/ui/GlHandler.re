@@ -1,23 +1,5 @@
 open GlReducer;
 
-[@bs.module "../index"]
-external renderBlank: AbstractTypes.webGlRenderingContext => unit = "";
-
-[@bs.module "../index"]
-external render:
-  (
-    AbstractTypes.webGlRenderingContext,
-    AbstractTypes.renderArg,
-    AbstractTypes.globalOptions
-  ) =>
-  unit =
-  "";
-
-[@bs.module "../models"]
-external getModels:
-  AbstractTypes.webGlRenderingContext => Js.Dict.t(AbstractTypes.model) =
-  "default";
-
 let isSelected = name =>
   fun
   | Some(a) when a === name => true
@@ -137,29 +119,11 @@ let fieldsets = (send, data): array(Fieldset.t) => [|
 let component = ReasonReact.reducerComponent("GL Handler");
 let make = (~glRenderingContext, _children) => {
   ...component,
-  initialState: () => {
-    models:
-      getModels(glRenderingContext)
-      |> StringMap.fromJsDict
-      |> StringMap.map(Model.fromAbstract),
-    renderFunc: render(glRenderingContext),
-    clear: () => renderBlank(glRenderingContext),
-    model: None,
-    selectedPrograms: StringMap.empty,
-    globalOptions: {
-      scale: 100,
-      rotation: Vector.fill(100),
-      camera: {
-        position: Vector.zero,
-        rotation: Vector.zero,
-        velocity: 1,
-      },
-    },
-  },
+  initialState: () => initialState(glRenderingContext),
   reducer,
   didMount: self => {
     Event.addKeyboardListener(handleKey(self.send));
-    self.send(Render);
+    self.send(PrepareRender);
   },
   willUnmount: self => Event.removeKeyboardListener(handleKey(self.send)),
   render: self =>
@@ -180,6 +144,14 @@ let make = (~glRenderingContext, _children) => {
               Vector.toString(self.state.globalOptions.camera.rotation),
             )
           }
+        </fieldset>
+        <fieldset>
+          <legend> {ReasonReact.string("Model rotation")} </legend>
+          {ReasonReact.string(self.state.modelRotation |> string_of_float)}
+        </fieldset>
+        <fieldset>
+          <legend> {ReasonReact.string("Current time")} </legend>
+          {ReasonReact.string(self.state.previousTime |> string_of_float)}
         </fieldset>
       </div>
       <Controls contents={fieldsets(self.send, self.state)} />

@@ -40,8 +40,6 @@ export const drawScene = (args: DrawArgs, rotation: number, opts: GlobalOptions)
 
   const modelViewMatrix = mat4.create()
   mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -6])
-  // mat4.rotate(modelViewMatrix, modelViewMatrix, rotation * 0.75, [0.3, 0.7, 0.5])
-  // mat4.rotate(modelViewMatrix, modelViewMatrix, rotation * 0.75, opts.rotation)
   mat4.rotate(modelViewMatrix, modelViewMatrix, rotation, opts.rotation)
 
   // normalize, then scale

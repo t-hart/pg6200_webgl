@@ -196,6 +196,12 @@ input[type="range"] {
   font-size: 1em;
   height: $thumb-height;
 
+  &:focus,
+  &:active,
+  &:hover {
+    box-shadow: 0 0 1em $main-color;
+  }
+
   @mixin thumb-style {
     background: $main-color;
     border: 0;
@@ -221,9 +227,10 @@ input[type="range"] {
 
     &:focus,
     &:active,
-    &:hover{
+    &:hover {
       background-color: transparentize($main-color, .91);
     }
+
   }
 
   &::-webkit-slider-thumb {
