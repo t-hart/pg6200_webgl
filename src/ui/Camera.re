@@ -4,14 +4,14 @@ type t = {
   velocity: int,
 };
 
-/* [@bs.deriving abstract] */
-/* type cameraType = { */
-/*   position: array(float), */
-/*   rotation: array(float), */
-/* }; */
+[@bs.deriving abstract]
+type abstract = {
+  position: array(float),
+  rotation: array(float),
+};
 
 let toAbstract = cam =>
-  AbstractTypes.cameraType(
+  abstract(
     ~rotation=cam.rotation |> Vector.toFloatArray,
     ~position=cam.position |> Vector.toFloatArray,
   );

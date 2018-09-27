@@ -9,13 +9,13 @@ type state = {
   models: StringMap.t(Model.t),
   selectedPrograms: StringMap.t(programName),
   clear: unit => unit,
-  renderFunc: (AbstractTypes.renderArg, AbstractTypes.globalOptions) => unit,
-  getDrawArgs: AbstractTypes.renderArg => AbstractTypes.drawArgs,
+  renderFunc: (RenderArgs.abstract, GlobalOptions.abstract) => unit,
+  getDrawArgs: RenderArgs.abstract => DrawArgs.abstract,
   globalOptions: GlobalOptions.t,
   rafId: option(Webapi.rafId),
   previousTime: float,
   nextTime: float,
-  drawArgs: StringMap.t(AbstractTypes.drawArgs),
+  drawArgs: StringMap.t(DrawArgs.abstract),
 };
 
 let initialState = glRenderingContext => {

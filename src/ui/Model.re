@@ -1,19 +1,25 @@
 type t = {
-  objData: AbstractTypes.objData,
-  programs: StringMap.t(AbstractTypes.webGlProgram),
-  texture: option(AbstractTypes.webGlTexture),
+  objData: ObjData.abstract,
+  programs: StringMap.t(WebGl.program),
+  texture: option(WebGl.texture),
+};
+
+[@bs.deriving abstract]
+type abstract = {
+  objData: ObjData.abstract,
+  programs: Js.Dict.t(WebGl.program),
+  texture: option(WebGl.texture),
 };
 
 let toRenderArgs = (model, programName) =>
-  AbstractTypes.renderArg(
+  RenderArgs.abstract(
     ~objData=model.objData,
     ~program=StringMap.find(programName, model.programs),
     ~texture=model.texture,
   );
 
-let fromAbstract = abstract =>
-  AbstractTypes.{
-    objData: abstract->objDataGet,
-    programs: abstract->programsGet |> StringMap.fromJsDict,
-    texture: abstract->textureGet,
-  };
+let fromAbstract = abstract => {
+  objData: abstract->objDataGet,
+  programs: abstract->programsGet |> StringMap.fromJsDict,
+  texture: abstract->textureGet,
+};

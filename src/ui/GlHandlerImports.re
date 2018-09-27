@@ -2,29 +2,21 @@
 
 [@bs.module "../index"]
 external getDrawArgs:
-  (AbstractTypes.webGlRenderingContext, AbstractTypes.renderArg) =>
-  AbstractTypes.drawArgs =
+  (WebGl.renderingContext, RenderArgs.abstract) => DrawArgs.abstract =
   "";
 
 [@bs.module "../models"]
-external getModels:
-  AbstractTypes.webGlRenderingContext => Js.Dict.t(AbstractTypes.model) =
+external getModels: WebGl.renderingContext => Js.Dict.t(Model.abstract) =
   "default";
 
 [@bs.module "../index"]
 external render:
-  (
-    AbstractTypes.webGlRenderingContext,
-    AbstractTypes.renderArg,
-    AbstractTypes.globalOptions
-  ) =>
-  unit =
+  (WebGl.renderingContext, RenderArgs.abstract, GlobalOptions.abstract) => unit =
   "";
 
 [@bs.module "../renderUtils"]
-external drawScene:
-  (AbstractTypes.drawArgs, AbstractTypes.globalOptions, float) => unit =
+external drawScene: (DrawArgs.abstract, GlobalOptions.abstract, float) => unit =
   "";
 
 [@bs.module "../index"]
-external renderBlank: AbstractTypes.webGlRenderingContext => unit = "";
+external renderBlank: WebGl.renderingContext => unit = "";

@@ -12,7 +12,7 @@ type action =
   | SetCamera(Movement.t)
   | SetRafId(option(Webapi.rafId))
   | PrepareRender
-  | Render(AbstractTypes.drawArgs, AbstractTypes.globalOptions, bool, float);
+  | Render(DrawArgs.abstract, GlobalOptions.abstract, bool, float);
 
 let getRenderArg = (models, programs, name) =>
   Model.toRenderArgs(

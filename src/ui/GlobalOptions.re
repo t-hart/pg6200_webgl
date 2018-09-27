@@ -4,8 +4,15 @@ type t = {
   camera: Camera.t,
 };
 
+[@bs.deriving abstract]
+type abstract = {
+  scale: float,
+  rotation: array(float),
+  camera: Camera.abstract,
+};
+
 let toAbstract = opts =>
-  AbstractTypes.globalOptions(
+  abstract(
     ~scale=opts.scale->Utils.toDecimal,
     ~rotation=opts.rotation->Vector.toFloatArray,
     ~camera=opts.camera->Camera.toAbstract,
