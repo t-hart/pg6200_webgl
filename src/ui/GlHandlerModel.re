@@ -42,3 +42,5 @@ let initialState = glRenderingContext => {
   previousTime: 0.0,
   nextTime: 0.0,
 };
+
+let shouldLoop = state => state.globalOptions.rotation != Vector.zero;
