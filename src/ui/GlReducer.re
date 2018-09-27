@@ -12,20 +12,13 @@ type action =
   | SetCamera(Movement.t)
   | SetRafId(option(Webapi.rafId))
   | PrepareRender
-  | Render(modelName, float);
+  | Render(AbstractTypes.drawArgs, AbstractTypes.globalOptions, float);
 
 let getRenderArg = (models, programs, name) =>
   Model.toRenderArgs(
     StringMap.find(name, models),
     StringMap.find(name, programs),
   );
-
-type renderStateUpdates = {
-  rafId: Webapi.rafId => unit,
-  modelRotation: float => unit,
-  previousTime: float => unit,
-  nextTime: float => unit,
-};
 
 let cancelAnimation =
   fun
@@ -52,23 +45,14 @@ let handleCameraUpdate = (mvmt, camera: Camera.t) => {
 
 let reducer = (action, state: state) =>
   switch (action) {
-  | Render(modelName, currentTime) =>
+  | Render(drawArgs, opts, currentTime) =>
     ReasonReact.UpdateWithSideEffects(
-      {
-        let currentSeconds = currentTime *. 0.0000007;
-        let delta = currentSeconds -. state.previousTime;
-        let nextRotation = state.modelRotation +. delta;
-        {...state, nextTime: currentSeconds, modelRotation: nextRotation};
-      },
+      {...state, nextTime: currentTime, previousTime: state.nextTime},
       (
         self => {
-          drawScene(
-            modelName->StringMap.find(state.drawArgs),
-            state.modelRotation,
-            state.globalOptions |> GlobalOptions.toAbstract,
-          );
+          drawScene(drawArgs, state.nextTime, opts);
           Webapi.requestCancellableAnimationFrame(x =>
-            self.send(Render(modelName, x))
+            self.send(Render(drawArgs, opts, x *. 0.001))
           )
           ->Some
           ->SetRafId
@@ -84,7 +68,14 @@ let reducer = (action, state: state) =>
           cancelAnimation(state.rafId);
           self.send(SetRafId(None));
           switch (state.model) {
-          | Some(name) => self.send(Render(name, state.nextTime))
+          | Some(name) =>
+            self.send(
+              Render(
+                name->StringMap.find(state.drawArgs),
+                state.globalOptions |> GlobalOptions.toAbstract,
+                state.nextTime,
+              ),
+            )
           | None => state.clear()
           };
         }

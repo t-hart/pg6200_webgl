@@ -146,12 +146,8 @@ let make = (~glRenderingContext, _children) => {
           }
         </fieldset>
         <fieldset>
-          <legend> {ReasonReact.string("Model rotation")} </legend>
-          {ReasonReact.string(self.state.modelRotation |> string_of_float)}
-        </fieldset>
-        <fieldset>
-          <legend> {ReasonReact.string("Current time")} </legend>
-          {ReasonReact.string(self.state.previousTime |> string_of_float)}
+          <legend> {ReasonReact.string("Time stamp")} </legend>
+          {ReasonReact.string(self.state.nextTime |> string_of_float)}
         </fieldset>
       </div>
       <Controls contents={fieldsets(self.send, self.state)} />

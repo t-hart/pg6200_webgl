@@ -13,7 +13,6 @@ type state = {
   getDrawArgs: AbstractTypes.renderArg => AbstractTypes.drawArgs,
   globalOptions: GlobalOptions.t,
   rafId: option(Webapi.rafId),
-  modelRotation: float,
   previousTime: float,
   nextTime: float,
   drawArgs: StringMap.t(AbstractTypes.drawArgs),
@@ -40,7 +39,6 @@ let initialState = glRenderingContext => {
     },
   },
   rafId: None,
-  modelRotation: 0.8,
   previousTime: 0.0,
   nextTime: 0.0,
 };
