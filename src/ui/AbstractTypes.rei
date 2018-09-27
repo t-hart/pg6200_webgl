@@ -39,15 +39,16 @@ type model = {
 };
 
 [@bs.deriving abstract]
-type globalOptions = {
-  scale: float,
+type cameraType = {
+  position: array(float),
   rotation: array(float),
 };
 
 [@bs.deriving abstract]
-type camera = {
-  position: array(float),
+type globalOptions = {
+  scale: float,
   rotation: array(float),
+  camera: cameraType,
 };
 
 [@bs.deriving abstract]

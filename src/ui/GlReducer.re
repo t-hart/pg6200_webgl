@@ -50,7 +50,7 @@ let reducer = (action, state: state) =>
       {...state, nextTime: currentTime, previousTime: state.nextTime},
       (
         self => {
-          drawScene(drawArgs, state.nextTime, opts);
+          drawScene(drawArgs, opts, state.nextTime);
           shouldLoop ?
             Webapi.requestCancellableAnimationFrame(x =>
               self.send(Render(drawArgs, opts, shouldLoop, x *. 0.001))

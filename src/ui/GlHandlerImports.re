@@ -23,7 +23,7 @@ external render:
 
 [@bs.module "../renderUtils"]
 external drawScene:
-  (AbstractTypes.drawArgs, float, AbstractTypes.globalOptions) => unit =
+  (AbstractTypes.drawArgs, AbstractTypes.globalOptions, float) => unit =
   "";
 
 [@bs.module "../index"]

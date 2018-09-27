@@ -1,6 +1,6 @@
 /* global alert, requestAnimationFrame */
 import 'babel-polyfill'
-import { Vector } from './vector'
+import Vector from './vector'
 import { initBuffers } from './bufferUtils'
 import { drawScene, drawEmptyScene, DrawArgs } from './renderUtils'
 import { ObjData } from './objs'
