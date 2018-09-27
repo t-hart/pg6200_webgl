@@ -1,4 +1,4 @@
-export type Vector = number[]
+type Vector = number[]
 
 export const zip = (...xs: any[][]) => xs.reduce((acc, x) => x.length < acc.length ? x : acc).map((_, i) => xs.map(x => x[i]))
 
@@ -16,3 +16,5 @@ export const offset = (max: Vector, lengths: Vector) => subtract(max)(scale(.5)(
 export const scale = (s: number) => (v: Vector) => v.map(x => s * x)
 
 export const subtract = (a: Vector) => (b: Vector) => a.map((x, i) => x - b[i])
+
+export default Vector;

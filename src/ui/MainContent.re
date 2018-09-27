@@ -1,15 +1,13 @@
 [@bs.module "../index"]
-external getGlContext:
-  string => Js.Nullable.t(AbstractTypes.webGlRenderingContext) =
-  "";
+external getGlContext: string => Js.Nullable.t(WebGl.renderingContext) = "";
 
 type state =
   | Uninitialized
   | Error(string)
-  | Ready(AbstractTypes.webGlRenderingContext);
+  | Ready(WebGl.renderingContext);
 
 type action =
-  | InitGl(option(AbstractTypes.webGlRenderingContext));
+  | InitGl(option(WebGl.renderingContext));
 
 let component = ReasonReact.reducerComponent("Main content");
 let make = (~canvasId, _children) => {

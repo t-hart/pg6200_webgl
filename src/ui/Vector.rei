@@ -32,4 +32,4 @@ let add: (t(int), t(int)) => t(int);
 
 let addSome: (t(int), t(option(int))) => t(int);
 
-let asDecimalArray: t(int) => array(float);
+let toFloatArray: t(int) => array(float);

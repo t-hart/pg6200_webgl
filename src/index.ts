@@ -1,6 +1,6 @@
 /* global alert, requestAnimationFrame */
 import 'babel-polyfill'
-import { Vector } from './vector'
+import Vector from './vector'
 import { initBuffers } from './bufferUtils'
 import { drawScene, drawEmptyScene, DrawArgs } from './renderUtils'
 import { ObjData } from './objs'
@@ -82,10 +82,7 @@ export const getDrawArgs = (gl: WebGLRenderingContext, { program, objData, textu
   }
 }
 
-export const render = (gl: WebGLRenderingContext, data: MaybeData, opts: GlobalOptions) => {
-  if (!data) {
-    return renderBlank(gl)
-  }
+export const render = (gl: WebGLRenderingContext, data: RenderArgs, opts: GlobalOptions) => {
   const { program, objData, texture } = data
 
   const programInfo = createProgramInfo(gl, program)

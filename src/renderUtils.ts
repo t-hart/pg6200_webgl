@@ -1,4 +1,5 @@
 import { mat4 } from 'gl-matrix-ts'
+import Vector from './vector'
 import { ProgramInfo, GlobalOptions } from './index'
 import { BufferObj } from './bufferUtils'
 
@@ -22,12 +23,15 @@ export type DrawArgs = {
   boundingBox: number[]
 }
 
-export const drawScene = (args: DrawArgs, rotation: number, opts: GlobalOptions) => {
+export const drawScene = (args: DrawArgs, opts: GlobalOptions, rotation: number) => {
   const { gl, programInfo, buffers, texture, normalizingScale, centeringTranslation, numFaces, boundingBox } = args
   gl.clearColor(0, 0, 0, 1)
   gl.clearDepth(1)
   gl.enable(gl.DEPTH_TEST)
   gl.depthFunc(gl.LEQUAL)
+
+  console.log(opts)
+  console.log([...opts.camera.rotation, ...opts.camera.position].join(", "))
 
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
@@ -37,11 +41,11 @@ export const drawScene = (args: DrawArgs, rotation: number, opts: GlobalOptions)
   const zFar = 100
   const projectionMatrix = mat4.create()
   mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar)
+  mat4.rotate(projectionMatrix, projectionMatrix, rotation, opts.camera.rotation)
+  mat4.translate(projectionMatrix, projectionMatrix, opts.camera.position)
 
   const modelViewMatrix = mat4.create()
   mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -6])
-  // mat4.rotate(modelViewMatrix, modelViewMatrix, rotation * 0.75, [0.3, 0.7, 0.5])
-  // mat4.rotate(modelViewMatrix, modelViewMatrix, rotation * 0.75, opts.rotation)
   mat4.rotate(modelViewMatrix, modelViewMatrix, rotation, opts.rotation)
 
   // normalize, then scale

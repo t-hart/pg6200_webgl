@@ -1,18 +1,7 @@
 open Utils;
-[@bs.module "../models"] external defaultProgram: string = "";
+include GlHandlerModel;
 
 type shaderKey = string;
-type programName = string;
-type modelName = string;
-
-type state = {
-  model: option(modelName),
-  models: StringMap.t(Model.t),
-  selectedPrograms: StringMap.t(programName),
-  clear: unit => unit,
-  renderFunc: (AbstractTypes.renderArg, AbstractTypes.globalOptions) => unit,
-  globalOptions: GlobalOptions.t,
-};
 
 type action =
   | SelectShader(modelName, shaderKey)
@@ -21,13 +10,20 @@ type action =
   | SetScale(int)
   | SetRotation(Vector.t(int))
   | SetCamera(Movement.t)
-  | Render;
+  | SetRafId(option(Webapi.rafId))
+  | PrepareRender
+  | Render(DrawArgs.abstract, GlobalOptions.abstract, bool, float);
 
 let getRenderArg = (models, programs, name) =>
   Model.toRenderArgs(
     StringMap.find(name, models),
     StringMap.find(name, programs),
   );
+
+let cancelAnimation =
+  fun
+  | Some(id) => Webapi.cancelAnimationFrame(id)
+  | None => ();
 
 let handleCameraUpdate = (mvmt, camera: Camera.t) => {
   open Movement;
@@ -49,20 +45,62 @@ let handleCameraUpdate = (mvmt, camera: Camera.t) => {
 
 let reducer = (action, state: state) =>
   switch (action) {
-  | Render =>
-    ReasonReact.SideEffects(
-      switch (state.model) {
-      | Some(name) => (
-          _ =>
-            getRenderArg(state.models, state.selectedPrograms, name)
-            |> state.renderFunc(
-                 _,
-                 state.globalOptions->GlobalOptions.toAbstract,
-               )
-        )
-      | None => (_ => state.clear())
-      },
+  | Render(drawArgs, opts, shouldLoop, currentTime) =>
+    ReasonReact.UpdateWithSideEffects(
+      {...state, nextTime: currentTime, previousTime: state.nextTime},
+      (
+        self => {
+          drawScene(drawArgs, opts, state.nextTime);
+          shouldLoop ?
+            Webapi.requestCancellableAnimationFrame(x =>
+              self.send(Render(drawArgs, opts, shouldLoop, x *. 0.001))
+            )
+            ->Some
+            ->SetRafId
+            |> self.send :
+            self.send(SetRafId(None));
+        }
+      ),
     )
+
+  | PrepareRender =>
+    let (nextState, sideEffects) =
+      switch (state.model) {
+      | Some(name) =>
+        let drawArgs =
+          StringMap.add(
+            name,
+            getRenderArg(state.models, state.selectedPrograms, name)
+            |> state.getDrawArgs,
+            state.drawArgs,
+          );
+
+        (
+          {...state, drawArgs},
+          (
+            send =>
+              send(
+                Render(
+                  name->StringMap.find(drawArgs),
+                  state.globalOptions |> GlobalOptions.toAbstract,
+                  shouldLoop(state),
+                  state.nextTime,
+                ),
+              )
+          ),
+        );
+      | None => (state, (_ => state.clear()))
+      };
+    ReasonReact.UpdateWithSideEffects(
+      nextState,
+      (
+        self => {
+          cancelAnimation(state.rafId);
+          self.send(SetRafId(None));
+          sideEffects(self.send);
+        }
+      ),
+    );
 
   | KeyPress(e) =>
     switch (Input.getMovement(Webapi.Dom.KeyboardEvent.code(e))) {
@@ -80,7 +118,7 @@ let reducer = (action, state: state) =>
           camera: handleCameraUpdate(mvmt, state.globalOptions.camera),
         },
       },
-      (self => self.send(Render)),
+      (self => self.send(PrepareRender)),
     )
 
   | SelectModel(name) =>
@@ -98,7 +136,7 @@ let reducer = (action, state: state) =>
       };
     ReasonReact.UpdateWithSideEffects(
       nextState,
-      (self => self.send(Render)),
+      (self => self.send(PrepareRender)),
     );
 
   | SetRotation(rotation) =>
@@ -110,7 +148,7 @@ let reducer = (action, state: state) =>
           rotation,
         },
       },
-      (self => self.send(Render)),
+      (self => self.send(PrepareRender)),
     )
 
   | SetScale(v) =>
@@ -122,8 +160,10 @@ let reducer = (action, state: state) =>
           scale: v,
         },
       },
-      (self => self.send(Render)),
+      (self => self.send(PrepareRender)),
     )
+
+  | SetRafId(id) => ReasonReact.Update({...state, rafId: id})
 
   | SelectShader(modelName, programName) =>
     ReasonReact.UpdateWithSideEffects(
@@ -132,6 +172,6 @@ let reducer = (action, state: state) =>
         selectedPrograms:
           StringMap.add(modelName, programName, state.selectedPrograms),
       },
-      (self => self.send(Render)),
+      (self => self.send(PrepareRender)),
     )
   };
