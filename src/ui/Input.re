@@ -1,4 +1,5 @@
 open Movement;
+open Utils;
 
 module Map =
   MapUtils.Make({
@@ -6,20 +7,22 @@ module Map =
     let compare = compare;
   });
 
+let negate = a => - a;
+
 let keycodeMovementMap =
   [
-    ("KeyE", Translation(Z)),
-    ("KeyD", Translation(Z)),
-    ("KeyS", Translation(X)),
-    ("KeyF", Translation(X)),
-    ("KeyW", Translation(Y)),
-    ("KeyR", Translation(Y)),
-    ("KeyJ", Rotation(Z)),
-    ("KeyL", Rotation(Z)),
-    ("KeyI", Rotation(X)),
-    ("KeyK", Rotation(X)),
-    ("KeyU", Rotation(Y)),
-    ("KeyO", Rotation(Y)),
+    ("KeyE", (Translation(Z), id)),
+    ("KeyD", (Translation(Z), negate)),
+    ("KeyS", (Translation(X), id)),
+    ("KeyF", (Translation(X), negate)),
+    ("KeyW", (Translation(Y), id)),
+    ("KeyR", (Translation(Y), negate)),
+    ("KeyJ", (Rotation(Z), id)),
+    ("KeyL", (Rotation(Z), negate)),
+    ("KeyI", (Rotation(X), id)),
+    ("KeyK", (Rotation(X), negate)),
+    ("KeyU", (Rotation(Y), id)),
+    ("KeyO", (Rotation(Y), negate)),
   ]
   |> StringMap.fromList;
 

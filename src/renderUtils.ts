@@ -1,5 +1,4 @@
 import { mat4 } from 'gl-matrix-ts'
-import Vector from './vector'
 import { ProgramInfo, GlobalOptions } from './index'
 import { BufferObj } from './bufferUtils'
 
