@@ -9,7 +9,6 @@ type state = {
   models: StringMap.t(Model.t),
   selectedPrograms: StringMap.t(programName),
   clear: unit => unit,
-  renderFunc: (RenderArgs.abstract, GlobalOptions.abstract) => unit,
   getDrawArgs: RenderArgs.abstract => DrawArgs.abstract,
   globalOptions: GlobalOptions.t,
   rafId: option(Webapi.rafId),
@@ -23,7 +22,6 @@ let initialState = glRenderingContext => {
     getModels(glRenderingContext)
     |> StringMap.fromJsDict
     |> StringMap.map(Model.fromAbstract),
-  renderFunc: render(glRenderingContext),
   clear: () => renderBlank(glRenderingContext),
   model: None,
   getDrawArgs: getDrawArgs(glRenderingContext),

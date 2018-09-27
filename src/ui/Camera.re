@@ -6,12 +6,12 @@ type t = {
 
 [@bs.deriving abstract]
 type abstract = {
-  position: array(float),
-  rotation: array(float),
+  position: array(int),
+  rotation: array(int),
 };
 
 let toAbstract = cam =>
   abstract(
-    ~rotation=cam.rotation |> Vector.toFloatArray,
-    ~position=cam.position |> Vector.toFloatArray,
+    ~rotation=cam.rotation |> Vector.toArray,
+    ~position=cam.position |> Vector.toArray,
   );

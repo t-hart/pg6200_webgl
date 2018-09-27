@@ -30,9 +30,6 @@ export const drawScene = (args: DrawArgs, opts: GlobalOptions, rotation: number)
   gl.enable(gl.DEPTH_TEST)
   gl.depthFunc(gl.LEQUAL)
 
-  console.log(opts)
-  console.log([...opts.camera.rotation, ...opts.camera.position].join(", "))
-
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
   const fieldOfView = 45 * Math.PI / 180
