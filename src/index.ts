@@ -1,5 +1,6 @@
 /* global alert, requestAnimationFrame */
 import 'babel-polyfill'
+import Camera from './camera'
 import Vector from './vector'
 import { initBuffers } from './bufferUtils'
 import { drawScene, drawEmptyScene, DrawArgs } from './renderUtils'
@@ -48,8 +49,6 @@ type RenderArgs = {
   program: WebGLProgram,
   texture: WebGLTexture | null
 }
-
-type MaybeData = RenderArgs | null
 
 export type Camera = {
   position: Vector,

@@ -17,4 +17,8 @@ export const scale = (s: number) => (v: Vector) => v.map(x => s * x)
 
 export const subtract = (a: Vector) => (b: Vector) => a.map((x, i) => x - b[i])
 
+export const add = (a: Vector) => (b: Vector) => a.map((x, i) => x + b[i])
+
+export const negate = (v: Vector) => v.map(x => x * -1);
+
 export default Vector;

@@ -37,10 +37,12 @@ export const drawScene = (args: DrawArgs, opts: GlobalOptions, rotation: number)
   const zFar = 100
   const projectionMatrix = mat4.create()
   mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar)
-  mat4.rotate(projectionMatrix, projectionMatrix, rotation, opts.camera.rotation)
-  mat4.translate(projectionMatrix, projectionMatrix, opts.camera.position)
+  // mat4.ortho(projectionMatrix, -2, 2, -2, 2, .1, 100)
+  // mat4.rotate(projectionMatrix, projectionMatrix, Math.PI / 4, mat4.getRotation([], opts.camera.viewMatrix))
+  // mat4.translate(projectionMatrix, projectionMatrix, mat4.getTranslation([], opts.camera.viewMatrix))
 
-  const modelViewMatrix = mat4.create()
+  // const modelViewMatrix = mat4.create()
+  const modelViewMatrix = mat4.clone(opts.camera.viewMatrix)
   mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -6])
   mat4.rotate(modelViewMatrix, modelViewMatrix, rotation, opts.rotation)
 

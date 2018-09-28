@@ -82,7 +82,7 @@ let reducer = (action, state: state) =>
               send(
                 Render(
                   name->StringMap.find(drawArgs),
-                  state.globalOptions |> GlobalOptions.toAbstract,
+                  state.globalOptions->GlobalOptions.toAbstract(_, state.cam),
                   shouldLoop(state),
                   state.nextTime,
                 ),
@@ -103,11 +103,10 @@ let reducer = (action, state: state) =>
     );
 
   | KeyPress(e) =>
-    switch (Input.getMovement(Webapi.Dom.KeyboardEvent.code(e))) {
-    | Some((mvmt, f)) =>
-      ReasonReact.SideEffects((self => self.send(SetCamera(mvmt, f))))
-    | None => ReasonReact.NoUpdate
-    }
+    ReasonReact.UpdateWithSideEffects(
+      {...state, cam: Input.update(state.cam, e)},
+      (self => self.send(PrepareRender)),
+    )
 
   | SetCamera(mvmt, f) =>
     ReasonReact.UpdateWithSideEffects(

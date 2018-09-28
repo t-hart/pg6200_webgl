@@ -1,3 +1,9 @@
+[@bs.deriving abstract]
+type abstractNew =
+  | Abstract;
+
+[@bs.module "../camera"] external create: unit => abstractNew = "";
+
 type t = {
   position: Vector.t(int),
   rotation: Vector.t(int),
