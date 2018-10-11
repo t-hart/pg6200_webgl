@@ -130,22 +130,6 @@ let make = (~glRenderingContext, _children) => {
     <>
       <div className="grid-2-cols full-width">
         <fieldset>
-          <legend> {ReasonReact.string("Position")} </legend>
-          {
-            ReasonReact.string(
-              Vector.toString(self.state.globalOptions.camera.position),
-            )
-          }
-        </fieldset>
-        <fieldset>
-          <legend> {ReasonReact.string("Rotation")} </legend>
-          {
-            ReasonReact.string(
-              Vector.toString(self.state.globalOptions.camera.rotation),
-            )
-          }
-        </fieldset>
-        <fieldset>
           <legend> {ReasonReact.string("Time stamp")} </legend>
           {ReasonReact.string(self.state.nextTime |> string_of_float)}
         </fieldset>

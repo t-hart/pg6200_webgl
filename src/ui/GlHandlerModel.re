@@ -30,7 +30,8 @@ let initialState = glRenderingContext => {
   drawArgs: StringMap.empty,
   globalOptions: {
     scale: 100,
-    rotation: Vector.make(0, 100, 0),
+    /* rotation: Vector.make(0, 100, 0), */
+    rotation: Vector.make(0, 0, 0),
     camera: {
       position: Vector.zero,
       rotation: Vector.zero,

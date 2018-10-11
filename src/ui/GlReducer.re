@@ -14,7 +14,7 @@ type action =
   | PrepareRender
   | Render(DrawArgs.abstract, GlobalOptions.abstract, bool, float);
 
-let getRenderArg = (models, programs, name) =>
+let getRenderArgs = (models, programs, name) =>
   Model.toRenderArgs(
     StringMap.find(name, models),
     StringMap.find(name, programs),
@@ -70,7 +70,7 @@ let reducer = (action, state: state) =>
         let drawArgs =
           StringMap.add(
             name,
-            getRenderArg(state.models, state.selectedPrograms, name)
+            getRenderArgs(state.models, state.selectedPrograms, name)
             |> state.getDrawArgs,
             state.drawArgs,
           );

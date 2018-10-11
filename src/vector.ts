@@ -1,4 +1,4 @@
-type Vector = number[]
+type Vector = number[] | Float32Array
 
 export const zip = (...xs: any[][]) => xs.reduce((acc, x) => x.length < acc.length ? x : acc).map((_, i) => xs.map(x => x[i]))
 
@@ -19,6 +19,6 @@ export const subtract = (a: Vector) => (b: Vector) => a.map((x, i) => x - b[i])
 
 export const add = (a: Vector) => (b: Vector) => a.map((x, i) => x + b[i])
 
-export const negate = (v: Vector) => v.map(x => x * -1);
+export const negate = scale(-1)
 
 export default Vector;

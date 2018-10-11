@@ -19,9 +19,9 @@ external turnRight: Camera.abstractNew => Camera.abstractNew = "";
 [@bs.module "../camera"]
 external turnLeft: Camera.abstractNew => Camera.abstractNew = "";
 [@bs.module "../camera"]
-external flipBack: Camera.abstractNew => Camera.abstractNew = "";
+external tiltUp: Camera.abstractNew => Camera.abstractNew = "";
 [@bs.module "../camera"]
-external flipForward: Camera.abstractNew => Camera.abstractNew = "";
+external tiltDown: Camera.abstractNew => Camera.abstractNew = "";
 
 open Movement;
 open Utils;
@@ -73,8 +73,8 @@ let keyCodeToMovement =
     ("KeyR", moveUp),
     ("KeyJ", turnLeft),
     ("KeyL", turnRight),
-    ("KeyI", flipBack),
-    ("KeyK", flipForward),
+    ("KeyI", tiltUp),
+    ("KeyK", tiltDown),
     ("KeyU", rollLeft),
     ("KeyO", rollRight),
   ]
