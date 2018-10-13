@@ -22,7 +22,8 @@ export type ProgramInfo = {
   },
   uniformLocations: {
     projectionMatrix: WebGLUniformLocation | null,
-    modelViewMatrix: WebGLUniformLocation | null,
+    modelMatrix: WebGLUniformLocation | null,
+    viewMatrix: WebGLUniformLocation | null,
     normalMatrix: WebGLUniformLocation | null,
     uSampler: WebGLUniformLocation | null
   }
@@ -38,7 +39,8 @@ const createProgramInfo = (gl: WebGLRenderingContext, program: WebGLProgram) => 
   },
   uniformLocations: {
     projectionMatrix: gl.getUniformLocation(program, 'uProjectionMatrix'),
-    modelViewMatrix: gl.getUniformLocation(program, 'uModelViewMatrix'),
+    modelMatrix: gl.getUniformLocation(program, 'uModelMatrix'),
+    viewMatrix: gl.getUniformLocation(program, 'uViewMatrix'),
     normalMatrix: gl.getUniformLocation(program, 'uNormalMatrix'),
     uSampler: gl.getUniformLocation(program, 'uSampler')
   }
