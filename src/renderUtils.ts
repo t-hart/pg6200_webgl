@@ -1,6 +1,7 @@
-import { mat4 } from 'gl-matrix-ts'
+import { mat4, vec3, quat } from 'gl-matrix-ts'
 import { ProgramInfo, GlobalOptions } from './index'
 import { BufferObj } from './bufferUtils'
+import { rotation, translation } from './camera'
 
 export const drawEmptyScene = (gl: WebGLRenderingContext) => {
   gl.clearColor(0, 0, 0, 1)
@@ -22,7 +23,7 @@ export type DrawArgs = {
   boundingBox: number[]
 }
 
-export const drawScene = (args: DrawArgs, opts: GlobalOptions, rotation: number) => {
+export const drawScene = (args: DrawArgs, opts: GlobalOptions, timeOffset: number) => {
   const { gl, programInfo, buffers, texture, normalizingScale, centeringTranslation, numFaces, boundingBox } = args
   gl.clearColor(0, 0, 0, 1)
   gl.clearDepth(1)
@@ -41,14 +42,21 @@ export const drawScene = (args: DrawArgs, opts: GlobalOptions, rotation: number)
   // mat4.rotate(projectionMatrix, projectionMatrix, Math.PI / 4, mat4.getRotation([], opts.camera.viewMatrix))
   // mat4.translate(projectionMatrix, projectionMatrix, mat4.getTranslation([], opts.camera.viewMatrix))
 
-  const modelViewMatrix = mat4.clone(opts.camera.viewMatrix)
-  // mat4.rotate(modelViewMatrix, modelViewMatrix, rotation, opts.rotation)
+  // const offset = mat4.getTranslation(vec3.create(), opts.camera.viewMatrix)
+  const offset = translation(opts.camera)
+  // const rot = mat4.getRotation(quat.create(), opts.camera.viewMatrix)
+  const rot = rotation(opts.camera)
+
+  // const modelMatrix = mat4.clone(opts.camera.viewMatrix)
+  const modelMatrix = mat4.fromTranslation(mat4.create(), offset)
+  // const modelMatrix = mat4.create()
+  mat4.rotate(modelMatrix, modelMatrix, timeOffset, opts.rotation)
 
   // normalize, then scale
-  // mat4.scale(modelViewMatrix, modelViewMatrix, Array(3).fill(normalizingScale * opts.scale))
+  mat4.scale(modelMatrix, modelMatrix, Array(3).fill(normalizingScale * opts.scale))
 
   // center
-  // mat4.translate(modelViewMatrix, modelViewMatrix, centeringTranslation)
+  mat4.translate(modelMatrix, modelMatrix, centeringTranslation)
 
   const bindBuffer = (numComponents: number, buffer: WebGLBuffer | null, attribLocs: number) => {
     if (attribLocs === -1) { return }
@@ -84,10 +92,13 @@ export const drawScene = (args: DrawArgs, opts: GlobalOptions, rotation: number)
 
   gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix)
 
-  gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix)
+  gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMatrix)
+  // gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, false, mat4.translate(mat4.create(), opts.camera.viewMatrix, offset))
+  gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, false, mat4.fromQuat(mat4.create(), rot))
+  // gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, false, opts.camera.viewMatrix)
 
   const normalMatrix = mat4.create()
-  mat4.invert(normalMatrix, modelViewMatrix)
+  mat4.invert(normalMatrix, modelMatrix)
   mat4.transpose(normalMatrix, normalMatrix)
   gl.uniformMatrix4fv(programInfo.uniformLocations.normalMatrix, false, normalMatrix)
 
