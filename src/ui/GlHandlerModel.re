@@ -32,11 +32,6 @@ let initialState = glRenderingContext => {
     scale: 100,
     /* rotation: Vector.make(0, 100, 0), */
     rotation: Vector.make(0, 0, 0),
-    camera: {
-      position: Vector.zero,
-      rotation: Vector.zero,
-      velocity: 1,
-    },
   },
   rafId: None,
   previousTime: 0.0,

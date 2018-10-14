@@ -9,7 +9,6 @@ type action =
   | KeyPress(Webapi.Dom.KeyboardEvent.t)
   | SetScale(int)
   | SetRotation(Vector.t(int))
-  | SetCamera(Movement.t, int => int)
   | SetRafId(option(Webapi.rafId))
   | PrepareRender
   | Render(DrawArgs.abstract, GlobalOptions.abstract, bool, float);
@@ -24,24 +23,6 @@ let cancelAnimation =
   fun
   | Some(id) => Webapi.cancelAnimationFrame(id)
   | None => ();
-
-let handleCameraUpdate = (mvmt, f, camera: Camera.t) => {
-  open Movement;
-  let (vec, axis, fill) =
-    switch (mvmt) {
-    | Translation(axis) => (
-        camera.position,
-        axis,
-        (position => {...camera, position}),
-      )
-    | Rotation(axis) => (
-        camera.rotation,
-        axis,
-        (rotation => {...camera, rotation}),
-      )
-    };
-  camera.velocity |> f |> Input.move(axis) |> Vector.addSome(vec) |> fill;
-};
 
 let reducer = (action, state: state) =>
   switch (action) {
@@ -105,18 +86,6 @@ let reducer = (action, state: state) =>
   | KeyPress(e) =>
     ReasonReact.UpdateWithSideEffects(
       {...state, cam: Input.update(state.cam, e)},
-      (self => self.send(PrepareRender)),
-    )
-
-  | SetCamera(mvmt, f) =>
-    ReasonReact.UpdateWithSideEffects(
-      {
-        ...state,
-        globalOptions: {
-          ...state.globalOptions,
-          camera: handleCameraUpdate(mvmt, f, state.globalOptions.camera),
-        },
-      },
       (self => self.send(PrepareRender)),
     )
 

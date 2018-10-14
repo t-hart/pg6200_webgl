@@ -1,7 +1,6 @@
 type t = {
   scale: int,
   rotation: Vector.t(int),
-  camera: Camera.t,
 };
 
 [@bs.deriving abstract]
