@@ -1,39 +1,42 @@
-import { vec3, quat } from 'gl-matrix-ts'
-import Vector, { negate, scale, add } from './vector'
-
-type Quaternion = number[] | Float32Array
+import Quaternion, * as quat from './quaternion'
+import Vector, * as vec from './vector'
 
 const VELOCITY = .5
 const ROTATION = VELOCITY * .25
 
-const rotateVec = (v: Vector) => (q: Quaternion) => vec3.transformQuat(vec3.create(), v, q)
-const X = rotateVec([1, 0, 0])
-const Y = rotateVec([0, 1, 0])
-const Z = rotateVec([0, 0, 1])
+const X = vec.rotate([1, 0, 0])
+const Y = vec.rotate([0, 1, 0])
+const Z = vec.rotate([0, 0, 1])
 
 type Camera = {
   translation: Vector,
   rotation: Quaternion,
+  rotationConjugate: Quaternion
 }
 
-export const create = (pos: Vector = [0, 0, -6], rotation: Quaternion = [0, 0, 0, 1]) => ({
-  translation: pos,
-  rotation: rotation,
+export const create = (translation: Vector = [0, 0, -6], rotation: Quaternion = [0, 0, 0, 1]) => ({
+  translation,
+  rotation,
+  rotationConjugate: quat.conjugate(rotation)
 })
 
 const translate = (camera: Camera, axis: Function) => ({
   ...camera,
-  translation: add(camera.translation)(scale(VELOCITY)(axis(camera.rotation))),
+  translation: vec.add(camera.translation)(vec.scale(VELOCITY)(axis(camera.rotation))),
 })
 
-const rotate = (axis: Function) => (camera: Camera, rad: number) => ({
-  ...camera,
-  rotation: quat.multiply(quat.create(), quat.setAxisAngle(quat.create(), axis(camera.rotation), rad), camera.rotation),
-})
+const rotate = (axis: Function) => (camera: Camera, rad: number) => {
+  const newRotation = quat.multiply(quat.fromAxisAngle(axis(camera.rotation))(rad))(camera.rotation)
+  return {
+    ...camera,
+    rotation: newRotation,
+    rotationConjugate: quat.conjugate(newRotation)
+  }
+}
 
 
 // translation
-const neg = (f: Function) => (v: Vector) => negate(f(v))
+const neg = (f: Function) => (v: Vector) => vec.negate(f(v))
 export const moveForward = (camera: Camera) => translate(camera, Z)
 export const moveBackward = (camera: Camera) => translate(camera, neg(Z))
 
@@ -57,7 +60,7 @@ export const turnLeft = (camera: Camera) => yaw(camera, ROTATION)
 export const tiltUp = (camera: Camera) => pitch(camera, ROTATION)
 export const tiltDown = (camera: Camera) => pitch(camera, -ROTATION)
 
-export const rotation = (camera: Camera) => quat.conjugate(quat.create(), camera.rotation)
+export const rotation = (camera: Camera) => camera.rotationConjugate
 export const translation = (camera: Camera) => camera.translation
 
 export default Camera;
