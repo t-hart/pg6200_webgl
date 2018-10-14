@@ -9,13 +9,13 @@ type state = {
   models: StringMap.t(Model.t),
   selectedPrograms: StringMap.t(programName),
   clear: unit => unit,
-  renderFunc: (RenderArgs.abstract, GlobalOptions.abstract) => unit,
   getDrawArgs: RenderArgs.abstract => DrawArgs.abstract,
   globalOptions: GlobalOptions.t,
   rafId: option(Webapi.rafId),
   previousTime: float,
   nextTime: float,
   drawArgs: StringMap.t(DrawArgs.abstract),
+  cam: Camera.abstractNew,
 };
 
 let initialState = glRenderingContext => {
@@ -23,7 +23,6 @@ let initialState = glRenderingContext => {
     getModels(glRenderingContext)
     |> StringMap.fromJsDict
     |> StringMap.map(Model.fromAbstract),
-  renderFunc: render(glRenderingContext),
   clear: () => renderBlank(glRenderingContext),
   model: None,
   getDrawArgs: getDrawArgs(glRenderingContext),
@@ -31,16 +30,13 @@ let initialState = glRenderingContext => {
   drawArgs: StringMap.empty,
   globalOptions: {
     scale: 100,
-    rotation: Vector.make(0, 100, 0),
-    camera: {
-      position: Vector.zero,
-      rotation: Vector.zero,
-      velocity: 1,
-    },
+    /* rotation: Vector.make(0, 100, 0), */
+    rotation: Vector.make(0, 0, 0),
   },
   rafId: None,
   previousTime: 0.0,
   nextTime: 0.0,
+  cam: Camera.create(),
 };
 
 let shouldLoop = state => state.globalOptions.rotation != Vector.zero;

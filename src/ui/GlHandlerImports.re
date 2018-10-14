@@ -9,11 +9,6 @@ external getDrawArgs:
 external getModels: WebGl.renderingContext => Js.Dict.t(Model.abstract) =
   "default";
 
-[@bs.module "../index"]
-external render:
-  (WebGl.renderingContext, RenderArgs.abstract, GlobalOptions.abstract) => unit =
-  "";
-
 [@bs.module "../renderUtils"]
 external drawScene: (DrawArgs.abstract, GlobalOptions.abstract, float) => unit =
   "";

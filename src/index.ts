@@ -1,7 +1,8 @@
 /* global alert, requestAnimationFrame */
 import 'babel-polyfill'
+import Camera from './camera'
 import Vector from './vector'
-import { initBuffers } from './bufferUtils'
+import { initBuffersTesting } from './bufferUtils'
 import { drawScene, drawEmptyScene, DrawArgs } from './renderUtils'
 import { ObjData } from './objs'
 import { boundingBox, dists, centeringTranslation, scale } from './vector'
@@ -21,7 +22,8 @@ export type ProgramInfo = {
   },
   uniformLocations: {
     projectionMatrix: WebGLUniformLocation | null,
-    modelViewMatrix: WebGLUniformLocation | null,
+    modelMatrix: WebGLUniformLocation | null,
+    viewMatrix: WebGLUniformLocation | null,
     normalMatrix: WebGLUniformLocation | null,
     uSampler: WebGLUniformLocation | null
   }
@@ -37,7 +39,8 @@ const createProgramInfo = (gl: WebGLRenderingContext, program: WebGLProgram) => 
   },
   uniformLocations: {
     projectionMatrix: gl.getUniformLocation(program, 'uProjectionMatrix'),
-    modelViewMatrix: gl.getUniformLocation(program, 'uModelViewMatrix'),
+    modelMatrix: gl.getUniformLocation(program, 'uModelMatrix'),
+    viewMatrix: gl.getUniformLocation(program, 'uViewMatrix'),
     normalMatrix: gl.getUniformLocation(program, 'uNormalMatrix'),
     uSampler: gl.getUniformLocation(program, 'uSampler')
   }
@@ -48,8 +51,6 @@ type RenderArgs = {
   program: WebGLProgram,
   texture: WebGLTexture | null
 }
-
-type MaybeData = RenderArgs | null
 
 export type Camera = {
   position: Vector,
@@ -72,7 +73,7 @@ export const getDrawArgs = (gl: WebGLRenderingContext, { program, objData, textu
 
   return {
     boundingBox: boundingBox(objData.min, objData.max),
-    buffers: initBuffers(gl, objData),
+    buffers: initBuffersTesting(gl, objData),
     centeringTranslation: centeringTranslation(objData.max, lengths),
     gl,
     normalizingScale: 1 / Math.max(...scale(0.5)(lengths)),
@@ -81,42 +82,3 @@ export const getDrawArgs = (gl: WebGLRenderingContext, { program, objData, textu
     texture,
   }
 }
-
-export const render = (gl: WebGLRenderingContext, data: RenderArgs, opts: GlobalOptions) => {
-  const { program, objData, texture } = data
-
-  const programInfo = createProgramInfo(gl, program)
-
-  const lengths = dists(objData.min, objData.max)
-
-  const drawArgs = {
-    boundingBox: boundingBox(objData.min, objData.max),
-    buffers: initBuffers(gl, objData),
-    centeringTranslation: centeringTranslation(objData.max, lengths),
-    gl,
-    normalizingScale: 1 / Math.max(...scale(0.5)(lengths)),
-    numFaces: objData.f.length,
-    programInfo,
-    texture,
-  }
-
-  const render = (cubeRotation: number) => (then: number) => (now: number) => {
-    const nowSeconds = now * 0.001
-    const deltaS = nowSeconds - then
-    drawScene(drawArgs, cubeRotation, opts)
-    // requestAnimationFrame(render(cubeRotation + deltaS)(nowSeconds))
-  }
-
-  requestAnimationFrame(render(0.7)(0))
-  // requestAnimationFrame(render(0)(0))
-}
-
-
-/*
-  Overføring av objekt data til GPU og WebGL
-Legg til funksjonalitet som overfører de innlastede dataene til GPUen med WebGL. Dette betyr at du oppretter array buffre for de dataene som er lastet inn og kopler disse til verteks-shaderen. Hvis en type data, som farger, ikke er inkludert, skal dette tas hensyn til. Her kan du lage forskjellige verteks- shadere basert på hvilke data som er tilgjengelige.
-  Start med et enkel type objekt (for eksempel, bare verteks-data uten farge, tekstur, og normaler), for deretter å utvide støtten iterativt.
-  UI web applikasjon
-Legg til funksjonalitet for enkel manipulasjon av innlastet objekt. Applikasjonen skal for nå utelukkende støtte visning av et objekt og hvis et nytt objekt lastes inn, skal nåværende objekt fjernes. Applikasjonen burde liste en pre-definert liste av objekter som støttes og som brukeren kan velge mellom.
-  Videre, burde applikasjonen støtte valg som å endre på farge for objektet og slå av/på modus som tekstur-rendering.
-  */

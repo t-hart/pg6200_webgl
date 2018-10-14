@@ -9,12 +9,11 @@ type action =
   | KeyPress(Webapi.Dom.KeyboardEvent.t)
   | SetScale(int)
   | SetRotation(Vector.t(int))
-  | SetCamera(Movement.t)
   | SetRafId(option(Webapi.rafId))
   | PrepareRender
   | Render(DrawArgs.abstract, GlobalOptions.abstract, bool, float);
 
-let getRenderArg = (models, programs, name) =>
+let getRenderArgs = (models, programs, name) =>
   Model.toRenderArgs(
     StringMap.find(name, models),
     StringMap.find(name, programs),
@@ -24,24 +23,6 @@ let cancelAnimation =
   fun
   | Some(id) => Webapi.cancelAnimationFrame(id)
   | None => ();
-
-let handleCameraUpdate = (mvmt, camera: Camera.t) => {
-  open Movement;
-  let (vec, axis, fill) =
-    switch (mvmt) {
-    | Translation(axis) => (
-        camera.position,
-        axis,
-        (position => {...camera, position}),
-      )
-    | Rotation(axis) => (
-        camera.rotation,
-        axis,
-        (rotation => {...camera, rotation}),
-      )
-    };
-  camera.velocity |> Input.move(axis) |> Vector.addSome(vec) |> fill;
-};
 
 let reducer = (action, state: state) =>
   switch (action) {
@@ -70,7 +51,7 @@ let reducer = (action, state: state) =>
         let drawArgs =
           StringMap.add(
             name,
-            getRenderArg(state.models, state.selectedPrograms, name)
+            getRenderArgs(state.models, state.selectedPrograms, name)
             |> state.getDrawArgs,
             state.drawArgs,
           );
@@ -82,7 +63,7 @@ let reducer = (action, state: state) =>
               send(
                 Render(
                   name->StringMap.find(drawArgs),
-                  state.globalOptions |> GlobalOptions.toAbstract,
+                  state.globalOptions->GlobalOptions.toAbstract(_, state.cam),
                   shouldLoop(state),
                   state.nextTime,
                 ),
@@ -103,21 +84,8 @@ let reducer = (action, state: state) =>
     );
 
   | KeyPress(e) =>
-    switch (Input.getMovement(Webapi.Dom.KeyboardEvent.code(e))) {
-    | Some(mvmt) =>
-      ReasonReact.SideEffects((self => self.send(SetCamera(mvmt))))
-    | None => ReasonReact.NoUpdate
-    }
-
-  | SetCamera(mvmt) =>
     ReasonReact.UpdateWithSideEffects(
-      {
-        ...state,
-        globalOptions: {
-          ...state.globalOptions,
-          camera: handleCameraUpdate(mvmt, state.globalOptions.camera),
-        },
-      },
+      {...state, cam: Input.update(state.cam, e)},
       (self => self.send(PrepareRender)),
     )
 

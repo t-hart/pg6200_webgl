@@ -4,6 +4,7 @@ export const initShaderProgram = (gl: WebGLRenderingContext) => (shaders: Shader
   const vertexShader = loadShader(gl, gl.VERTEX_SHADER, shaders.vertex)
   const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, shaders.fragment)
 
+
   const shaderProgram = gl.createProgram()
   gl.attachShader(shaderProgram, vertexShader)
   gl.attachShader(shaderProgram, fragmentShader)
