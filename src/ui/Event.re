@@ -1,3 +1,5 @@
+[@bs.val] external window: WindowRe.t = "";
+
 let registration = (f, handler) =>
   f(handler, Webapi.Dom.Document.asEventTarget(Webapi.Dom.document));
 
@@ -12,5 +14,10 @@ let removeKeyDownListener =
 
 let removeKeyUpListener =
   registration(Webapi.Dom.EventTarget.removeKeyUpEventListener);
+
+let addResizeListener = f => WindowRe.addEventListener("resize", f, window);
+
+let removeResizeListener = f =>
+  WindowRe.removeEventListener("resize", f, window);
 
 let value = event => event->ReactEvent.Form.target##value;

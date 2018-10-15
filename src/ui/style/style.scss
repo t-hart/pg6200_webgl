@@ -65,11 +65,14 @@ h6 {
 .content {
   display: grid;
   height: 100%;
+  padding:  1em;
   place-items: center;
 }
 
 .canvas {
   border: .1em solid $main-color;
+  height: 50vh;
+  width: 100%;
 }
 
 .page-header {
@@ -219,10 +222,10 @@ input[type="range"] {
   }
 
   @mixin track-style {
-    height: $thumb-height;
     background: transparent;
     border: 0;
     cursor: pointer;
+    height: $thumb-height;
     width: 100%;
 
     &:focus,

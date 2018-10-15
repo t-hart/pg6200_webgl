@@ -1,7 +1,10 @@
-import { mat4, vec3, quat } from 'gl-matrix-ts'
+import { mat4 } from 'gl-matrix-ts'
 import { ProgramInfo, GlobalOptions } from './index'
 import { BufferObj } from './bufferUtils'
 import { rotation, translation } from './camera'
+
+export const setViewport = (gl: WebGLRenderingContext, width: number, height: number) => gl.viewport(0, 0, width, height)
+
 
 export const drawEmptyScene = (gl: WebGLRenderingContext) => {
   gl.clearColor(0, 0, 0, 1)
