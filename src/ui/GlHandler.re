@@ -100,7 +100,8 @@ let globalOptControls = (send, opts: GlobalOptions.t) =>
     </fieldset>
   </>;
 
-let handleKey = (send, e) => KeyPress(e)->send;
+let handleKeyDown = (send, e) => KeyDown(e)->send;
+let handleKeyUp = (send, e) => KeyUp(e)->send;
 
 let fieldsets = (send, data): array(Fieldset.t) => [|
   {disabled: false, content: modelButtons(send, data), legend: "Models"},
@@ -122,10 +123,14 @@ let make = (~glRenderingContext, _children) => {
   initialState: () => initialState(glRenderingContext),
   reducer,
   didMount: self => {
-    Event.addKeyboardListener(handleKey(self.send));
+    Event.addKeyDownListener(handleKeyDown(self.send));
+    Event.addKeyUpListener(handleKeyUp(self.send));
     self.send(PrepareRender);
   },
-  willUnmount: self => Event.removeKeyboardListener(handleKey(self.send)),
+  willUnmount: self => {
+    Event.removeKeyDownListener(handleKeyDown(self.send));
+    Event.removeKeyUpListener(handleKeyUp(self.send));
+  },
   render: self =>
     <>
       <div className="grid-2-cols full-width">

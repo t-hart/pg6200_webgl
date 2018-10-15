@@ -1,27 +1,20 @@
 [@bs.module "../camera"]
-external moveForward: Camera.abstractNew => Camera.abstractNew = "";
+external moveForward: (Camera.t, float) => Camera.t = "";
 [@bs.module "../camera"]
-external moveBackward: Camera.abstractNew => Camera.abstractNew = "";
+external moveBackward: (Camera.t, float) => Camera.t = "";
+[@bs.module "../camera"] external moveUp: (Camera.t, float) => Camera.t = "";
+[@bs.module "../camera"] external moveDown: (Camera.t, float) => Camera.t = "";
+[@bs.module "../camera"] external moveLeft: (Camera.t, float) => Camera.t = "";
 [@bs.module "../camera"]
-external moveUp: Camera.abstractNew => Camera.abstractNew = "";
+external moveRight: (Camera.t, float) => Camera.t = "";
+[@bs.module "../camera"] external rollLeft: (Camera.t, float) => Camera.t = "";
 [@bs.module "../camera"]
-external moveDown: Camera.abstractNew => Camera.abstractNew = "";
+external rollRight: (Camera.t, float) => Camera.t = "";
 [@bs.module "../camera"]
-external moveLeft: Camera.abstractNew => Camera.abstractNew = "";
-[@bs.module "../camera"]
-external moveRight: Camera.abstractNew => Camera.abstractNew = "";
-[@bs.module "../camera"]
-external rollLeft: Camera.abstractNew => Camera.abstractNew = "";
-[@bs.module "../camera"]
-external rollRight: Camera.abstractNew => Camera.abstractNew = "";
-[@bs.module "../camera"]
-external turnRight: Camera.abstractNew => Camera.abstractNew = "";
-[@bs.module "../camera"]
-external turnLeft: Camera.abstractNew => Camera.abstractNew = "";
-[@bs.module "../camera"]
-external tiltUp: Camera.abstractNew => Camera.abstractNew = "";
-[@bs.module "../camera"]
-external tiltDown: Camera.abstractNew => Camera.abstractNew = "";
+external turnRight: (Camera.t, float) => Camera.t = "";
+[@bs.module "../camera"] external turnLeft: (Camera.t, float) => Camera.t = "";
+[@bs.module "../camera"] external tiltUp: (Camera.t, float) => Camera.t = "";
+[@bs.module "../camera"] external tiltDown: (Camera.t, float) => Camera.t = "";
 
 let keyCodeToMovement =
   [
@@ -40,10 +33,19 @@ let keyCodeToMovement =
   ]
   |> StringMap.fromList;
 
-let update = (camera, e) =>
-  e->Webapi.Dom.KeyboardEvent.code->StringMap.get(_, keyCodeToMovement)
+let keyDown = (keys, e) => {
+  let keyCode = e->Webapi.Dom.KeyboardEvent.code;
+  StringMap.get(keyCode, keyCodeToMovement)
   |> (
     fun
-    | Some(f) => f(camera)
-    | None => camera
+    | Some(f) when !StringMap.exists((k, _) => k === keyCode, keys) =>
+      Some(StringMap.add(keyCode, f, keys))
+    | _ => None
   );
+};
+
+let keyUp = (keys, e) => {
+  let keyCode = e->Webapi.Dom.KeyboardEvent.code;
+  StringMap.exists((k, _) => k === keyCode, keys) ?
+    Some(StringMap.remove(Webapi.Dom.KeyboardEvent.code(e), keys)) : None;
+};

@@ -7,7 +7,7 @@ type t = {
 type abstract = {
   scale: float,
   rotation: array(float),
-  camera: Camera.abstractNew,
+  camera: Camera.t,
 };
 
 let toAbstract = (opts, camera) =>

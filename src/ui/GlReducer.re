@@ -6,18 +6,28 @@ type shaderKey = string;
 type action =
   | SelectShader(modelName, shaderKey)
   | SelectModel(modelName)
-  | KeyPress(Webapi.Dom.KeyboardEvent.t)
+  | KeyDown(Webapi.Dom.KeyboardEvent.t)
+  | KeyUp(Webapi.Dom.KeyboardEvent.t)
   | SetScale(int)
   | SetRotation(Vector.t(int))
   | SetRafId(option(Webapi.rafId))
   | PrepareRender
-  | Render(DrawArgs.abstract, GlobalOptions.abstract, bool, float);
+  | Render(DrawArgs.abstract, GlobalOptions.t, bool, float);
 
 let getRenderArgs = (models, programs, name) =>
   Model.toRenderArgs(
     StringMap.find(name, models),
     StringMap.find(name, programs),
   );
+
+let handleKeyPress = state =>
+  fun
+  | Some(keys) =>
+    ReasonReact.UpdateWithSideEffects(
+      {...state, keys},
+      (self => self.send(PrepareRender)),
+    )
+  | None => ReasonReact.NoUpdate;
 
 let cancelAnimation =
   fun
@@ -26,15 +36,32 @@ let cancelAnimation =
 
 let reducer = (action, state: state) =>
   switch (action) {
-  | Render(drawArgs, opts, shouldLoop, currentTime) =>
+  | Render(drawArgs, globalOptions, shouldLoop, currentTime) =>
+    let delta = currentTime -. state.nextTime;
+    let deltaClamped = delta > 0.1 ? 0.03344409800000392 : delta;
+    let cam =
+      StringMap.fold(
+        (_, f, acc) => f(acc, deltaClamped),
+        state.keys,
+        state.cam,
+      );
+    let opts = globalOptions->GlobalOptions.toAbstract(cam);
     ReasonReact.UpdateWithSideEffects(
-      {...state, nextTime: currentTime, previousTime: state.nextTime},
+      {
+        ...state,
+        nextTime: currentTime,
+        previousTime: state.nextTime,
+        cam,
+        globalOptions,
+      },
       (
         self => {
           drawScene(drawArgs, opts, state.nextTime);
           shouldLoop ?
             Webapi.requestCancellableAnimationFrame(x =>
-              self.send(Render(drawArgs, opts, shouldLoop, x *. 0.001))
+              self.send(
+                Render(drawArgs, globalOptions, shouldLoop, x *. 0.001),
+              )
             )
             ->Some
             ->SetRafId
@@ -42,7 +69,7 @@ let reducer = (action, state: state) =>
             self.send(SetRafId(None));
         }
       ),
-    )
+    );
 
   | PrepareRender =>
     let (nextState, sideEffects) =
@@ -55,7 +82,6 @@ let reducer = (action, state: state) =>
             |> state.getDrawArgs,
             state.drawArgs,
           );
-
         (
           {...state, drawArgs},
           (
@@ -63,7 +89,7 @@ let reducer = (action, state: state) =>
               send(
                 Render(
                   name->StringMap.find(drawArgs),
-                  state.globalOptions->GlobalOptions.toAbstract(_, state.cam),
+                  state.globalOptions,
                   shouldLoop(state),
                   state.nextTime,
                 ),
@@ -83,11 +109,9 @@ let reducer = (action, state: state) =>
       ),
     );
 
-  | KeyPress(e) =>
-    ReasonReact.UpdateWithSideEffects(
-      {...state, cam: Input.update(state.cam, e)},
-      (self => self.send(PrepareRender)),
-    )
+  | KeyDown(e) => Input.keyDown(state.keys, e) |> handleKeyPress(state)
+
+  | KeyUp(e) => Input.keyUp(state.keys, e) |> handleKeyPress(state)
 
   | SelectModel(name) =>
     let nextState =

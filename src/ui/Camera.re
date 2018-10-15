@@ -1,5 +1,5 @@
 [@bs.deriving abstract]
-type abstractNew =
+type t =
   | Abstract;
 
-[@bs.module "../camera"] external create: unit => abstractNew = "";
+[@bs.module "../camera"] external create: unit => t = "";

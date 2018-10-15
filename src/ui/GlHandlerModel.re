@@ -15,7 +15,8 @@ type state = {
   previousTime: float,
   nextTime: float,
   drawArgs: StringMap.t(DrawArgs.abstract),
-  cam: Camera.abstractNew,
+  cam: Camera.t,
+  keys: StringMap.t((Camera.t, float) => Camera.t),
 };
 
 let initialState = glRenderingContext => {
@@ -37,6 +38,9 @@ let initialState = glRenderingContext => {
   previousTime: 0.0,
   nextTime: 0.0,
   cam: Camera.create(),
+  keys: StringMap.empty,
 };
 
-let shouldLoop = state => state.globalOptions.rotation != Vector.zero;
+let shouldLoop = state =>
+  state.globalOptions.rotation != Vector.zero
+  || !StringMap.is_empty(state.keys);
