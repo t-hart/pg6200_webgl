@@ -1,6 +1,7 @@
 import bunny from './obj_files/bunny.obj'
 import bunnyHiRes from './obj_files/bunny_10k.obj'
 import cubeTexture from './textures/cubetexture.png'
+import brain from './obj_files/brain.obj'
 
 export type ObjData = {
   v: number[],
@@ -147,5 +148,6 @@ const cube = {
 export default {
   bunny: { model: bunny },
   'bunny (hi res)': { model: bunnyHiRes },
-  cube: { model: cube, texturePath: cubeTexture }
+  cube: { model: cube, texturePath: cubeTexture },
+  brain: { model: brain },
 }
