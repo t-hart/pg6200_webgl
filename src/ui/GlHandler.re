@@ -102,6 +102,11 @@ let globalOptControls = (send, opts: GlobalOptions.t) =>
 
 let handleKeyDown = (send, e) => KeyDown(e)->send;
 let handleKeyUp = (send, e) => KeyUp(e)->send;
+let handleCanvasResize = (gl, send, e) => {
+  let (width, height) = CanvasResizeEvent.details(e);
+  setViewport(gl, width, height);
+  send(PrepareRender);
+};
 
 let fieldsets = (send, data): array(Fieldset.t) => [|
   {disabled: false, content: modelButtons(send, data), legend: "Models"},
@@ -125,11 +130,17 @@ let make = (~glRenderingContext, _children) => {
   didMount: self => {
     Event.addKeyDownListener(handleKeyDown(self.send));
     Event.addKeyUpListener(handleKeyUp(self.send));
+    CanvasResizeEvent.addListener(
+      handleCanvasResize(glRenderingContext, self.send),
+    );
     self.send(PrepareRender);
   },
   willUnmount: self => {
     Event.removeKeyDownListener(handleKeyDown(self.send));
     Event.removeKeyUpListener(handleKeyUp(self.send));
+    CanvasResizeEvent.removeListener(
+      handleCanvasResize(glRenderingContext, self.send),
+    );
   },
   render: self =>
     <>

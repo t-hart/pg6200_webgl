@@ -1,6 +1,4 @@
 [@bs.val] external document: Webapi.Dom.Element.t = "";
-[@bs.module "../renderUtils"]
-external setViewport: (WebGl.renderingContext, int, int) => unit = "";
 [@bs.module "../index"]
 external getGlContext: string => Js.Nullable.t(WebGl.renderingContext) = "";
 
@@ -61,7 +59,7 @@ let make = (~canvasId, _children) => {
       }
     | (SetCanvasDimensions, state) =>
       switch (state.glState) {
-      | Ready(gl, canvas) =>
+      | Ready(_, canvas) =>
         let (width, height) = dimensions(canvas);
         ReasonReact.UpdateWithSideEffects(
           {
@@ -71,7 +69,7 @@ let make = (~canvasId, _children) => {
               height,
             },
           },
-          (_ => setViewport(gl, width, height)),
+          (_ => CanvasResizeEvent.dispatch(width, height) |> ignore),
         );
       | Error(_)
       | Uninitialized => ReasonReact.NoUpdate
