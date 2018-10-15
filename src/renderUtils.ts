@@ -39,17 +39,11 @@ export const drawScene = (args: DrawArgs, opts: GlobalOptions, timeOffset: numbe
   const projectionMatrix = mat4.create()
   mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar)
   // mat4.ortho(projectionMatrix, -2, 2, -2, 2, .1, 100)
-  // mat4.rotate(projectionMatrix, projectionMatrix, Math.PI / 4, mat4.getRotation([], opts.camera.viewMatrix))
-  // mat4.translate(projectionMatrix, projectionMatrix, mat4.getTranslation([], opts.camera.viewMatrix))
 
-  // const offset = mat4.getTranslation(vec3.create(), opts.camera.viewMatrix)
   const offset = translation(opts.camera)
-  // const rot = mat4.getRotation(quat.create(), opts.camera.viewMatrix)
   const rot = rotation(opts.camera)
 
-  // const modelMatrix = mat4.clone(opts.camera.viewMatrix)
   const modelMatrix = mat4.fromTranslation(mat4.create(), offset)
-  // const modelMatrix = mat4.create()
   mat4.rotate(modelMatrix, modelMatrix, timeOffset, opts.rotation)
 
   // normalize, then scale
@@ -93,13 +87,12 @@ export const drawScene = (args: DrawArgs, opts: GlobalOptions, timeOffset: numbe
   gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix)
 
   gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMatrix)
-  // gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, false, mat4.translate(mat4.create(), opts.camera.viewMatrix, offset))
   gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, false, mat4.fromQuat(mat4.create(), rot))
-  // gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, false, opts.camera.viewMatrix)
 
   const normalMatrix = mat4.create()
   mat4.invert(normalMatrix, modelMatrix)
   mat4.transpose(normalMatrix, normalMatrix)
+
   gl.uniformMatrix4fv(programInfo.uniformLocations.normalMatrix, false, normalMatrix)
 
   gl.activeTexture(gl.TEXTURE0)

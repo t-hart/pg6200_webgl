@@ -14,10 +14,18 @@ const mapObject = (o: object, f: Function) =>
 
 export const defaultProgram = "color"
 
-const models = (gl: WebGLRenderingContext) => mapObject(objs, (x: ObjTexture) => ({
-  objData: x.model,
-  programs: mapObject(availableShaders(x.model), initShaderProgram(gl)),
-  texture: x.texturePath ? initTexture2D(gl)(x.texturePath) : null
-}))
+const models = (gl: WebGLRenderingContext) => mapObject(objs, (x: ObjTexture) => {
+  try {
+    return {
+      objData: x.model,
+      programs: mapObject(availableShaders(x.model), initShaderProgram(gl)),
+      texture: x.texturePath ? initTexture2D(gl)(x.texturePath) : null
+    }
+  }
+  catch (e) {
+    console.error(e)
+    return {}
+  }
+}
 
 export default models
