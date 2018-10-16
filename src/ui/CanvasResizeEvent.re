@@ -17,9 +17,10 @@ let dispatch = (width, height) => {
 };
 
 let details = e => {
-  let width: Webapi.Dom.Event.t => int = [%bs.raw "e => e.detail.width"];
-  let height: Webapi.Dom.Event.t => int = [%bs.raw "e => e.detail.height"];
-  (width(e), height(e));
+  let dimensions: Webapi.Dom.Event.t => array(int) = [%bs.raw
+    "({detail}) => [detail.width, detail.height]"
+  ];
+  e |> dimensions |> (d => (d[0], d[1]));
 };
 
 let addListener = f => WindowRe.addEventListener(name, f, window);
