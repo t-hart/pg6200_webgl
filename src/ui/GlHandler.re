@@ -13,7 +13,7 @@ let elementArray = (toElement, xs) =>
   ->Array.of_list
   ->ReasonReact.array;
 
-let modelButtons = (send, data: state) =>
+let modelButtons = (send, data) =>
   elementArray(
     key =>
       <button
@@ -109,6 +109,14 @@ let handleCanvasResize = (gl, send, e) => {
 };
 
 let fieldsets = (send, data): array(Fieldset.t) => [|
+  {
+    disabled: false,
+    content:
+      <button className="span-all" onClick={_ => send(Reset)}>
+        {ReasonReact.string("Reset")}
+      </button>,
+    legend: "",
+  },
   {disabled: false, content: modelButtons(send, data), legend: "Models"},
   {
     disabled: data.model === None,

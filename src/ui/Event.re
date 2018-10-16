@@ -20,25 +20,4 @@ let addResizeListener = f => WindowRe.addEventListener("resize", f, window);
 let removeResizeListener = f =>
   WindowRe.removeEventListener("resize", f, window);
 
-/* let canvasResizeEventName = "canvasresize"; */
-/* let canvasResize = (width: int, height: int) => { */
-/*   let e = */
-/*     Webapi.Dom.CustomEvent.makeWithOptions( */
-/*       canvasResizeEventName, */
-/*       { */
-/*         "detail": { */
-/*           "width": width, */
-/*           "height": height, */
-/*         }, */
-/*       }, */
-/*     ); */
-/*   EventTargetRe.dispatchEvent(e, window |> WindowRe.asEventTarget); */
-/* }; */
-
-/* let addCanvasResizeListener = f => */
-/*   WindowRe.addEventListener(canvasResizeEventName, f, window); */
-
-/* let removeCanvasResizeListener = f => */
-/*   WindowRe.removeEventListener(canvasResizeEventName, f, window); */
-
 let value = event => event->ReactEvent.Form.target##value;

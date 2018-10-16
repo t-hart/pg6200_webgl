@@ -156,6 +156,10 @@ button {
     font-weight: normal;
   }
 
+  &:active {
+    font-weight: bolder;
+  }
+
   &:enabled {
     cursor: pointer;
 

@@ -17,6 +17,7 @@ type state = {
   drawArgs: StringMap.t(DrawArgs.abstract),
   cam: Camera.t,
   keys: StringMap.t((Camera.t, float) => Camera.t),
+  gl: WebGl.renderingContext,
 };
 
 let initialState = glRenderingContext => {
@@ -24,7 +25,7 @@ let initialState = glRenderingContext => {
     getModels(glRenderingContext)
     |> StringMap.fromJsDict
     |> StringMap.map(Model.fromAbstract),
-  clear: () => renderBlank(glRenderingContext),
+  clear: () => drawEmptyScene(glRenderingContext),
   model: None,
   getDrawArgs: getDrawArgs(glRenderingContext),
   selectedPrograms: StringMap.empty,
@@ -39,6 +40,7 @@ let initialState = glRenderingContext => {
   nextTime: 0.0,
   cam: Camera.create(),
   keys: StringMap.empty,
+  gl: glRenderingContext,
 };
 
 let shouldLoop = state =>

@@ -16,5 +16,5 @@ external drawScene: (DrawArgs.abstract, GlobalOptions.abstract, float) => unit =
 [@bs.module "../renderUtils"]
 external setViewport: (WebGl.renderingContext, int, int) => unit = "";
 
-[@bs.module "../index"]
-external renderBlank: WebGl.renderingContext => unit = "";
+[@bs.module "../renderUtils"]
+external drawEmptyScene: WebGl.renderingContext => unit = "";

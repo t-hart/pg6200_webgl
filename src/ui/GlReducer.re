@@ -12,7 +12,8 @@ type action =
   | SetRotation(Vector.t(int))
   | SetRafId(option(Webapi.rafId))
   | PrepareRender
-  | Render(DrawArgs.abstract, GlobalOptions.t, bool, float);
+  | Render(DrawArgs.abstract, GlobalOptions.t, bool, float)
+  | Reset;
 
 let getRenderArgs = (models, programs, name) =>
   Model.toRenderArgs(
@@ -165,5 +166,17 @@ let reducer = (action, state: state) =>
           StringMap.add(modelName, programName, state.selectedPrograms),
       },
       (self => self.send(PrepareRender)),
+    )
+
+  | Reset =>
+    ReasonReact.UpdateWithSideEffects(
+      initialState(state.gl),
+      (
+        self => {
+          cancelAnimation(state.rafId);
+          self.send(SetRafId(None));
+          self.send(PrepareRender);
+        }
+      ),
     )
   };

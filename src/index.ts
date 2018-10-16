@@ -65,8 +65,6 @@ export type GlobalOptions = {
 
 export const log = (a: any) => { console.log(a); return a }
 
-export const renderBlank = (gl: WebGLRenderingContext) => drawEmptyScene(gl)
-
 export const getDrawArgs = (gl: WebGLRenderingContext, { program, objData, texture }: RenderArgs): DrawArgs => {
   const programInfo = createProgramInfo(gl, program)
   const lengths = dists(objData.min, objData.max)
