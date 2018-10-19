@@ -90,6 +90,7 @@ export const drawScene = (args: DrawArgs, opts: GlobalOptions, timeOffset: numbe
   gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix)
 
   gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMatrix)
+
   gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, false, mat4.fromQuat(mat4.create(), rot))
 
   const normalMatrix = mat4.create()
@@ -100,8 +101,8 @@ export const drawScene = (args: DrawArgs, opts: GlobalOptions, timeOffset: numbe
 
   gl.activeTexture(gl.TEXTURE0)
   gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.uniform4fv(programInfo.uniformLocations.colorMult, [1, 0.5, 0.5, 1])
   gl.uniform1i(programInfo.uniformLocations.uSampler, 0)
-
   {
     const vertexCount = numFaces
     const type = gl.UNSIGNED_SHORT

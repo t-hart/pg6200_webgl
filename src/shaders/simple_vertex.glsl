@@ -7,12 +7,14 @@ uniform mat4 uModelMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 
+uniform vec4 uColorMult;
+
 varying highp vec4 vColor;
 varying highp vec3 vLighting;
 
 void main(void) {
     gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aVertexPosition;
-    vColor = aVertexColor;
+    vColor = aVertexColor * uColorMult;
 
     highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
     highp vec3 directionalLightColor = vec3(1, 1, 1);

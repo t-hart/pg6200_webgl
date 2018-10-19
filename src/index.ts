@@ -3,7 +3,7 @@ import 'babel-polyfill'
 import Camera from './camera'
 import Vector from './vector'
 import { initBuffersTesting } from './bufferUtils'
-import { drawScene, drawEmptyScene, DrawArgs } from './renderUtils'
+import { drawEmptyScene, DrawArgs } from './renderUtils'
 import { ObjData } from './objs'
 import { boundingBox, dists, centeringTranslation, scale } from './vector'
 
@@ -25,7 +25,8 @@ export type ProgramInfo = {
     modelMatrix: WebGLUniformLocation | null,
     viewMatrix: WebGLUniformLocation | null,
     normalMatrix: WebGLUniformLocation | null,
-    uSampler: WebGLUniformLocation | null
+    uSampler: WebGLUniformLocation | null,
+    colorMult: WebGLUniformLocation | null
   }
 }
 
@@ -42,7 +43,8 @@ const createProgramInfo = (gl: WebGLRenderingContext, program: WebGLProgram) => 
     modelMatrix: gl.getUniformLocation(program, 'uModelMatrix'),
     viewMatrix: gl.getUniformLocation(program, 'uViewMatrix'),
     normalMatrix: gl.getUniformLocation(program, 'uNormalMatrix'),
-    uSampler: gl.getUniformLocation(program, 'uSampler')
+    uSampler: gl.getUniformLocation(program, 'uSampler'),
+    colorMult: gl.getUniformLocation(program, 'uColorMult')
   }
 })
 
