@@ -7,12 +7,12 @@ type t = {
 type abstract = {
   scale: float,
   rotation: array(float),
-  camera: Camera.t,
+  drawArgs: DrawArgs.abstract,
 };
 
-let toAbstract = (opts, camera) =>
+let toAbstract = (opts, drawArgs) =>
   abstract(
     ~scale=opts.scale->Utils.toDecimal,
     ~rotation=opts.rotation->Vector.toFloatArray,
-    ~camera,
+    ~drawArgs,
   );

@@ -1,11 +1,7 @@
 import { mat4 } from 'gl-matrix-ts'
 import { rotation, translation } from './camera'
-import DrawArgs from './drawArgs'
-import Vector from './vector'
 import Camera from './camera'
-
-export const setViewport = (gl: WebGLRenderingContext, width: number, height: number) => gl.viewport(0, 0, width, height)
-
+import ModelOptions from './modelOptions'
 
 export const drawEmptyScene = (gl: WebGLRenderingContext) => {
   gl.clearColor(0, 0, 0, 1)
@@ -16,15 +12,8 @@ export const drawEmptyScene = (gl: WebGLRenderingContext) => {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 }
 
-export type GlobalOptions = {
-  scale: number,
-  rotation: Vector,
-  camera: Camera,
-}
-
-
-export const drawScene = (args: DrawArgs, opts: GlobalOptions, timeOffset: number) => {
-  const { gl, programInfo, buffers, texture, normalizingScale, centeringTranslation, numFaces, boundingBox } = args
+export const drawScene = (opts: ModelOptions, cam: Camera, timeOffset: number) => {
+  const { gl, programInfo, buffers, texture, normalizingScale, centeringTranslation, numFaces, boundingBox } = opts.drawArgs
   gl.clearColor(0, 0, 0, 1)
   gl.clearDepth(1)
   gl.enable(gl.DEPTH_TEST)
@@ -40,8 +29,8 @@ export const drawScene = (args: DrawArgs, opts: GlobalOptions, timeOffset: numbe
   mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar)
   // mat4.ortho(projectionMatrix, -2, 2, -2, 2, .1, 100)
 
-  const offset = translation(opts.camera)
-  const rot = rotation(opts.camera)
+  const offset = translation(cam)
+  const rot = rotation(cam)
 
   const modelMatrix = mat4.fromTranslation(mat4.create(), offset)
   mat4.rotate(modelMatrix, modelMatrix, timeOffset, opts.rotation)

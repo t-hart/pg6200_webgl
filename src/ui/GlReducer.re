@@ -12,7 +12,7 @@ type action =
   | SetRotation(Vector.t(int))
   | SetRafId(option(Webapi.rafId))
   | PrepareRender
-  | Render(DrawArgs.abstract, GlobalOptions.t, bool, float)
+  | Render(DrawArgs.abstract, ModelOptions.t, bool, float)
   | Reset;
 
 let getRenderArgs = (models, programs, name) =>
@@ -35,9 +35,9 @@ let cancelAnimation =
   | Some(id) => Webapi.cancelAnimationFrame(id)
   | None => ();
 
-let reducer = (action, state: state) =>
+let reducer = (action, state) =>
   switch (action) {
-  | Render(drawArgs, globalOptions, shouldLoop, currentTime) =>
+  | Render(drawArgs, modelOptions, shouldLoop, currentTime) =>
     let delta = currentTime -. state.nextTime;
     let deltaClamped = delta > 0.1 ? 0.03344409800000392 : delta;
     let cam =
@@ -46,22 +46,16 @@ let reducer = (action, state: state) =>
         state.keys,
         state.cam,
       );
-    let opts = globalOptions->GlobalOptions.toAbstract(cam);
+    let opts = modelOptions->ModelOptions.toAbstract(drawArgs);
     ReasonReact.UpdateWithSideEffects(
-      {
-        ...state,
-        nextTime: currentTime,
-        previousTime: state.nextTime,
-        cam,
-        globalOptions,
-      },
+      {...state, nextTime: currentTime, previousTime: state.nextTime, cam},
       (
         self => {
-          drawScene(drawArgs, opts, state.nextTime);
+          drawScene(opts, cam, state.nextTime);
           shouldLoop ?
             Webapi.requestCancellableAnimationFrame(x =>
               self.send(
-                Render(drawArgs, globalOptions, shouldLoop, x *. 0.001),
+                Render(drawArgs, modelOptions, shouldLoop, x *. 0.001),
               )
             )
             ->Some
@@ -90,7 +84,7 @@ let reducer = (action, state: state) =>
               send(
                 Render(
                   name->StringMap.find(drawArgs),
-                  state.globalOptions,
+                  state.modelOptions,
                   shouldLoop(state),
                   state.nextTime,
                 ),
@@ -136,8 +130,8 @@ let reducer = (action, state: state) =>
     ReasonReact.UpdateWithSideEffects(
       {
         ...state,
-        globalOptions: {
-          ...state.globalOptions,
+        modelOptions: {
+          ...state.modelOptions,
           rotation,
         },
       },
@@ -148,8 +142,8 @@ let reducer = (action, state: state) =>
     ReasonReact.UpdateWithSideEffects(
       {
         ...state,
-        globalOptions: {
-          ...state.globalOptions,
+        modelOptions: {
+          ...state.modelOptions,
           scale: v,
         },
       },

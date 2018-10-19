@@ -82,7 +82,7 @@ let rotationSliders = (send, rotation) =>
   )
   |> Array.of_list;
 
-let globalOptControls = (send, opts: GlobalOptions.t) =>
+let modelOptControls = (send, opts: ModelOptions.t) =>
   <>
     <fieldset className="span-all no-pad-h">
       <legend> {ReasonReact.string("Scale")} </legend>
@@ -125,7 +125,7 @@ let fieldsets = (send, data): array(Fieldset.t) => [|
   },
   {
     disabled: false,
-    content: globalOptControls(send, data.globalOptions),
+    content: modelOptControls(send, data.modelOptions),
     legend: "Transforms",
   },
 |];

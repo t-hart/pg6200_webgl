@@ -10,7 +10,7 @@ type state = {
   selectedPrograms: StringMap.t(programName),
   clear: unit => unit,
   createDrawArgs: RenderArgs.abstract => DrawArgs.abstract,
-  globalOptions: GlobalOptions.t,
+  modelOptions: ModelOptions.t,
   rafId: option(Webapi.rafId),
   previousTime: float,
   nextTime: float,
@@ -30,7 +30,7 @@ let initialState = glRenderingContext => {
   createDrawArgs: DrawArgs.create(glRenderingContext),
   selectedPrograms: StringMap.empty,
   drawArgs: StringMap.empty,
-  globalOptions: {
+  modelOptions: {
     scale: 100,
     /* rotation: Vector.make(0, 100, 0), */
     rotation: Vector.make(0, 0, 0),
@@ -44,5 +44,5 @@ let initialState = glRenderingContext => {
 };
 
 let shouldLoop = state =>
-  state.globalOptions.rotation != Vector.zero
+  state.modelOptions.rotation != Vector.zero
   || !StringMap.is_empty(state.keys);
