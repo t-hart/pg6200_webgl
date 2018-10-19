@@ -12,12 +12,12 @@ import TextureFragment from './shaders/fragment_texture.glsl'
 // @ts-ignore
 import TextureVertex from './shaders/vertex_texture.glsl'
 
-export type ShaderSet = {
+export interface ShaderSet {
   vertex: string,
   fragment: string
 }
 
-export type Programs = {
+export interface Programs {
   color: WebGLProgram,
   texture?: WebGLProgram,
   lighting?: WebGLProgram

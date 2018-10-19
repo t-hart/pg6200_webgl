@@ -1,7 +1,7 @@
 import DrawArgs from './drawArgs'
 import Vector from './vector'
 
-type ModelOptions = {
+interface ModelOptions {
   scale: number,
   rotation: Vector,
   drawArgs: DrawArgs

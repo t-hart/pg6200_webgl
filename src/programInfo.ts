@@ -1,4 +1,4 @@
-type ProgramInfo = {
+interface ProgramInfo {
   program: WebGLProgram | null,
   attribLocations: {
     vertexPosition: number,

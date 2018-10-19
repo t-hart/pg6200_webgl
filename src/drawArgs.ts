@@ -4,7 +4,7 @@ import { boundingBox, dists, centeringTranslation, scale } from './vector'
 import BufferObject, { initBuffers } from './bufferUtils'
 import ProgramInfo, * as programInfo from './programInfo'
 
-type DrawArgs = {
+interface DrawArgs {
   gl: WebGLRenderingContext,
   programInfo: ProgramInfo,
   buffers: BufferObject
@@ -15,7 +15,7 @@ type DrawArgs = {
   boundingBox: number[]
 }
 
-type RenderArgs = {
+interface RenderArgs {
   objData: ObjData,
   program: WebGLProgram,
   texture: WebGLTexture | null

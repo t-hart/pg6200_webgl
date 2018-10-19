@@ -3,7 +3,7 @@ import { initTexture2D } from './textureUtils'
 import { initShaderProgram } from './shaderUtils'
 import { availableShaders, Programs } from './shaders'
 
-export type ModelData = {
+export interface ModelData {
   objData: ObjData,
   programs: Programs,
   texture: WebGLTexture | null

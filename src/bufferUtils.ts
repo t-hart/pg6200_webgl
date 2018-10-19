@@ -1,7 +1,7 @@
 import { boundingBox } from './vector'
 import { ObjData } from './objs'
 
-type BufferObject = {
+interface BufferObject {
   position: WebGLBuffer | null,
   color: WebGLBuffer | null,
   normal: WebGLBuffer | null,

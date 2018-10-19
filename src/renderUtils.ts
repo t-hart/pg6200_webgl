@@ -1,4 +1,5 @@
 import { mat4 } from 'gl-matrix-ts'
+import { attribSetters } from './glUtils'
 import { rotation, translation } from './camera'
 import Camera from './camera'
 import ModelOptions from './modelOptions'
@@ -40,6 +41,8 @@ export const drawScene = (opts: ModelOptions, cam: Camera, timeOffset: number) =
 
   // center
   mat4.translate(modelMatrix, modelMatrix, centeringTranslation)
+
+
 
   const bindBuffer = (numComponents: number, buffer: WebGLBuffer | null, attribLocs: number) => {
     if (attribLocs === -1) { return }

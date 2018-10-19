@@ -8,7 +8,7 @@ const X = vec.rotate([1, 0, 0])
 const Y = vec.rotate([0, 1, 0])
 const Z = vec.rotate([0, 0, 1])
 
-type Camera = {
+interface Camera {
   translation: Vector,
   rotation: Quaternion,
   rotationConjugate: Quaternion
