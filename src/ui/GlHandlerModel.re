@@ -9,7 +9,7 @@ type state = {
   models: StringMap.t(Model.t),
   selectedPrograms: StringMap.t(programName),
   clear: unit => unit,
-  getDrawArgs: RenderArgs.abstract => DrawArgs.abstract,
+  createDrawArgs: RenderArgs.abstract => DrawArgs.abstract,
   globalOptions: GlobalOptions.t,
   rafId: option(Webapi.rafId),
   previousTime: float,
@@ -27,7 +27,7 @@ let initialState = glRenderingContext => {
     |> StringMap.map(Model.fromAbstract),
   clear: () => drawEmptyScene(glRenderingContext),
   model: None,
-  getDrawArgs: getDrawArgs(glRenderingContext),
+  createDrawArgs: DrawArgs.create(glRenderingContext),
   selectedPrograms: StringMap.empty,
   drawArgs: StringMap.empty,
   globalOptions: {

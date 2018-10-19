@@ -1,9 +1,9 @@
 [@bs.module "../models"] external defaultProgram: string = "";
 
-[@bs.module "../index"]
-external getDrawArgs:
+[@bs.module "../drawArgs"]
+external create:
   (WebGl.renderingContext, RenderArgs.abstract) => DrawArgs.abstract =
-  "";
+  "create";
 
 [@bs.module "../models"]
 external getModels: WebGl.renderingContext => Js.Dict.t(Model.abstract) =

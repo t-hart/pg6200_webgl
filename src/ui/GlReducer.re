@@ -80,7 +80,7 @@ let reducer = (action, state: state) =>
           StringMap.add(
             name,
             getRenderArgs(state.models, state.selectedPrograms, name)
-            |> state.getDrawArgs,
+            |> state.createDrawArgs,
             state.drawArgs,
           );
         (

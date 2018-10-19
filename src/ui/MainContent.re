@@ -1,5 +1,5 @@
 [@bs.val] external document: Webapi.Dom.Element.t = "";
-[@bs.module "../index"]
+[@bs.module "../glUtils"]
 external getGlContext: string => Js.Nullable.t(WebGl.renderingContext) = "";
 
 type canvasDimensions = {

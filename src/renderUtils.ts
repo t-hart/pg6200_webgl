@@ -1,7 +1,8 @@
 import { mat4 } from 'gl-matrix-ts'
-import { ProgramInfo, GlobalOptions } from './index'
-import { BufferObj } from './bufferUtils'
 import { rotation, translation } from './camera'
+import DrawArgs from './drawArgs'
+import Vector from './vector'
+import Camera from './camera'
 
 export const setViewport = (gl: WebGLRenderingContext, width: number, height: number) => gl.viewport(0, 0, width, height)
 
@@ -15,16 +16,12 @@ export const drawEmptyScene = (gl: WebGLRenderingContext) => {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 }
 
-export type DrawArgs = {
-  gl: WebGLRenderingContext,
-  programInfo: ProgramInfo,
-  buffers: BufferObj
-  texture: WebGLTexture | null,
-  centeringTranslation: number[],
-  normalizingScale: number,
-  numFaces: number,
-  boundingBox: number[]
+export type GlobalOptions = {
+  scale: number,
+  rotation: Vector,
+  camera: Camera,
 }
+
 
 export const drawScene = (args: DrawArgs, opts: GlobalOptions, timeOffset: number) => {
   const { gl, programInfo, buffers, texture, normalizingScale, centeringTranslation, numFaces, boundingBox } = args
