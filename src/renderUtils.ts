@@ -1,5 +1,5 @@
 import { mat4 } from 'gl-matrix-ts'
-import { attribSetters } from './glUtils'
+import * as glUtils from './glUtils'
 import { rotation, translation } from './camera'
 import Camera from './camera'
 import ModelOptions from './modelOptions'
@@ -42,35 +42,16 @@ export const drawScene = (opts: ModelOptions, cam: Camera, timeOffset: number) =
   // center
   mat4.translate(modelMatrix, modelMatrix, centeringTranslation)
 
+  const setters = glUtils.attribSetters(gl, programInfo.program)
 
-
-  const bindBuffer = (numComponents: number, buffer: WebGLBuffer | null, attribLocs: number) => {
-    if (attribLocs === -1) { return }
-    const type = gl.FLOAT
-    const normalize = false
-    const stride = 0
-    const offset = 0
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-    gl.vertexAttribPointer(
-      attribLocs,
-      numComponents,
-      type,
-      normalize,
-      stride,
-      offset
-    )
-    gl.enableVertexAttribArray(attribLocs)
+  const attribs = {
+    aVertexNormal: { buffer: buffers.normal, numComponents: 3 },
+    aVertexPosition: { buffer: buffers.position, numComponents: 3 },
+    aVertexColor: { buffer: buffers.color, numComponents: 4 },
+    aTextureCoord: { buffer: buffers.textureCoord, numComponents: 2 }
   }
 
-
-  bindBuffer(3, buffers.position, programInfo.attribLocations.vertexPosition)
-
-  // bindBuffer(3, buffers.boundingBox, programInfo.attribLocations.vertexPosition)
-  bindBuffer(3, buffers.normal, programInfo.attribLocations.vertexNormal)
-
-  bindBuffer(4, buffers.color, programInfo.attribLocations.vertexColor)
-
-  bindBuffer(2, buffers.textureCoord, programInfo.attribLocations.textureCoord)
+  glUtils.setAttributes(setters, attribs)
 
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices)
 

@@ -19,10 +19,10 @@ interface ProgramInfo {
 export const create = (gl: WebGLRenderingContext, program: WebGLProgram) => ({
   program: program,
   attribLocations: {
-    vertexPosition: gl.getAttribLocation(program, 'aVertexPosition'),
-    vertexNormal: gl.getAttribLocation(program, 'aVertexNormal'),
-    textureCoord: gl.getAttribLocation(program, 'aTextureCoord'),
-    vertexColor: gl.getAttribLocation(program, 'aVertexColor')
+    aVertexPosition: gl.getAttribLocation(program, 'aVertexPosition'),
+    aVertexNormal: gl.getAttribLocation(program, 'aVertexNormal'),
+    aTextureCoord: gl.getAttribLocation(program, 'aTextureCoord'),
+    aVertexColor: gl.getAttribLocation(program, 'aVertexColor')
   },
   uniformLocations: {
     projectionMatrix: gl.getUniformLocation(program, 'uProjectionMatrix'),

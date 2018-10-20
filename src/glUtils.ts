@@ -7,19 +7,18 @@ export const getGlContext = (canvasId: string) => {
 
 export const setViewport = (gl: WebGLRenderingContext, width: number, height: number) => gl.viewport(0, 0, width, height)
 
-interface B {
+interface AttribData {
   numComponents: number,
   normalize?: boolean,
   stride?: number,
   offset?: number,
-  name: string,
   buffer: WebGLBuffer,
   type?: number,
   size: number
 }
 
 export const attribSetters = (gl: WebGLRenderingContext, program: WebGLProgram) => {
-  const createAttribSetter = (index: number) => (b: B) => {
+  const createAttribSetter = (index: number) => (b: AttribData) => {
     gl.bindBuffer(gl.ARRAY_BUFFER, b.buffer)
     gl.enableVertexAttribArray(index)
     gl.vertexAttribPointer(
@@ -37,32 +36,12 @@ export const attribSetters = (gl: WebGLRenderingContext, program: WebGLProgram) 
     .map(i => gl.getActiveAttrib(program, i))
     .filter(x => x)
     .map(x => [x.name, createAttribSetter(gl.getAttribLocation(program, x.name))])
-
-  return objectFromValues(keyVals)
+  return objectFromValues(...keyVals)
 }
 
-// function createAttributeSetters(gl, program) {
-//   var attribSetters = {
-//   };
-
-//   function createAttribSetter(index) {
-//     return function(b) {
-//       gl.bindBuffer(gl.ARRAY_BUFFER, b.buffer);
-//       gl.enableVertexAttribArray(index);
-//       gl.vertexAttribPointer(
-//         index, b.numComponents || b.size, b.type || gl.FLOAT, b.normalize || false, b.stride || 0, b.offset || 0);
-//     };
-//   }
-
-//   var numAttribs = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
-//   for (var ii = 0; ii < numAttribs; ++ii) {
-//     var attribInfo = gl.getActiveAttrib(program, ii);
-//     if (!attribInfo) {
-//       break;
-//     }
-//     var index = gl.getAttribLocation(program, attribInfo.name);
-//     attribSetters[attribInfo.name] = createAttribSetter(index);
-//   }
-
-//   return attribSetters;
-// }
+export const setAttributes = (setters: object, attribs: object) => {
+  Object.entries(attribs).forEach(([k, v]) => {
+    const setter = setters[k] || (() => { })
+    setter(v)
+  })
+}
