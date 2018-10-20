@@ -53,8 +53,6 @@ export const drawScene = (opts: ModelOptions, cam: Camera, timeOffset: number) =
 
   glUtils.setAttributes(setters, attribs)
 
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices)
-
   gl.useProgram(programInfo.program)
 
   gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix)
