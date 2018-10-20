@@ -14,16 +14,8 @@ const prepareCanvas = (gl: WebGLRenderingContext) => {
 
 export const drawEmptyScene = prepareCanvas
 
-const drawObj = (opts: ModelOptions, projectionMatrix_: number[] | Float32Array, viewMatrix: number[] | Float32Array, cam: Camera, timeOffset: number) => {
-  const { gl, programInfo, texture, normalizingScale, centeringTranslation, numFaces, setAttributes, setUniforms, buffers } = opts.drawArgs
-  prepareCanvas(gl)
-
-  const fieldOfView = 45 * Math.PI / 180
-  const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight
-  const zNear = 0.1
-  const zFar = 100
-  const projectionMatrix = mat4.perspective(mat4.create(), fieldOfView, aspect, zNear, zFar)
-  // mat4.ortho(projectionMatrix, -2, 2, -2, 2, .1, 100)
+const drawObj = (gl: WebGLRenderingContext, opts: ModelOptions, projectionMatrix: number[] | Float32Array, viewMatrix: number[] | Float32Array, cam: Camera, timeOffset: number) => {
+  const { programInfo, texture, normalizingScale, centeringTranslation, numFaces, setAttributes, setUniforms, buffers } = opts.drawArgs
 
   const offset = translation(cam)
 
@@ -65,14 +57,18 @@ const drawObj = (opts: ModelOptions, projectionMatrix_: number[] | Float32Array,
   }
 }
 
-export const drawScene = (opts: ModelOptions[], cam: Camera, aspect: number, timeOffset: number) => {
+export const drawScene = (gl: WebGLRenderingContext, opts: ModelOptions[], cam: Camera, aspect: number, timeOffset: number) => {
+  prepareCanvas(gl)
+
   const viewMatrix = mat4.fromQuat(mat4.create(), rotation(cam))
 
   const fieldOfView = 45 * Math.PI / 180
   const zNear = 0.1
   const zFar = 100
   const projectionMatrix = mat4.perspective(mat4.create(), fieldOfView, aspect, zNear, zFar)
+  // mat4.ortho(projectionMatrix, -2, 2, -2, 2, .1, 100)
 
-  opts.forEach(x => drawObj(x, projectionMatrix, viewMatrix, cam, timeOffset))
+
+  opts.forEach(x => drawObj(gl, x, projectionMatrix, viewMatrix, cam, timeOffset))
   // drawObj(opts[0], projectionMatrix, viewMatrix, cam, timeOffset))
 }
