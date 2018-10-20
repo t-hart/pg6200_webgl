@@ -1,10 +1,3 @@
-/* type t = { */
-/*   disabled: bool, */
-/*   content: ReasonReact.reactElement, */
-/*   legend: string, */
-/*   children: array(t), */
-/* }; */
-
 type node = {
   content: ReasonReact.reactElement,
   legend: string,
