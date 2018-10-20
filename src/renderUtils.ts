@@ -1,5 +1,4 @@
 import { mat4 } from 'gl-matrix-ts'
-import * as glUtils from './glUtils'
 import { rotation, translation } from './camera'
 import Camera from './camera'
 import ModelOptions from './modelOptions'
@@ -17,7 +16,7 @@ export const drawEmptyScene = prepareCanvas
 
 
 export const drawScene = (opts: ModelOptions, cam: Camera, timeOffset: number) => {
-  const { gl, programInfo, buffers, texture, normalizingScale, centeringTranslation, numFaces, boundingBox } = opts.drawArgs
+  const { gl, programInfo, texture, normalizingScale, centeringTranslation, numFaces, setAttributes, setUniforms } = opts.drawArgs
   prepareCanvas(gl)
 
   const fieldOfView = 45 * Math.PI / 180
@@ -44,17 +43,6 @@ export const drawScene = (opts: ModelOptions, cam: Camera, timeOffset: number) =
   mat4.invert(normalMatrix, modelMatrix)
   mat4.transpose(normalMatrix, normalMatrix)
 
-  const setters = glUtils.attribSetters(gl, programInfo.program)
-
-  const attribs = {
-    aVertexNormal: { buffer: buffers.normal, numComponents: 3 },
-    aVertexPosition: { buffer: buffers.position, numComponents: 3 },
-    aVertexColor: { buffer: buffers.color, numComponents: 4 },
-    aTextureCoord: { buffer: buffers.textureCoord, numComponents: 2 }
-  }
-
-  glUtils.setAttributes(setters, attribs)
-
   gl.useProgram(programInfo.program)
 
   const uniforms = {
@@ -66,7 +54,8 @@ export const drawScene = (opts: ModelOptions, cam: Camera, timeOffset: number) =
     colorMult: [1, 0.5, 0.5, 1]
   }
 
-  glUtils.setUniforms(programInfo.uniformFunctions, uniforms)
+  setAttributes()
+  setUniforms(uniforms)
 
   {
     const vertexCount = numFaces

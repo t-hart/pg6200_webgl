@@ -10,10 +10,10 @@ export interface UniformFunctions {
 interface ProgramInfo {
   program: WebGLProgram | null,
   attribLocations: {
-    vertexPosition: number,
-    vertexNormal: number,
-    textureCoord: number,
-    vertexColor: number
+    aVertexPosition: number,
+    aVertexNormal: number,
+    aTextureCoord: number,
+    aVertexColor: number
   },
   uniformFunctions: UniformFunctions
 }
@@ -30,7 +30,7 @@ const texture = (gl: WebGLRenderingContext, location: WebGLUniformLocation | nul
   gl.uniform1i(location, x)
 }
 
-export const create = (gl: WebGLRenderingContext, program: WebGLProgram) => ({
+export const create = (gl: WebGLRenderingContext, program: WebGLProgram): ProgramInfo => ({
   program: program,
   attribLocations: {
     aVertexPosition: gl.getAttribLocation(program, 'aVertexPosition'),
