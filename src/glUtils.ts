@@ -20,7 +20,7 @@ interface AttribData {
   size: number
 }
 
-export const attribSetters = (gl: WebGLRenderingContext, program: WebGLProgram) => {
+const attribSetters = (gl: WebGLRenderingContext, program: WebGLProgram) => {
   const createAttribSetter = (index: number) => (b: AttribData) => {
     gl.bindBuffer(gl.ARRAY_BUFFER, b.buffer)
     gl.enableVertexAttribArray(index)
@@ -42,7 +42,7 @@ export const attribSetters = (gl: WebGLRenderingContext, program: WebGLProgram) 
   return objectFromValues(...keyVals)
 }
 
-export const setAttributes = (setters: object) => (attribs: object) => {
+const setAttributes = (setters: object) => (attribs: object) => {
   Object.entries(attribs).forEach(([k, v]) => {
     const setter = setters[k] || (() => { })
     setter(v)
