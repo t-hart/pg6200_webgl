@@ -12,3 +12,5 @@ let const = (a, _) => a;
 let id = a => a;
 
 let default = (a, b) => Belt.Option.getWithDefault(b, a);
+
+let mapOption = (f, a) => Belt.Option.map(a, f);

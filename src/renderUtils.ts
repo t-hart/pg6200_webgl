@@ -14,8 +14,7 @@ const prepareCanvas = (gl: WebGLRenderingContext) => {
 
 export const drawEmptyScene = prepareCanvas
 
-
-export const drawScene = (opts: ModelOptions, cam: Camera, timeOffset: number) => {
+const drawObj = (opts: ModelOptions, projectionMatrix_: number[] | Float32Array, viewMatrix: number[] | Float32Array, cam: Camera, timeOffset: number) => {
   const { gl, programInfo, texture, normalizingScale, centeringTranslation, numFaces, setAttributes, setUniforms } = opts.drawArgs
   prepareCanvas(gl)
 
@@ -23,12 +22,10 @@ export const drawScene = (opts: ModelOptions, cam: Camera, timeOffset: number) =
   const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight
   const zNear = 0.1
   const zFar = 100
-  const projectionMatrix = mat4.create()
-  mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar)
+  const projectionMatrix = mat4.perspective(mat4.create(), fieldOfView, aspect, zNear, zFar)
   // mat4.ortho(projectionMatrix, -2, 2, -2, 2, .1, 100)
 
   const offset = translation(cam)
-  const rot = rotation(cam)
 
   const modelMatrix = mat4.fromTranslation(mat4.create(), offset)
   mat4.rotate(modelMatrix, modelMatrix, timeOffset, opts.rotation)
@@ -49,9 +46,10 @@ export const drawScene = (opts: ModelOptions, cam: Camera, timeOffset: number) =
     projectionMatrix,
     modelMatrix,
     normalMatrix,
-    viewMatrix: mat4.fromQuat(mat4.create(), rot),
+    viewMatrix,
     texture,
-    colorMult: [1, 0.5, 0.5, 1]
+    // colorMult: [1, 0.5, 0.5, 1]
+    colorMult: [0.5, 0.5, 1, 1]
   }
 
   setAttributes()
@@ -63,4 +61,17 @@ export const drawScene = (opts: ModelOptions, cam: Camera, timeOffset: number) =
     const offset = 0
     gl.drawElements(gl.TRIANGLES, vertexCount, type, offset)
   }
+}
+
+export const drawScene = (opts: ModelOptions[], cam: Camera, aspect: number, timeOffset: number) => {
+  const viewMatrix = mat4.fromQuat(mat4.create(), rotation(cam))
+
+  const fieldOfView = 45 * Math.PI / 180
+  const zNear = 0.1
+  const zFar = 100
+  const projectionMatrix = mat4.perspective(mat4.create(), fieldOfView, aspect, zNear, zFar)
+
+  opts.forEach(x => drawObj(x, projectionMatrix, viewMatrix, cam, timeOffset))
+  console.log(opts)
+  // drawObj(opts[0], projectionMatrix, viewMatrix, cam, timeOffset))
 }

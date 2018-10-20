@@ -4,22 +4,17 @@ include GlHandlerModel;
 type shaderKey = string;
 
 type action =
-  | SelectShader(modelName, shaderKey)
-  | SelectModel(modelName)
+  | ClickModel(modelName)
   | KeyDown(Webapi.Dom.KeyboardEvent.t)
   | KeyUp(Webapi.Dom.KeyboardEvent.t)
-  | SetScale(int)
-  | SetRotation(Vector.t(int))
+  | SelectShader(modelName, shaderKey)
+  | SetScale(modelName, int)
+  | SetRotation(modelName, Vector.t(int))
   | SetRafId(option(Webapi.rafId))
   | PrepareRender
-  | Render(DrawArgs.abstract, ModelOptions.t, bool, float)
+  | Render(array(ModelOptions.abstract), bool, float)
+  | SetAspect(float)
   | Reset;
-
-let getRenderArgs = (models, programs, name) =>
-  Model.toRenderArgs(
-    StringMap.find(name, models),
-    StringMap.find(name, programs),
-  );
 
 let handleKeyPress = state =>
   fun
@@ -37,7 +32,7 @@ let cancelAnimation =
 
 let reducer = (action, state) =>
   switch (action) {
-  | Render(drawArgs, modelOptions, shouldLoop, currentTime) =>
+  | Render(modelOptions, shouldLoop, currentTime) =>
     let delta = currentTime -. state.nextTime;
     let deltaClamped = delta > 0.1 ? 0.03344409800000392 : delta;
     let cam =
@@ -46,17 +41,14 @@ let reducer = (action, state) =>
         state.keys,
         state.cam,
       );
-    let opts = modelOptions->ModelOptions.toAbstract(drawArgs);
     ReasonReact.UpdateWithSideEffects(
       {...state, nextTime: currentTime, previousTime: state.nextTime, cam},
       (
         self => {
-          drawScene(opts, cam, state.nextTime);
+          drawScene(modelOptions, cam, state.aspect, state.nextTime);
           shouldLoop ?
             Webapi.requestCancellableAnimationFrame(x =>
-              self.send(
-                Render(drawArgs, modelOptions, shouldLoop, x *. 0.001),
-              )
+              self.send(Render(modelOptions, shouldLoop, x *. 0.001))
             )
             ->Some
             ->SetRafId
@@ -67,34 +59,20 @@ let reducer = (action, state) =>
     );
 
   | PrepareRender =>
-    let (nextState, sideEffects) =
-      switch (state.model) {
-      | Some(name) =>
-        let drawArgs =
-          StringMap.add(
-            name,
-            getRenderArgs(state.models, state.selectedPrograms, name)
-            |> state.createDrawArgs,
-            state.drawArgs,
-          );
-        (
-          {...state, drawArgs},
+    let models =
+      StringMap.filter((_, x) => Model.shouldRender(x), state.models);
+    let sideEffects =
+      StringMap.is_empty(models) ?
+        (_ => state.clear()) :
+        {
+          let modelOptions =
+            models |> StringMap.map(Model.toAbstract) |> StringMap.toArray;
           (
             send =>
-              send(
-                Render(
-                  name->StringMap.find(drawArgs),
-                  state.modelOptions,
-                  shouldLoop(state),
-                  state.nextTime,
-                ),
-              )
-          ),
-        );
-      | None => (state, (_ => state.clear()))
-      };
-    ReasonReact.UpdateWithSideEffects(
-      nextState,
+              send(Render(modelOptions, shouldLoop(state), state.nextTime))
+          );
+        };
+    ReasonReact.SideEffects(
       (
         self => {
           cancelAnimation(state.rafId);
@@ -104,61 +82,66 @@ let reducer = (action, state) =>
       ),
     );
 
+  | SelectShader(modelName, drawArgs) =>
+    ReasonReact.Update({
+      ...state,
+      models:
+        StringMap.update(
+          modelName,
+          mapOption(Model.changeDrawArgs(drawArgs)),
+          state.models,
+        ),
+    })
+
   | KeyDown(e) => Input.keyDown(state.keys, e) |> handleKeyPress(state)
 
   | KeyUp(e) => Input.keyUp(state.keys, e) |> handleKeyPress(state)
 
-  | SelectModel(name) =>
-    let nextState =
-      switch (state.model) {
-      | Some(n) when n === name => {...state, model: None}
-      | _ =>
-        let selectedPrograms =
-          StringMap.update(
-            name,
-            default(defaultProgram),
-            state.selectedPrograms,
-          );
-        {...state, model: Some(name), selectedPrograms};
-      };
+  | ClickModel(name) =>
+    let models =
+      StringMap.update(
+        name,
+        mapOption(Model.toggleSelectedState),
+        state.models,
+      );
     ReasonReact.UpdateWithSideEffects(
-      nextState,
+      {...state, models},
       (self => self.send(PrepareRender)),
     );
 
-  | SetRotation(rotation) =>
+  | SetRotation(modelName, rotation) =>
     ReasonReact.UpdateWithSideEffects(
       {
         ...state,
-        modelOptions: {
-          ...state.modelOptions,
-          rotation,
-        },
+        models:
+          StringMap.update(
+            modelName,
+            mapOption(Model.setRotation(rotation)),
+            state.models,
+          ),
       },
       (self => self.send(PrepareRender)),
     )
 
-  | SetScale(v) =>
+  | SetScale(modelName, scale) =>
     ReasonReact.UpdateWithSideEffects(
       {
         ...state,
-        modelOptions: {
-          ...state.modelOptions,
-          scale: v,
-        },
+        models:
+          StringMap.update(
+            modelName,
+            mapOption(Model.setScale(scale)),
+            state.models,
+          ),
       },
       (self => self.send(PrepareRender)),
     )
 
   | SetRafId(id) => ReasonReact.Update({...state, rafId: id})
 
-  | SelectShader(modelName, programName) =>
+  | SetAspect(aspect) =>
     ReasonReact.UpdateWithSideEffects(
-      {
-        ...state,
-        selectedPrograms:
-          StringMap.add(modelName, programName, state.selectedPrograms),
-      },
+      {...state, aspect},
       (self => self.send(PrepareRender)),
     )
 

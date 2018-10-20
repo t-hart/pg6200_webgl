@@ -8,6 +8,8 @@ export const getGlContext = (canvasId: string) => {
 
 export const setViewport = (gl: WebGLRenderingContext, width: number, height: number) => gl.viewport(0, 0, width, height)
 
+export const getAspect = (gl: WebGLRenderingContext) => gl.canvas.clientWidth / gl.canvas.clientHeight
+
 interface AttribData {
   numComponents: number,
   normalize?: boolean,
