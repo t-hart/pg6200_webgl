@@ -45,3 +45,19 @@ export const setAttributes = (setters: object, attribs: object) => {
     setter(v)
   })
 }
+
+type Matrix = number[] | Float32Array
+interface Uniforms {
+  projectionMatrix: Matrix,
+  modelMatrix: Matrix,
+  normalMatrix: Matrix,
+  viewMatrix: Matrix,
+  texture: WebGLTexture | null,
+  colorMult: number[] | Float32Array
+}
+
+export const setUniforms = (setters: object, uniforms: Uniforms) => {
+  Object.entries(uniforms).forEach(([k, v]) => {
+    setters[k](v)
+  })
+}

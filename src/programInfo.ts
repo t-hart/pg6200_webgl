@@ -1,3 +1,12 @@
+export interface UniformFunctions {
+  projectionMatrix: Function,
+  modelMatrix: Function,
+  viewMatrix: Function,
+  normalMatrix: Function,
+  texture: Function,
+  colorMult: Function,
+}
+
 interface ProgramInfo {
   program: WebGLProgram | null,
   attribLocations: {
@@ -6,22 +15,7 @@ interface ProgramInfo {
     textureCoord: number,
     vertexColor: number
   },
-  uniformLocations: {
-    uProjectionMatrix: WebGLUniformLocation | null,
-    uModelMatrix: WebGLUniformLocation | null,
-    uViewMatrix: WebGLUniformLocation | null,
-    uNormalMatrix: WebGLUniformLocation | null,
-    uSampler: WebGLUniformLocation | null,
-    uColorMult: WebGLUniformLocation | null
-  },
-  uniformFunctions: {
-    projectionMatrix: Function,
-    modelMatrix: Function,
-    viewMatrix: Function,
-    normalMatrix: Function,
-    sampler: Function,
-    colorMult: Function,
-  }
+  uniformFunctions: UniformFunctions
 }
 
 const matrixUniform = (gl: WebGLRenderingContext, location: WebGLUniformLocation | null) => (matrix: number[] | Float32Array) =>
@@ -29,6 +23,12 @@ const matrixUniform = (gl: WebGLRenderingContext, location: WebGLUniformLocation
 
 const vec4Uniform = (gl: WebGLRenderingContext, location: WebGLUniformLocation | null) => (vec: number[] | Float32Array) =>
   gl.uniform4fv(location, vec)
+
+const texture = (gl: WebGLRenderingContext, location: WebGLUniformLocation | null) => (texture: WebGLTexture | null, x: number = 0) => {
+  gl.activeTexture(gl.TEXTURE0)
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.uniform1i(location, x)
+}
 
 export const create = (gl: WebGLRenderingContext, program: WebGLProgram) => ({
   program: program,
@@ -38,20 +38,12 @@ export const create = (gl: WebGLRenderingContext, program: WebGLProgram) => ({
     aTextureCoord: gl.getAttribLocation(program, 'aTextureCoord'),
     aVertexColor: gl.getAttribLocation(program, 'aVertexColor')
   },
-  uniformLocations: {
-    uProjectionMatrix: gl.getUniformLocation(program, 'uProjectionMatrix'),
-    uModelMatrix: gl.getUniformLocation(program, 'uModelMatrix'),
-    uViewMatrix: gl.getUniformLocation(program, 'uViewMatrix'),
-    uNormalMatrix: gl.getUniformLocation(program, 'uNormalMatrix'),
-    uSampler: gl.getUniformLocation(program, 'uSampler'),
-    uColorMult: gl.getUniformLocation(program, 'uColorMult')
-  },
   uniformFunctions: {
     projectionMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uProjectionMatrix')),
     modelMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uModelMatrix')),
     viewMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uViewMatrix')),
     normalMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uNormalMatrix')),
-    sampler: gl.getUniformLocation(program, 'uSampler'),
+    texture: texture(gl, gl.getUniformLocation(program, 'uSampler')),
     colorMult: vec4Uniform(gl, gl.getUniformLocation(program, 'uColorMult'))
   }
 })

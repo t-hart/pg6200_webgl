@@ -4,7 +4,7 @@ import { rotation, translation } from './camera'
 import Camera from './camera'
 import ModelOptions from './modelOptions'
 
-export const drawEmptyScene = (gl: WebGLRenderingContext) => {
+const prepareCanvas = (gl: WebGLRenderingContext) => {
   gl.clearColor(0, 0, 0, 1)
   gl.clearDepth(1)
   gl.enable(gl.DEPTH_TEST)
@@ -13,14 +13,12 @@ export const drawEmptyScene = (gl: WebGLRenderingContext) => {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 }
 
+export const drawEmptyScene = prepareCanvas
+
+
 export const drawScene = (opts: ModelOptions, cam: Camera, timeOffset: number) => {
   const { gl, programInfo, buffers, texture, normalizingScale, centeringTranslation, numFaces, boundingBox } = opts.drawArgs
-  gl.clearColor(0, 0, 0, 1)
-  gl.clearDepth(1)
-  gl.enable(gl.DEPTH_TEST)
-  gl.depthFunc(gl.LEQUAL)
-
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+  prepareCanvas(gl)
 
   const fieldOfView = 45 * Math.PI / 180
   const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight
@@ -42,6 +40,10 @@ export const drawScene = (opts: ModelOptions, cam: Camera, timeOffset: number) =
   // center
   mat4.translate(modelMatrix, modelMatrix, centeringTranslation)
 
+  const normalMatrix = mat4.create()
+  mat4.invert(normalMatrix, modelMatrix)
+  mat4.transpose(normalMatrix, normalMatrix)
+
   const setters = glUtils.attribSetters(gl, programInfo.program)
 
   const attribs = {
@@ -55,22 +57,17 @@ export const drawScene = (opts: ModelOptions, cam: Camera, timeOffset: number) =
 
   gl.useProgram(programInfo.program)
 
-  gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix)
+  const uniforms = {
+    projectionMatrix,
+    modelMatrix,
+    normalMatrix,
+    viewMatrix: mat4.fromQuat(mat4.create(), rot),
+    texture,
+    colorMult: [1, 0.5, 0.5, 1]
+  }
 
-  gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, false, modelMatrix)
+  glUtils.setUniforms(programInfo.uniformFunctions, uniforms)
 
-  gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, false, mat4.fromQuat(mat4.create(), rot))
-
-  const normalMatrix = mat4.create()
-  mat4.invert(normalMatrix, modelMatrix)
-  mat4.transpose(normalMatrix, normalMatrix)
-
-  gl.uniformMatrix4fv(programInfo.uniformLocations.normalMatrix, false, normalMatrix)
-
-  gl.activeTexture(gl.TEXTURE0)
-  gl.bindTexture(gl.TEXTURE_2D, texture)
-  gl.uniform4fv(programInfo.uniformLocations.colorMult, [1, 0.5, 0.5, 1])
-  gl.uniform1i(programInfo.uniformLocations.uSampler, 0)
   {
     const vertexCount = numFaces
     const type = gl.UNSIGNED_SHORT

@@ -4,7 +4,7 @@ import { boundingBox, dists, centeringTranslation, scale } from './vector'
 import BufferObject, { initBuffers } from './bufferUtils'
 import ProgramInfo, * as programInfo from './programInfo'
 
-interface DrawArgs {
+export interface DrawArgs {
   gl: WebGLRenderingContext,
   programInfo: ProgramInfo,
   buffers: BufferObject
