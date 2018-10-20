@@ -89,15 +89,18 @@ let reducer = (action, state) =>
     );
 
   | SelectShader(modelName, drawArgs) =>
-    ReasonReact.Update({
-      ...state,
-      models:
-        StringMap.update(
-          modelName,
-          mapOption(Model.changeDrawArgs(drawArgs)),
-          state.models,
-        ),
-    })
+    ReasonReact.UpdateWithSideEffects(
+      {
+        ...state,
+        models:
+          StringMap.update(
+            modelName,
+            mapOption(Model.changeDrawArgs(drawArgs)),
+            state.models,
+          ),
+      },
+      (self => self.send(PrepareRender)),
+    )
 
   | KeyDown(e) => Input.keyDown(state.keys, e) |> handleKeyPress(state)
 

@@ -5,10 +5,14 @@ let isSelected = name =>
   | Some(a) when a === name => true
   | _ => false;
 
+let sortedBindings = map =>
+  map
+  |> StringMap.bindings
+  |> List.fast_sort((a, b) => compare(fst(a), fst(b)));
+
 let elementArray = (toElement, xs) =>
   xs
-  ->StringMap.bindings
-  ->List.fast_sort((a, b) => compare(fst(a), fst(b)), _)
+  ->sortedBindings
   ->List.map(toElement, _)
   ->Array.of_list
   ->ReasonReact.array;
@@ -35,7 +39,7 @@ let ifSome = content =>
   | Some(x) => content(x)
   | None => selectModel;
 
-let shaderButtons = (send, name, model: Model.t) =>
+let shaderButtons = (onClick, model: Model.t) =>
   elementArray(
     ((key, _drawArgs)) => {
       let isSelected = key === model.currentDrawArgs;
@@ -43,7 +47,8 @@ let shaderButtons = (send, name, model: Model.t) =>
         key
         className={isSelected ? "active" : ""}
         disabled=isSelected
-        onClick={_ => SelectShader(name, key)->send}>
+        /* onClick={_ => SelectShader(name, key)->send}> */
+        onClick={_ => onClick(key)}>
         {ReasonReact.string(key)}
       </button>;
     },
@@ -69,7 +74,8 @@ let rotationSliders = (send, name, rotation) =>
           event
           ->Event.value
           ->int_of_string
-          ->(v => SetRotation(name, Vector.update(rotation, f(v)))),
+          ->(v => Vector.update(rotation, f(v)))
+          ->(x => SetRotation(name, x)),
         )
       ),
     [Vector.x, Vector.y, Vector.z],
@@ -103,31 +109,44 @@ let handleCanvasResize = (gl, send, e) => {
   send(SetAspect(float_of_int(width) /. float_of_int(height)));
 };
 
-let fieldsets = (send, state): array(Fieldset.t) => [|
-  {
-    disabled: false,
-    content:
-      <button className="span-all" onClick={_ => send(Reset)}>
-        {ReasonReact.string("Reset")}
-      </button>,
-    legend: "",
-  },
-  {
-    disabled: false,
-    content: modelButtons(send, state.models),
-    legend: "Models",
-  },
-  /* { */
-  /*   disabled: state.model === None, */
-  /*   content: shaderButtons(send, state), */
-  /*   legend: "Shaders", */
-  /* }, */
-  /* { */
-  /*   disabled: false, */
-  /*   content: modelOptControls(send, state.modelOptions), */
-  /*   legend: "Transforms", */
-  /* }, */
-|];
+let fieldsets = (send, state): array(Fieldset.t) =>
+  Fieldset.(
+    Array.concat([
+      [|
+        Leaf({
+          content:
+            <button className="span-all" onClick={_ => send(Reset)}>
+              {ReasonReact.string("Reset")}
+            </button>,
+          legend: "",
+        }),
+        Leaf({content: modelButtons(send, state.models), legend: "Models"}),
+      |],
+      state.models
+      |> StringMap.filter((_, v) => Model.shouldRender(v))
+      |> sortedBindings
+      |> List.map(((k, v)) =>
+           Branch({
+             legend: k,
+             children: [|
+               Leaf({
+                 content:
+                   shaderButtons(
+                     shader => send(SelectShader(k, shader)),
+                     v,
+                   ),
+                 legend: "Shaders",
+               }),
+               Leaf({
+                 content: modelOptControls(send, k, v),
+                 legend: "Transforms",
+               }),
+             |],
+           })
+         )
+      |> Array.of_list,
+    ])
+  );
 
 let component = ReasonReact.reducerComponent("GL Handler");
 let make = (~glRenderingContext, _children) => {

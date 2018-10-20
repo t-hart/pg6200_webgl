@@ -66,9 +66,7 @@ export const drawScene = (gl: WebGLRenderingContext, opts: ModelOptions[], cam: 
   const zNear = 0.1
   const zFar = 100
   const projectionMatrix = mat4.perspective(mat4.create(), fieldOfView, aspect, zNear, zFar)
-  // mat4.ortho(projectionMatrix, -2, 2, -2, 2, .1, 100)
-
+  // const projectionMatrix = mat4.ortho(mat4.create(), -2, 2, -2, 2, .1, 100)
 
   opts.forEach(x => drawObj(gl, x, projectionMatrix, viewMatrix, cam, timeOffset))
-  // drawObj(opts[0], projectionMatrix, viewMatrix, cam, timeOffset))
 }
