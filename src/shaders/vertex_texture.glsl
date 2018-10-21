@@ -8,6 +8,6 @@ uniform mat4 uProjectionMatrix;
 varying highp vec2 vTextureCoord;
 
 void main(void) {
-  gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aVertexPosition;
+    gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aVertexPosition;
     vTextureCoord = aTextureCoord;
 }
