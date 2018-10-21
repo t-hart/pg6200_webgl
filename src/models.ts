@@ -13,11 +13,16 @@ export interface ModelData {
 const mapObject = (o: object, f: Function) =>
   Object.entries(o).reduce((x, [k, v]) => ({ ...x, [k]: f(v) }), {})
 
-const flatMapObject = (o: object, f: (a: any) => b: any) => mapObject(o, f)
-
 export const defaultProgram = "color"
 
-const models = (gl: WebGLRenderingContext) => mapObject(objs, (x: ObjTexture) => {
+export const room = (gl: WebGLRenderingContext) => {
+  const cube = objs.cube
+  const programs = mapObject(availableShaders(cube.model), initShaderProgram(gl))
+  const texture = initTexture2D(gl)(cube.texturePath)
+  return drawArgs.create(gl, { program: programs.lighting, objData: cube.model, texture })
+}
+
+export default (gl: WebGLRenderingContext) => mapObject(objs, (x: ObjTexture) => {
   try {
     const programs = mapObject(availableShaders(x.model), initShaderProgram(gl))
     const texture = x.texturePath ? initTexture2D(gl)(x.texturePath) : null
@@ -27,6 +32,4 @@ const models = (gl: WebGLRenderingContext) => mapObject(objs, (x: ObjTexture) =>
     console.error(e)
     return {}
   }
-}
-
-export default models
+})

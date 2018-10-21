@@ -5,6 +5,7 @@ type modelName = string;
 
 type state = {
   models: StringMap.t(Model.t),
+  room: DrawArgs.abstract,
   cam: Camera.t,
   clear: unit => unit,
   rafId: option(Webapi.rafId),
@@ -20,6 +21,7 @@ let initialState = glRenderingContext => {
     getModels(glRenderingContext)
     |> StringMap.fromJsDict
     |> StringMap.map(Model.fromAbstract),
+  room: getRoom(glRenderingContext),
   clear: () => drawEmptyScene(glRenderingContext),
   rafId: None,
   previousTime: 0.0,

@@ -33,7 +33,7 @@ let fromAbstract = drawArgsAbstract => {
   };
 };
 
-let isRotating = t => t.isSelected && t.rotation !== Vector.zero;
+let isRotating = t => t.isSelected && !Vector.isZero(t.rotation);
 let shouldRender = t => t.isSelected;
 let changeDrawArgs = (drawArgs, t) => {...t, currentDrawArgs: drawArgs};
 let toggleSelectedState = t => {...t, isSelected: !t.isSelected};

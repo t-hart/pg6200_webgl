@@ -45,7 +45,14 @@ let reducer = (action, state) =>
       {...state, nextTime: currentTime, previousTime: state.nextTime, cam},
       (
         self => {
-          drawScene(state.gl, models, cam, state.aspect, state.nextTime);
+          drawScene(
+            state.gl,
+            state.room,
+            models,
+            cam,
+            state.aspect,
+            state.nextTime,
+          );
           shouldLoop ?
             Webapi.requestCancellableAnimationFrame(x =>
               self.send(Render(models, shouldLoop, x *. 0.001))

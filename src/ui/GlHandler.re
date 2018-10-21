@@ -82,7 +82,7 @@ let rotationSliders = (send, name, rotation) =>
   )
   |> Array.of_list;
 
-let modelOptControls = (send, name, model: Model.t) =>
+let modelTransforms = (send, name, model: Model.t) =>
   <>
     <fieldset className="span-all no-pad-h">
       <legend> {ReasonReact.string("Scale")} </legend>
@@ -136,10 +136,7 @@ let fieldsets = (send, state): array(Fieldset.t) =>
                    ),
                  legend: "Shaders",
                }),
-               Leaf({
-                 content: modelOptControls(send, k, v),
-                 legend: "Transforms",
-               }),
+               Leaf({content: modelTransforms(send, k, v), legend: ""}),
              |],
            })
          )
