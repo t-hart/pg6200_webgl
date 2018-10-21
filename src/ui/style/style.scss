@@ -64,6 +64,7 @@ h6 {
 
 .content {
   display: grid;
+  gap: 1em;
   height: 100%;
   padding:  1em;
   place-items: center;
@@ -89,7 +90,6 @@ footer {
   display: grid;
   gap: .5em .5em;
   grid-template-columns: 1fr 1fr 1fr;
-  width: 640px;
 }
 
 .no-pad-h {
@@ -121,6 +121,8 @@ fieldset {
 .controls-grid {
   display: grid;
   gap: 1.5em 0;
+  width: 100%;
+  max-width: 60rem;
 
   > fieldset > legend {
     font-weight: normal;
