@@ -2,20 +2,15 @@ import { ObjData } from './objs'
 import * as glUtils from './glUtils'
 import Vector from './vector'
 import { boundingBox, dists, centeringTranslation, scale } from './vector'
-import BufferObject, { initBuffers } from './bufferUtils'
-import ProgramInfo, * as programInfo from './programInfo'
+import { initBuffers } from './bufferUtils'
+import * as programInfo from './programInfo'
 
 export interface DrawArgs {
-  gl: WebGLRenderingContext,
-  programInfo: ProgramInfo,
-  buffers: BufferObject
-  texture: WebGLTexture | null,
-  centeringTranslation: Vector,
-  normalizingScale: number,
-  numFaces: number,
-  boundingBox: number[],
-  setAttributes: () => void,
-  setUniforms: (uniforms: glUtils.Uniforms) => void,
+  readonly texture: WebGLTexture | null,
+  readonly centeringTranslation: Vector,
+  readonly normalizingScale: number,
+  readonly boundingBox: number[],
+  readonly render: (uniforms: glUtils.Uniforms) => void,
 }
 
 interface RenderArgs {
@@ -38,15 +33,20 @@ export const create = (gl: WebGLRenderingContext, { program, objData, texture }:
 
   return {
     boundingBox: boundingBox(objData.min, objData.max),
-    buffers,
     centeringTranslation: centeringTranslation(objData.max, lengths),
-    gl,
     normalizingScale: 1 / Math.max(...scale(0.5)(lengths)),
-    numFaces: objData.f.length,
-    programInfo: progInfo,
     texture,
-    setAttributes: () => glUtils.createAttributeSetters(gl, program)(attribs),
-    setUniforms: glUtils.setUniforms(progInfo.uniformFunctions)
+    render: (uniforms: glUtils.Uniforms) => {
+      gl.useProgram(progInfo.program)
+      glUtils.createAttributeSetters(gl, program)(attribs)
+      glUtils.setUniforms(progInfo.uniformFunctions)(uniforms)
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices)
+
+      const vertexCount = objData.f.length
+      const type = gl.UNSIGNED_SHORT
+      const offset = 0
+      gl.drawElements(gl.TRIANGLES, vertexCount, type, offset)
+    }
   }
 }
 

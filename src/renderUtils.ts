@@ -14,8 +14,8 @@ const prepareCanvas = (gl: WebGLRenderingContext) => {
 
 export const drawEmptyScene = prepareCanvas
 
-const drawObj = (gl: WebGLRenderingContext, opts: ModelOptions, projectionMatrix: number[] | Float32Array, viewMatrix: number[] | Float32Array, cam: Camera, timeOffset: number) => {
-  const { programInfo, texture, normalizingScale, centeringTranslation, numFaces, setAttributes, setUniforms, buffers } = opts.drawArgs
+const drawObj = (opts: ModelOptions, projectionMatrix: number[] | Float32Array, viewMatrix: number[] | Float32Array, cam: Camera, timeOffset: number) => {
+  const { texture, normalizingScale, centeringTranslation, render } = opts.drawArgs
 
   const offset = translation(cam)
 
@@ -32,10 +32,6 @@ const drawObj = (gl: WebGLRenderingContext, opts: ModelOptions, projectionMatrix
   mat4.invert(normalMatrix, modelMatrix)
   mat4.transpose(normalMatrix, normalMatrix)
 
-  gl.useProgram(programInfo.program)
-
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices)
-
   const uniforms = {
     projectionMatrix,
     modelMatrix,
@@ -46,15 +42,7 @@ const drawObj = (gl: WebGLRenderingContext, opts: ModelOptions, projectionMatrix
     colorMult: [0.5, 0.5, 1, 1]
   }
 
-  setAttributes()
-  setUniforms(uniforms)
-
-  {
-    const vertexCount = numFaces
-    const type = gl.UNSIGNED_SHORT
-    const offset = 0
-    gl.drawElements(gl.TRIANGLES, vertexCount, type, offset)
-  }
+  render(uniforms)
 }
 
 export const drawScene = (gl: WebGLRenderingContext, opts: ModelOptions[], cam: Camera, aspect: number, timeOffset: number) => {
@@ -68,5 +56,5 @@ export const drawScene = (gl: WebGLRenderingContext, opts: ModelOptions[], cam: 
   const projectionMatrix = mat4.perspective(mat4.create(), fieldOfView, aspect, zNear, zFar)
   // const projectionMatrix = mat4.ortho(mat4.create(), -2, 2, -2, 2, .1, 100)
 
-  opts.forEach(x => drawObj(gl, x, projectionMatrix, viewMatrix, cam, timeOffset))
+  opts.forEach(x => drawObj(x, projectionMatrix, viewMatrix, cam, timeOffset))
 }
