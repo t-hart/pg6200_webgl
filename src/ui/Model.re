@@ -1,25 +1,41 @@
-type t = {
-  objData: ObjData.abstract,
-  programs: StringMap.t(WebGl.program),
-  texture: option(WebGl.texture),
-};
+[@bs.module "../models"] external defaultProgram: string = "";
 
 [@bs.deriving abstract]
 type abstract = {
-  objData: ObjData.abstract,
-  programs: Js.Dict.t(WebGl.program),
-  texture: option(WebGl.texture),
+  scale: float,
+  rotation: array(float),
+  drawArgs: DrawArgs.abstract,
 };
 
-let toRenderArgs = (model, programName) =>
-  RenderArgs.abstract(
-    ~objData=model.objData,
-    ~program=StringMap.find(programName, model.programs),
-    ~texture=model.texture,
+type t = {
+  drawArgs: StringMap.t(DrawArgs.abstract),
+  currentDrawArgs: string,
+  isSelected: bool,
+  scale: int,
+  rotation: Vector.t(int),
+};
+
+let toAbstract = model =>
+  abstract(
+    ~scale=model.scale->Utils.toDecimal,
+    ~rotation=model.rotation->Vector.toFloatArray,
+    ~drawArgs=StringMap.find(model.currentDrawArgs, model.drawArgs),
   );
 
-let fromAbstract = abstract => {
-  objData: abstract->objDataGet,
-  programs: abstract->programsGet |> StringMap.fromJsDict,
-  texture: abstract->textureGet,
+let fromAbstract = drawArgsAbstract => {
+  let drawArgs = StringMap.fromJsDict(drawArgsAbstract);
+  {
+    drawArgs,
+    currentDrawArgs: defaultProgram,
+    isSelected: false,
+    scale: 100,
+    rotation: Vector.zero,
+  };
 };
+
+let isRotating = t => t.isSelected && !Vector.isZero(t.rotation);
+let shouldRender = t => t.isSelected;
+let changeDrawArgs = (drawArgs, t) => {...t, currentDrawArgs: drawArgs};
+let toggleSelectedState = t => {...t, isSelected: !t.isSelected};
+let setRotation = (rotation, t) => {...t, rotation};
+let setScale = (scale, t) => {...t, scale};

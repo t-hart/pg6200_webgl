@@ -28,6 +28,8 @@ let update = (original: t('a), opt: t(option('a))) => {
   z: opt.z |> default(original.z),
 };
 
+let isZero = v => v.x === 0 && v.y === 0 && v.z === 0;
+
 let toString = ({x, y, z}: t('a)) => {j|[ $x, $y, $z ]|j};
 
 let map = (f, v) => {x: f(v.x), y: f(v.y), z: f(v.z)};

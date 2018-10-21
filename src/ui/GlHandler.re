@@ -5,24 +5,28 @@ let isSelected = name =>
   | Some(a) when a === name => true
   | _ => false;
 
+let sortedBindings = map =>
+  map
+  |> StringMap.bindings
+  |> List.fast_sort((a, b) => compare(fst(a), fst(b)));
+
 let elementArray = (toElement, xs) =>
   xs
-  ->StringMap.keys
-  ->List.fast_sort(compare, _)
+  ->sortedBindings
   ->List.map(toElement, _)
   ->Array.of_list
   ->ReasonReact.array;
 
-let modelButtons = (send, data) =>
+let modelButtons = (send, models) =>
   elementArray(
-    key =>
+    ((name, model)) =>
       <button
-        key
-        className={isSelected(key, data.model) ? "active" : ""}
-        onClick={_ => key->SelectModel->send}>
-        {ReasonReact.string(key)}
+        key=name
+        className={Model.shouldRender(model) ? "active" : ""}
+        onClick={_ => name->ClickModel->send}>
+        {ReasonReact.string(name)}
       </button>,
-    data.models,
+    models,
   );
 
 let selectModel =
@@ -35,25 +39,20 @@ let ifSome = content =>
   | Some(x) => content(x)
   | None => selectModel;
 
-let shaderButtons = (send, data: state) =>
-  (
-    name => {
-      let selectedProgram = key =>
-        key === StringMap.find(name, data.selectedPrograms);
-      elementArray(
-        key =>
-          <button
-            key
-            className={key->selectedProgram ? "active" : ""}
-            disabled=key->selectedProgram
-            onClick={_ => SelectShader(name, key)->send}>
-            {ReasonReact.string(key)}
-          </button>,
-        StringMap.find(name, data.models).programs,
-      );
-    }
-  )
-  ->ifSome(_, data.model);
+let shaderButtons = (onClick, model: Model.t) =>
+  elementArray(
+    ((key, _drawArgs)) => {
+      let isSelected = key === model.currentDrawArgs;
+      <button
+        key
+        className={isSelected ? "active" : ""}
+        disabled=isSelected
+        onClick={_ => onClick(key)}>
+        {ReasonReact.string(key)}
+      </button>;
+    },
+    model.drawArgs,
+  );
 
 let rangeSlider = (value, onChange) =>
   <input
@@ -66,7 +65,7 @@ let rangeSlider = (value, onChange) =>
     onChange
   />;
 
-let rotationSliders = (send, rotation) =>
+let rotationSliders = (send, name, rotation) =>
   List.map2(
     (f, a) =>
       rangeSlider(string_of_int(a), event =>
@@ -74,7 +73,8 @@ let rotationSliders = (send, rotation) =>
           event
           ->Event.value
           ->int_of_string
-          ->(v => SetRotation(Vector.update(rotation, f(v)))),
+          ->(v => Vector.update(rotation, f(v)))
+          ->(x => SetRotation(name, x)),
         )
       ),
     [Vector.x, Vector.y, Vector.z],
@@ -82,20 +82,20 @@ let rotationSliders = (send, rotation) =>
   )
   |> Array.of_list;
 
-let globalOptControls = (send, opts: GlobalOptions.t) =>
+let modelTransforms = (send, name, model: Model.t) =>
   <>
     <fieldset className="span-all no-pad-h">
       <legend> {ReasonReact.string("Scale")} </legend>
       {
-        rangeSlider(opts.scale->string_of_int, event =>
-          send(event->Event.value->int_of_string->SetScale)
+        rangeSlider(model.scale->string_of_int, event =>
+          send(event->Event.value->int_of_string->(x => SetScale(name, x)))
         )
       }
     </fieldset>
     <fieldset className="span-all no-pad-h">
       <legend> {ReasonReact.string("Rotation (X, Y, Z)")} </legend>
       <div className="controls">
-        ...{rotationSliders(send, opts.rotation)}
+        ...{rotationSliders(send, name, model.rotation)}
       </div>
     </fieldset>
   </>;
@@ -105,30 +105,44 @@ let handleKeyUp = (send, e) => KeyUp(e)->send;
 let handleCanvasResize = (gl, send, e) => {
   let (width, height) = CanvasResizeEvent.details(e);
   setViewport(gl, width, height);
-  send(PrepareRender);
+  send(SetAspect(float_of_int(width) /. float_of_int(height)));
 };
 
-let fieldsets = (send, data): array(Fieldset.t) => [|
-  {
-    disabled: false,
-    content:
-      <button className="span-all" onClick={_ => send(Reset)}>
-        {ReasonReact.string("Reset")}
-      </button>,
-    legend: "",
-  },
-  {disabled: false, content: modelButtons(send, data), legend: "Models"},
-  {
-    disabled: data.model === None,
-    content: shaderButtons(send, data),
-    legend: "Shaders",
-  },
-  {
-    disabled: false,
-    content: globalOptControls(send, data.globalOptions),
-    legend: "Transforms",
-  },
-|];
+let fieldsets = (send, state): array(Fieldset.t) =>
+  Fieldset.(
+    Array.concat([
+      [|
+        Leaf({
+          content:
+            <button className="span-all" onClick={_ => send(Reset)}>
+              {ReasonReact.string("Reset")}
+            </button>,
+          legend: "",
+        }),
+        Leaf({content: modelButtons(send, state.models), legend: "Models"}),
+      |],
+      state.models
+      |> StringMap.filter((_, v) => Model.shouldRender(v))
+      |> sortedBindings
+      |> List.map(((k, v)) =>
+           Branch({
+             legend: k,
+             children: [|
+               Leaf({
+                 content:
+                   shaderButtons(
+                     shader => send(SelectShader(k, shader)),
+                     v,
+                   ),
+                 legend: "Shaders",
+               }),
+               Leaf({content: modelTransforms(send, k, v), legend: ""}),
+             |],
+           })
+         )
+      |> Array.of_list,
+    ])
+  );
 
 let component = ReasonReact.reducerComponent("GL Handler");
 let make = (~glRenderingContext, _children) => {

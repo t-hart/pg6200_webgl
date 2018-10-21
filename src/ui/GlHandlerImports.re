@@ -1,19 +1,29 @@
-[@bs.module "../models"] external defaultProgram: string = "";
-
-[@bs.module "../index"]
-external getDrawArgs:
-  (WebGl.renderingContext, RenderArgs.abstract) => DrawArgs.abstract =
-  "";
-
 [@bs.module "../models"]
-external getModels: WebGl.renderingContext => Js.Dict.t(Model.abstract) =
+external getModels:
+  WebGl.renderingContext => Js.Dict.t(Js.Dict.t(DrawArgs.abstract)) =
   "default";
 
+[@bs.module "../models"]
+external getRoom: WebGl.renderingContext => DrawArgs.abstract = "room";
+
+type aspect = float;
 [@bs.module "../renderUtils"]
-external drawScene: (DrawArgs.abstract, GlobalOptions.abstract, float) => unit =
+external drawScene:
+  (
+    WebGl.renderingContext,
+    DrawArgs.abstract,
+    array(Model.abstract),
+    Camera.t,
+    aspect,
+    float
+  ) =>
+  unit =
   "";
 
-[@bs.module "../renderUtils"]
+[@bs.module "../glUtils"]
+external getAspect: WebGl.renderingContext => aspect = "";
+
+[@bs.module "../glUtils"]
 external setViewport: (WebGl.renderingContext, int, int) => unit = "";
 
 [@bs.module "../renderUtils"]

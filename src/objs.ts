@@ -3,7 +3,7 @@ import bunnyHiRes from './obj_files/bunny_10k.obj'
 import cubeTexture from './textures/cubetexture.png'
 import brain from './obj_files/brain.obj'
 
-export type ObjData = {
+export interface ObjData {
   v: number[],
   vt: number[],
   vn: number[],
@@ -13,7 +13,7 @@ export type ObjData = {
   max: number[]
 }
 
-export type ObjTexture = {
+export interface ObjTexture {
   model: ObjData,
   texturePath?: string
 }

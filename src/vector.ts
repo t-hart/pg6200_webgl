@@ -9,6 +9,8 @@ export const boundingBox = (a: Vector, b: Vector) => {
   return xs.flatMap(x => ys.flatMap(y => zs.flatMap(z => [x, y, z])))
 }
 
+export const zero = () => vec3.create()
+
 export const dists = (a: Vector, b: Vector) => zip(a, b).map(([a, b]) => Math.abs(a - b))
 
 export const centeringTranslation = (max: Vector, lengths: Vector) => scale(-1)(offset(max, lengths))

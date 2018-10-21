@@ -1,23 +1,19 @@
 include GlHandlerImports;
 
 type programName = string;
-
 type modelName = string;
 
 type state = {
-  model: option(modelName),
   models: StringMap.t(Model.t),
-  selectedPrograms: StringMap.t(programName),
+  room: DrawArgs.abstract,
+  cam: Camera.t,
   clear: unit => unit,
-  getDrawArgs: RenderArgs.abstract => DrawArgs.abstract,
-  globalOptions: GlobalOptions.t,
   rafId: option(Webapi.rafId),
   previousTime: float,
   nextTime: float,
-  drawArgs: StringMap.t(DrawArgs.abstract),
-  cam: Camera.t,
   keys: StringMap.t((Camera.t, float) => Camera.t),
   gl: WebGl.renderingContext,
+  aspect: float,
 };
 
 let initialState = glRenderingContext => {
@@ -25,24 +21,17 @@ let initialState = glRenderingContext => {
     getModels(glRenderingContext)
     |> StringMap.fromJsDict
     |> StringMap.map(Model.fromAbstract),
+  room: getRoom(glRenderingContext),
   clear: () => drawEmptyScene(glRenderingContext),
-  model: None,
-  getDrawArgs: getDrawArgs(glRenderingContext),
-  selectedPrograms: StringMap.empty,
-  drawArgs: StringMap.empty,
-  globalOptions: {
-    scale: 100,
-    /* rotation: Vector.make(0, 100, 0), */
-    rotation: Vector.make(0, 0, 0),
-  },
   rafId: None,
   previousTime: 0.0,
   nextTime: 0.0,
   cam: Camera.create(),
   keys: StringMap.empty,
   gl: glRenderingContext,
+  aspect: getAspect(glRenderingContext),
 };
 
 let shouldLoop = state =>
-  state.globalOptions.rotation != Vector.zero
+  StringMap.exists((_, x) => Model.isRotating(x), state.models)
   || !StringMap.is_empty(state.keys);
