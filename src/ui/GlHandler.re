@@ -47,7 +47,6 @@ let shaderButtons = (onClick, model: Model.t) =>
         key
         className={isSelected ? "active" : ""}
         disabled=isSelected
-        /* onClick={_ => SelectShader(name, key)->send}> */
         onClick={_ => onClick(key)}>
         {ReasonReact.string(key)}
       </button>;

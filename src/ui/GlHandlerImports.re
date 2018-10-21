@@ -1,17 +1,12 @@
 [@bs.module "../models"]
-external getModels: WebGl.renderingContext => Js.Dict.t(Model.abstract) =
+external getModels:
+  WebGl.renderingContext => Js.Dict.t(Js.Dict.t(DrawArgs.abstract)) =
   "default";
 
 type aspect = float;
 [@bs.module "../renderUtils"]
 external drawScene:
-  (
-    WebGl.renderingContext,
-    array(ModelOptions.abstract),
-    Camera.t,
-    aspect,
-    float
-  ) =>
+  (WebGl.renderingContext, array(Model.abstract), Camera.t, aspect, float) =>
   unit =
   "";
 

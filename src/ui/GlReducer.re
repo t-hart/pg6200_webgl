@@ -12,7 +12,7 @@ type action =
   | SetRotation(modelName, Vector.t(int))
   | SetRafId(option(Webapi.rafId))
   | PrepareRender
-  | Render(array(ModelOptions.abstract), bool, float)
+  | Render(array(Model.abstract), bool, float)
   | SetAspect(float)
   | Reset;
 
@@ -32,7 +32,7 @@ let cancelAnimation =
 
 let reducer = (action, state) =>
   switch (action) {
-  | Render(modelOptions, shouldLoop, currentTime) =>
+  | Render(models, shouldLoop, currentTime) =>
     let delta = currentTime -. state.nextTime;
     let deltaClamped = delta > 0.1 ? 0.03344409800000392 : delta;
     let cam =
@@ -45,16 +45,10 @@ let reducer = (action, state) =>
       {...state, nextTime: currentTime, previousTime: state.nextTime, cam},
       (
         self => {
-          drawScene(
-            state.gl,
-            modelOptions,
-            cam,
-            state.aspect,
-            state.nextTime,
-          );
+          drawScene(state.gl, models, cam, state.aspect, state.nextTime);
           shouldLoop ?
             Webapi.requestCancellableAnimationFrame(x =>
-              self.send(Render(modelOptions, shouldLoop, x *. 0.001))
+              self.send(Render(models, shouldLoop, x *. 0.001))
             )
             ->Some
             ->SetRafId
@@ -71,12 +65,9 @@ let reducer = (action, state) =>
       StringMap.is_empty(models) ?
         (_ => state.clear()) :
         {
-          let modelOptions =
+          let models =
             models |> StringMap.map(Model.toAbstract) |> StringMap.toArray;
-          (
-            send =>
-              send(Render(modelOptions, shouldLoop(state), state.nextTime))
-          );
+          (send => send(Render(models, shouldLoop(state), state.nextTime)));
         };
     ReasonReact.SideEffects(
       (
