@@ -3,7 +3,7 @@ import { range, objectFromValues } from './utils'
 
 export const getGlContext = (canvasId: string) => {
   const canvas: HTMLCanvasElement | null = document.querySelector('#' + canvasId)
-  return canvas ? canvas.getContext('webgl') : null
+  return canvas ? canvas.getContext('webgl2') : null
 }
 
 export const setViewport = (gl: WebGLRenderingContext, width: number, height: number) => gl.viewport(0, 0, width, height)
