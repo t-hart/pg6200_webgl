@@ -23,7 +23,7 @@ void main(void) {
     highp vec4 transformedNormal = normalize(uNormalMatrix * vec4(aVertexNormal, 1.0));
     // highp vec4 transformedNormal = uNormalMatrix * vec4(aVertexNormal, 1.0);
 
-    // highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);
-    highp float directional = dot(transformedNormal.xyz, directionalVector);
+    highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);
+    // highp float directional = dot(transformedNormal.xyz, directionalVector);
     vLighting = ambientLight + (directionalLightColor * directional);
 }
