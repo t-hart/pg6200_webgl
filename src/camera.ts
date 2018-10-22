@@ -1,7 +1,7 @@
 import Quaternion, * as quat from './quaternion'
 import Vector, * as vec from './vector'
 
-const VELOCITY = 2
+const VELOCITY = 10
 const ROTATION = VELOCITY * .5
 
 const X = vec.rotate([1, 0, 0])
