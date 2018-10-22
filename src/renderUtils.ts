@@ -1,9 +1,11 @@
 import { mat4 } from 'gl-matrix-ts'
 import { rotation, translation } from './camera'
-import DrawArgs from './drawArgs'
 import Camera from './camera'
-import * as Vector from './vector'
+import { Architecture } from './models'
+import Vec, * as Vector from './vector'
 import ModelOptions from './modelOptions'
+
+type Matrix = number[] | Float32Array
 
 const prepareCanvas = (gl: WebGLRenderingContext) => {
   gl.clearColor(0, 0, 0, 1)
@@ -16,13 +18,14 @@ const prepareCanvas = (gl: WebGLRenderingContext) => {
 
 export const drawEmptyScene = prepareCanvas
 
-const drawObj = (model: ModelOptions, projectionMatrix: number[] | Float32Array, viewMatrix: number[] | Float32Array, cam: Camera, timeOffset: number) => {
+const drawObj = (model: ModelOptions, projectionMatrix: Matrix, viewMatrix: Matrix, cam: Camera, lightDirection: Vec, timeOffset: number) => {
   const { texture, normalizingScale, centeringTranslation, render } = model.drawArgs
 
   const offset = translation(cam)
 
   const modelMatrix = mat4.fromTranslation(mat4.create(), offset)
-  mat4.rotate(modelMatrix, modelMatrix, timeOffset, model.rotation)
+  mat4.translate(modelMatrix, modelMatrix, model.position)
+  mat4.rotate(modelMatrix, modelMatrix, timeOffset, model.orientation)
 
   // normalize, then scale
   mat4.scale(modelMatrix, modelMatrix, Array(3).fill(normalizingScale * model.scale))
@@ -40,16 +43,23 @@ const drawObj = (model: ModelOptions, projectionMatrix: number[] | Float32Array,
     normalMatrix,
     viewMatrix,
     texture,
-    // colorMult: [1, 0.5, 0.5, 1]
-    // colorMult: [0.5, 0.5, 1, 1]
-    colorMult: [0.5, 1, 0.5, 1]
+    colorMult: model.color || [1, 1, 1, 1],
+    lightDirection
   }
 
   render(uniforms)
 }
 
-export const drawScene = (gl: WebGLRenderingContext, room: DrawArgs, models: ModelOptions[], cam: Camera, aspect: number, timeOffset: number) => {
+export const drawScene = (gl: WebGLRenderingContext, architecture: Architecture, models: ModelOptions[], cam: Camera, aspect: number, lightDirection: Vec, timeOffset: number) => {
   prepareCanvas(gl)
+
+  // get light direction. render everything orthographically to an fbo. This is the depth texture.
+  // when rendering normally, use this depth texture to find out what's in shadow and what is not
+
+  // the room should be exempt from the shading and depth testing.
+  // i.e.: render models and depth test. Render models with shadows. Render room.
+
+  // gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 512, 512, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null)
 
   const viewMatrix = mat4.fromQuat(mat4.create(), rotation(cam))
 
@@ -59,6 +69,8 @@ export const drawScene = (gl: WebGLRenderingContext, room: DrawArgs, models: Mod
   const projectionMatrix = mat4.perspective(mat4.create(), fieldOfView, aspect, zNear, zFar)
   // const projectionMatrix = mat4.ortho(mat4.create(), -2, 2, -2, 2, .1, 100)
 
-  const roomModel: ModelOptions = { drawArgs: room, scale: 10, rotation: Vector.zero() };
-  [roomModel, ...models].forEach(x => drawObj(x, projectionMatrix, viewMatrix, cam, timeOffset))
+  const { room, platform } = architecture
+  const roomModel: ModelOptions = { drawArgs: room, scale: 10, orientation: Vector.zero(), position: Vector.zero() };
+  const platformModel: ModelOptions = { drawArgs: platform, scale: 4, orientation: Vector.zero(), position: [0, -1, 0] };
+  [roomModel, platformModel, ...models].forEach(x => drawObj(x, projectionMatrix, viewMatrix, cam, lightDirection, timeOffset))
 }

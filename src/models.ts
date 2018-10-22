@@ -1,5 +1,5 @@
 import objs, { ObjData, ObjTexture } from './objs'
-import * as drawArgs from './drawArgs'
+import DrawArgs, * as drawArgs from './drawArgs'
 import { initTexture2D } from './textureUtils'
 import { initShaderProgram } from './shaderUtils'
 import { availableShaders, Programs } from './shaders'
@@ -10,16 +10,27 @@ export interface ModelData {
   texture: WebGLTexture | null
 }
 
+export interface Architecture {
+  room: DrawArgs,
+  platform: DrawArgs
+}
+
 const mapObject = (o: object, f: Function) =>
   Object.entries(o).reduce((x, [k, v]) => ({ ...x, [k]: f(v) }), {})
 
 export const defaultProgram = "color"
 
-export const room = (gl: WebGLRenderingContext) => {
-  const cube = objs.cube
-  const programs = mapObject(availableShaders(cube.model), initShaderProgram(gl))
-  const texture = initTexture2D(gl)(cube.texturePath)
-  return drawArgs.create(gl, { program: programs.lighting, objData: cube.model, texture })
+export const architecture = (gl: WebGLRenderingContext) => {
+  const make = (obj: ObjTexture, program: string) => {
+    const programs = mapObject(availableShaders(obj.model), initShaderProgram(gl))
+    const texture = initTexture2D(gl)(obj.texturePath)
+    return drawArgs.create(gl, { program: programs[program], objData: obj.model, texture })
+  }
+
+  return {
+    room: make(objs.cube, 'lighting'),
+    platform: make(objs.plane, 'color')
+  }
 }
 
 export default (gl: WebGLRenderingContext) => mapObject(objs, (x: ObjTexture) => {

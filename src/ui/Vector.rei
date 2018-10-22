@@ -34,4 +34,6 @@ let addSome: (t(int), t(option(int))) => t(int);
 
 let toFloatArray: t(int) => array(float);
 
+let toFloatArray4D: (t(int), int) => array(float);
+
 let isZero: t(int) => bool;

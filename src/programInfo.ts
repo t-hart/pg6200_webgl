@@ -5,6 +5,7 @@ export interface UniformFunctions {
   normalMatrix: Function,
   texture: Function,
   colorMult: Function,
+  lightDirection: Function,
 }
 
 interface ProgramInfo {
@@ -20,6 +21,9 @@ interface ProgramInfo {
 
 const matrixUniform = (gl: WebGLRenderingContext, location: WebGLUniformLocation | null) => (matrix: number[] | Float32Array) =>
   gl.uniformMatrix4fv(location, false, matrix)
+
+const vec3Uniform = (gl: WebGLRenderingContext, location: WebGLUniformLocation | null) => (vec: number[] | Float32Array) => gl.uniform3fv(location, vec)
+
 
 const vec4Uniform = (gl: WebGLRenderingContext, location: WebGLUniformLocation | null) => (vec: number[] | Float32Array) =>
   gl.uniform4fv(location, vec)
@@ -44,7 +48,8 @@ export const create = (gl: WebGLRenderingContext, program: WebGLProgram): Progra
     viewMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uViewMatrix')),
     normalMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uNormalMatrix')),
     texture: texture(gl, gl.getUniformLocation(program, 'uSampler')),
-    colorMult: vec4Uniform(gl, gl.getUniformLocation(program, 'uColorMult'))
+    colorMult: vec4Uniform(gl, gl.getUniformLocation(program, 'uColorMult')),
+    lightDirection: vec3Uniform(gl, gl.getUniformLocation(program, 'uLightDirection'))
   }
 })
 

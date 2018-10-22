@@ -3,18 +3,22 @@ external getModels:
   WebGl.renderingContext => Js.Dict.t(Js.Dict.t(DrawArgs.abstract)) =
   "default";
 
+type architecture;
+
 [@bs.module "../models"]
-external getRoom: WebGl.renderingContext => DrawArgs.abstract = "room";
+external getArchitecture: WebGl.renderingContext => architecture =
+  "architecture";
 
 type aspect = float;
 [@bs.module "../renderUtils"]
 external drawScene:
   (
     WebGl.renderingContext,
-    DrawArgs.abstract,
+    architecture,
     array(Model.abstract),
     Camera.t,
     aspect,
+    array(int),
     float
   ) =>
   unit =

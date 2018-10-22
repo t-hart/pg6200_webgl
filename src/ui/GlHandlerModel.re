@@ -5,7 +5,7 @@ type modelName = string;
 
 type state = {
   models: StringMap.t(Model.t),
-  room: DrawArgs.abstract,
+  architecture,
   cam: Camera.t,
   clear: unit => unit,
   rafId: option(Webapi.rafId),
@@ -14,6 +14,7 @@ type state = {
   keys: StringMap.t((Camera.t, float) => Camera.t),
   gl: WebGl.renderingContext,
   aspect: float,
+  lightPosition: Vector.t(int),
 };
 
 let initialState = glRenderingContext => {
@@ -21,7 +22,7 @@ let initialState = glRenderingContext => {
     getModels(glRenderingContext)
     |> StringMap.fromJsDict
     |> StringMap.map(Model.fromAbstract),
-  room: getRoom(glRenderingContext),
+  architecture: getArchitecture(glRenderingContext),
   clear: () => drawEmptyScene(glRenderingContext),
   rafId: None,
   previousTime: 0.0,
@@ -30,6 +31,7 @@ let initialState = glRenderingContext => {
   keys: StringMap.empty,
   gl: glRenderingContext,
   aspect: getAspect(glRenderingContext),
+  lightPosition: Vector.make(1, 1, 1),
 };
 
 let shouldLoop = state =>

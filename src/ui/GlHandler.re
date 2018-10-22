@@ -54,33 +54,38 @@ let shaderButtons = (onClick, model: Model.t) =>
     model.drawArgs,
   );
 
-let rangeSlider = (value, onChange) =>
+let rangeSlider = (~min=0, ~max="200", value, onChange) =>
   <input
     className="button-style"
     type_="range"
-    min=0
-    max="200"
+    min
+    max
     value
     step=1.0
     onChange
   />;
 
-let rotationSliders = (send, name, rotation) =>
+let sliders = (~min=0, ~max="200", onChange, send, vec) =>
   List.map2(
     (f, a) =>
-      rangeSlider(string_of_int(a), event =>
+      rangeSlider(~min, ~max, string_of_int(a), event =>
         send(
           event
           ->Event.value
           ->int_of_string
-          ->(v => Vector.update(rotation, f(v)))
-          ->(x => SetRotation(name, x)),
+          ->(v => Vector.update(vec, f(v)))
+          ->onChange,
         )
       ),
     [Vector.x, Vector.y, Vector.z],
-    Vector.toList(rotation),
+    Vector.toList(vec),
   )
   |> Array.of_list;
+
+let positionSliders = name =>
+  sliders(~min=-100, ~max="100", x => SetPosition(name, x));
+
+let orientationSliders = name => sliders(x => SetOrientation(name, x));
 
 let modelTransforms = (send, name, model: Model.t) =>
   <>
@@ -93,9 +98,15 @@ let modelTransforms = (send, name, model: Model.t) =>
       }
     </fieldset>
     <fieldset className="span-all no-pad-h">
-      <legend> {ReasonReact.string("Rotation (X, Y, Z)")} </legend>
+      <legend> {ReasonReact.string("Orientation (X, Y, Z)")} </legend>
       <div className="controls">
-        ...{rotationSliders(send, name, model.rotation)}
+        ...{orientationSliders(name, send, model.orientation)}
+      </div>
+    </fieldset>
+    <fieldset className="span-all no-pad-h">
+      <legend> {ReasonReact.string("Position (X, Y, Z)")} </legend>
+      <div className="controls">
+        ...{positionSliders(name, send, model.position)}
       </div>
     </fieldset>
   </>;

@@ -18,6 +18,38 @@ export interface ObjTexture {
   texturePath?: string
 }
 
+const plane = {
+  v: [
+    -1.0, 0, -1.0,
+    1.0, 0, -1.0,
+    1.0, 0, 1.0,
+    -1.0, 0, 1.0,
+  ],
+  vt: [
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+  ],
+  vn: [
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 0.0,
+    0.0, 1.0, 0.0,
+  ],
+  f: [
+    0, 1, 2, 0, 2, 3
+  ],
+  colors: [
+    1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0,
+  ],
+  min: [-1, 0, -1],
+  max: [1, 0, 1],
+}
+
 const cube = {
   v: [
     // Front face
@@ -150,4 +182,5 @@ export default {
   'bunny (hi res)': { model: bunnyHiRes },
   cube: { model: cube, texturePath: cubeTexture },
   brain: { model: brain },
+  plane: { model: plane, texturePath: cubeTexture }
 }

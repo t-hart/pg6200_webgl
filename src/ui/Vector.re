@@ -16,6 +16,9 @@ let one = fill(1);
 
 let toFloatArray = vec => Array.map(toDecimal, [|vec.x, vec.y, vec.z|]);
 
+let toFloatArray4D = (vec, w) =>
+  Array.map(toDecimal, [|vec.x, vec.y, vec.z, w|]);
+
 let x = a => make(Some(a), None, None);
 
 let y = a => make(None, Some(a), None);
