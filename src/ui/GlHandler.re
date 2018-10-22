@@ -20,12 +20,12 @@ let elementArray = (toElement, xs) =>
 let modelButtons = (send, models) =>
   elementArray(
     ((name, model)) =>
-      <button
+      <SpanButton
         key=name
         className={Model.shouldRender(model) ? "active" : ""}
-        onClick={_ => name->ClickModel->send}>
-        {ReasonReact.string(name)}
-      </button>,
+        onClick={_ => name->ClickModel->send}
+        text=name
+      />,
     models,
   );
 

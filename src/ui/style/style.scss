@@ -144,8 +144,13 @@ fieldset {
   line-height: 1.5;
   padding: 0 1.5em;
   text-align: center;
+}
+
+.button-span {
   white-space: nowrap;
   text-overflow: ellipsis;
+  display: block;
+  overflow: hidden;
 }
 
 button {
