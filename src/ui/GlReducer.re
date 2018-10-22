@@ -15,6 +15,7 @@ type action =
   | PrepareRender
   | Render(array(Model.abstract), array(int), bool, float)
   | SetAspect(float)
+  | SetLightDirection(Vector.t(int))
   | Reset;
 
 let handleKeyPress = state =>
@@ -81,7 +82,7 @@ let reducer = (action, state) =>
               send(
                 Render(
                   models,
-                  Vector.toArray(state.lightPosition),
+                  Vector.toArray(state.lightDirection),
                   shouldLoop(state),
                   state.nextTime,
                 ),
@@ -139,6 +140,12 @@ let reducer = (action, state) =>
             state.models,
           ),
       },
+      (self => self.send(PrepareRender)),
+    )
+
+  | SetLightDirection(lightDirection) =>
+    ReasonReact.UpdateWithSideEffects(
+      {...state, lightDirection},
       (self => self.send(PrepareRender)),
     )
 

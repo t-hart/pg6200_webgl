@@ -54,16 +54,8 @@ let shaderButtons = (onClick, model: Model.t) =>
     model.drawArgs,
   );
 
-let rangeSlider = (~min=0, ~max="200", value, onChange) =>
-  <input
-    className="button-style"
-    type_="range"
-    min
-    max
-    value
-    step=1.0
-    onChange
-  />;
+let rangeSlider = (~min=0, ~max="200", ~step=1.0, value, onChange) =>
+  <input className="button-style" type_="range" min max value step onChange />;
 
 let sliders = (~min=0, ~max="200", onChange, send, vec) =>
   List.map2(
@@ -81,6 +73,11 @@ let sliders = (~min=0, ~max="200", onChange, send, vec) =>
     Vector.toList(vec),
   )
   |> Array.of_list;
+
+let lightDirectionSliders = (send, vec) =>
+  <div className="display-contents">
+    ...{sliders(~min=-5, ~max="5", x => SetLightDirection(x), send, vec)}
+  </div>;
 
 let positionSliders = name =>
   sliders(~min=-100, ~max="100", x => SetPosition(name, x));
@@ -131,6 +128,10 @@ let fieldsets = (send, state): array(Fieldset.t) =>
           legend: "",
         }),
         Leaf({content: modelButtons(send, state.models), legend: "Models"}),
+        Leaf({
+          content: lightDirectionSliders(send, state.lightDirection),
+          legend: "Light direction",
+        }),
       |],
       state.models
       |> StringMap.filter((_, v) => Model.shouldRender(v))

@@ -14,7 +14,7 @@ type state = {
   keys: StringMap.t((Camera.t, float) => Camera.t),
   gl: WebGl.renderingContext,
   aspect: float,
-  lightPosition: Vector.t(int),
+  lightDirection: Vector.t(int),
 };
 
 let initialState = glRenderingContext => {
@@ -31,7 +31,7 @@ let initialState = glRenderingContext => {
   keys: StringMap.empty,
   gl: glRenderingContext,
   aspect: getAspect(glRenderingContext),
-  lightPosition: Vector.make(1, 1, 1),
+  lightDirection: Vector.make(0, 1, 1),
 };
 
 let shouldLoop = state =>
