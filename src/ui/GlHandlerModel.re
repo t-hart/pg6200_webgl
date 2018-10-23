@@ -31,7 +31,17 @@ let initialState = glRenderingContext => {
   keys: StringMap.empty,
   gl: glRenderingContext,
   aspect: getAspect(glRenderingContext),
-  lightDirection: Vector.make(0, 1, 1),
+  lightDirection: Vector.make(1, 5, 4),
+};
+
+let reset = state => {
+  ...state,
+  models: StringMap.map(Model.reset, state.models),
+  previousTime: 0.0,
+  nextTime: 0.0,
+  cam: Camera.create(),
+  keys: StringMap.empty,
+  lightDirection: Vector.make(1, 5, 4),
 };
 
 let shouldLoop = state =>

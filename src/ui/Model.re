@@ -41,6 +41,14 @@ let fromAbstract = drawArgsAbstract => {
   };
 };
 
+let reset = t => {
+  ...t,
+  currentDrawArgs: defaultProgram,
+  isSelected: false,
+  scale: 100,
+  orientation: Vector.zero,
+  position: Vector.zero,
+};
 let isRotating = t => t.isSelected && !Vector.isZero(t.orientation);
 let shouldRender = t => t.isSelected;
 let changeDrawArgs = (drawArgs, t) => {...t, currentDrawArgs: drawArgs};

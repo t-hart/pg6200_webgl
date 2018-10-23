@@ -1,7 +1,11 @@
 import bunny from './obj_files/bunny.obj'
-import bunnyHiRes from './obj_files/bunny_10k.obj'
+import bunnyHi from './obj_files/bunny_10k.obj'
 import cubeTexture from './textures/cubetexture.png'
+import chessTexture from './textures/chess.png'
 import brain from './obj_files/brain.obj'
+import sphere from './obj_files/sphere.obj'
+import circularPlane from './obj_files/circular_plane'
+import platforms from './obj_files/platforms'
 
 export interface ObjData {
   v: number[],
@@ -16,38 +20,6 @@ export interface ObjData {
 export interface ObjTexture {
   model: ObjData,
   texturePath?: string
-}
-
-const plane = {
-  v: [
-    -1.0, 0, -1.0,
-    1.0, 0, -1.0,
-    1.0, 0, 1.0,
-    -1.0, 0, 1.0,
-  ],
-  vt: [
-    0.0, 0.0,
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0,
-  ],
-  vn: [
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-  ],
-  f: [
-    0, 1, 2, 0, 2, 3
-  ],
-  colors: [
-    1.0, 1.0, 1.0, 1.0,
-    1.0, 1.0, 1.0, 1.0,
-    1.0, 1.0, 1.0, 1.0,
-    1.0, 1.0, 1.0, 1.0,
-  ],
-  min: [-1, 0, -1],
-  max: [1, 0, 1],
 }
 
 const cube = {
@@ -177,10 +149,17 @@ const cube = {
   max: [1, 1, 1],
 }
 
+export const textures = {
+  fireFox: cubeTexture,
+  chess: chessTexture
+}
+
 export default {
   bunny: { model: bunny },
-  'bunny (hi res)': { model: bunnyHiRes },
+  'bunny (hi)': { model: bunnyHi },
   cube: { model: cube, texturePath: cubeTexture },
   brain: { model: brain },
-  plane: { model: plane, texturePath: cubeTexture }
+  sphere: { model: sphere },
+  'plane (circular)': { model: circularPlane },
+  platforms: { model: platforms }
 }

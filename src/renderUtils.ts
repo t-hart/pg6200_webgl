@@ -18,6 +18,38 @@ const prepareCanvas = (gl: WebGLRenderingContext) => {
 
 export const drawEmptyScene = prepareCanvas
 
+const drawLight = (model: ModelOptions, projectionMatrix: Matrix, viewMatrix: Matrix, cam: Camera, lightDirection: Vec) => {
+  const { texture, normalizingScale, centeringTranslation, render } = model.drawArgs
+
+  const offset = translation(cam)
+
+  const modelMatrix = mat4.fromTranslation(mat4.create(), offset)
+  mat4.translate(modelMatrix, modelMatrix, model.position)
+  // mat4.lookAt(modelMatrix, modelMatrix, [0, 0, 0], model.orientation)
+
+  // normalize, then scale
+  mat4.scale(modelMatrix, modelMatrix, Array(3).fill(normalizingScale * model.scale))
+
+  // center
+  mat4.translate(modelMatrix, modelMatrix, centeringTranslation)
+
+  const normalMatrix = mat4.create()
+  mat4.invert(normalMatrix, modelMatrix)
+  mat4.transpose(normalMatrix, normalMatrix)
+
+  const uniforms = {
+    projectionMatrix,
+    modelMatrix,
+    normalMatrix,
+    viewMatrix,
+    texture,
+    colorMult: model.color || [1, 1, 1, 1],
+    lightDirection
+  }
+
+  render(uniforms)
+}
+
 const drawObj = (model: ModelOptions, projectionMatrix: Matrix, viewMatrix: Matrix, cam: Camera, lightDirection: Vec, timeOffset: number) => {
   const { texture, normalizingScale, centeringTranslation, render } = model.drawArgs
 
@@ -69,8 +101,11 @@ export const drawScene = (gl: WebGLRenderingContext, architecture: Architecture,
   const projectionMatrix = mat4.perspective(mat4.create(), fieldOfView, aspect, zNear, zFar)
   // const projectionMatrix = mat4.ortho(mat4.create(), -2, 2, -2, 2, .1, 100)
 
-  const { room, platform } = architecture
-  const roomModel: ModelOptions = { drawArgs: room, scale: 10, orientation: Vector.zero(), position: Vector.zero() };
-  const platformModel: ModelOptions = { drawArgs: platform, scale: 4, orientation: Vector.zero(), position: [0, -1, 0] };
+  const { room, platform, lightSource } = architecture
+  const roomModel: ModelOptions = { drawArgs: room, scale: 20, orientation: Vector.zero(), position: Vector.zero() };
+  const platformModel: ModelOptions = { drawArgs: platform, scale: 8, orientation: Vector.zero(), position: [5.5, -1, 0] };
+  const light: ModelOptions = { drawArgs: lightSource, scale: .5, orientation: Vector.zero(), position: lightDirection, color: [1, .75, 0, 1] };
+
   [roomModel, platformModel, ...models].forEach(x => drawObj(x, projectionMatrix, viewMatrix, cam, lightDirection, timeOffset))
+  drawLight(light, projectionMatrix, viewMatrix, cam, lightDirection);
 }

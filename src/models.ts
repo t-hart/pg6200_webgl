@@ -1,4 +1,4 @@
-import objs, { ObjData, ObjTexture } from './objs'
+import objs, { ObjData, ObjTexture, textures } from './objs'
 import DrawArgs, * as drawArgs from './drawArgs'
 import { initTexture2D } from './textureUtils'
 import { initShaderProgram } from './shaderUtils'
@@ -11,6 +11,7 @@ export interface ModelData {
 }
 
 export interface Architecture {
+  lightSource: DrawArgs
   room: DrawArgs,
   platform: DrawArgs
 }
@@ -21,15 +22,16 @@ const mapObject = (o: object, f: Function) =>
 export const defaultProgram = "color"
 
 export const architecture = (gl: WebGLRenderingContext) => {
-  const make = (obj: ObjTexture, program: string) => {
+  const make = (obj: ObjTexture, program: string, texturePath?: string) => {
     const programs = mapObject(availableShaders(obj.model), initShaderProgram(gl))
-    const texture = initTexture2D(gl)(obj.texturePath)
+    const texture = initTexture2D(gl)(texturePath || obj.texturePath)
     return drawArgs.create(gl, { program: programs[program], objData: obj.model, texture })
   }
 
   return {
-    room: make(objs.cube, 'lighting'),
-    platform: make(objs.plane, 'color')
+    lightSource: make(objs.sphere, 'color'),
+    room: make(objs.cube, 'lighting', textures.chess),
+    platform: make(objs.platforms, 'color')
   }
 }
 

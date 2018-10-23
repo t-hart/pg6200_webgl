@@ -71,24 +71,21 @@ let reducer = (action, state) =>
   | PrepareRender =>
     let models =
       StringMap.filter((_, x) => Model.shouldRender(x), state.models);
-    let sideEffects =
-      StringMap.is_empty(models) ?
-        (_ => state.clear()) :
-        {
-          let models =
-            models |> StringMap.map(Model.toAbstract) |> StringMap.toArray;
-          (
-            send =>
-              send(
-                Render(
-                  models,
-                  Vector.toArray(state.lightDirection),
-                  shouldLoop(state),
-                  state.nextTime,
-                ),
-              )
-          );
-        };
+    let sideEffects = {
+      let models =
+        models |> StringMap.map(Model.toAbstract) |> StringMap.toArray;
+      (
+        send =>
+          send(
+            Render(
+              models,
+              Vector.toArray(state.lightDirection),
+              shouldLoop(state),
+              state.nextTime,
+            ),
+          )
+      );
+    };
     ReasonReact.SideEffects(
       (
         self => {
@@ -187,7 +184,7 @@ let reducer = (action, state) =>
 
   | Reset =>
     ReasonReact.UpdateWithSideEffects(
-      initialState(state.gl),
+      reset(state),
       (
         self => {
           cancelAnimation(state.rafId);
