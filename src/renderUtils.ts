@@ -18,30 +18,29 @@ const prepareCanvas = (gl: WebGLRenderingContext) => {
 
 export const drawEmptyScene = prepareCanvas
 
-const drawLight = (model: ModelOptions, projectionMatrix: Matrix, viewMatrix: Matrix, cam: Camera, lightDirection: Vec) => {
+const drawLight = (model: ModelOptions, projectionMatrix: Matrix, cam: Camera, lightDirection: Vec) => {
   const { texture, normalizingScale, centeringTranslation, render } = model.drawArgs
 
   const offset = translation(cam)
 
-  const modelMatrix = mat4.fromTranslation(mat4.create(), offset)
-  mat4.translate(modelMatrix, modelMatrix, model.position)
-  // mat4.lookAt(modelMatrix, modelMatrix, [0, 0, 0], model.orientation)
+  const modelViewMatrix = mat4.fromTranslation(mat4.create(), offset)
+  mat4.translate(modelViewMatrix, modelViewMatrix, model.position)
+  // mat4.lookAt(modelViewMatrix, modelViewMatrix, [0, 0, 0], model.orientation)
 
   // normalize, then scale
-  mat4.scale(modelMatrix, modelMatrix, Array(3).fill(normalizingScale * model.scale))
+  mat4.scale(modelViewMatrix, modelViewMatrix, Array(3).fill(normalizingScale * model.scale))
 
   // center
-  mat4.translate(modelMatrix, modelMatrix, centeringTranslation)
+  mat4.translate(modelViewMatrix, modelViewMatrix, centeringTranslation)
 
   const normalMatrix = mat4.create()
-  mat4.invert(normalMatrix, modelMatrix)
+  mat4.invert(normalMatrix, modelViewMatrix)
   mat4.transpose(normalMatrix, normalMatrix)
 
   const uniforms = {
     projectionMatrix,
-    modelMatrix,
+    modelViewMatrix,
     normalMatrix,
-    viewMatrix,
     texture,
     colorMult: model.color || [1, 1, 1, 1],
     lightDirection
@@ -50,30 +49,31 @@ const drawLight = (model: ModelOptions, projectionMatrix: Matrix, viewMatrix: Ma
   render(uniforms)
 }
 
-const drawObj = (model: ModelOptions, projectionMatrix: Matrix, viewMatrix: Matrix, cam: Camera, lightDirection: Vec, timeOffset: number) => {
+const drawObj = (model: ModelOptions, projectionMatrix: Matrix, cam: Camera, lightDirection: Vec, timeOffset: number) => {
   const { texture, normalizingScale, centeringTranslation, render } = model.drawArgs
 
   const offset = translation(cam)
 
-  const modelMatrix = mat4.fromTranslation(mat4.create(), offset)
-  mat4.translate(modelMatrix, modelMatrix, model.position)
-  mat4.rotate(modelMatrix, modelMatrix, timeOffset, model.orientation)
+  const modelViewMatrix = mat4.fromTranslation(mat4.create(), offset)
+  mat4.translate(modelViewMatrix, modelViewMatrix, model.position)
+  mat4.rotate(modelViewMatrix, modelViewMatrix, timeOffset, model.orientation)
 
   // normalize, then scale
-  mat4.scale(modelMatrix, modelMatrix, Array(3).fill(normalizingScale * model.scale))
+  mat4.scale(modelViewMatrix, modelViewMatrix, Array(3).fill(normalizingScale * model.scale))
 
   // center
-  mat4.translate(modelMatrix, modelMatrix, centeringTranslation)
+  mat4.translate(modelViewMatrix, modelViewMatrix, centeringTranslation)
 
   const normalMatrix = mat4.create()
-  mat4.invert(normalMatrix, modelMatrix)
+  mat4.invert(normalMatrix, modelViewMatrix)
   mat4.transpose(normalMatrix, normalMatrix)
+
+  mat4.mul(modelViewMatrix, mat4.fromQuat(mat4.create(), rotation(cam)), modelViewMatrix)
 
   const uniforms = {
     projectionMatrix,
-    modelMatrix,
+    modelViewMatrix,
     normalMatrix,
-    viewMatrix,
     texture,
     colorMult: model.color || [1, 1, 1, 1],
     lightDirection
@@ -93,7 +93,6 @@ export const drawScene = (gl: WebGLRenderingContext, architecture: Architecture,
 
   // gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, 512, 512, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_SHORT, null)
 
-  const viewMatrix = mat4.fromQuat(mat4.create(), rotation(cam))
 
   const fieldOfView = 45 * Math.PI / 180
   const zNear = 0.1
@@ -106,6 +105,6 @@ export const drawScene = (gl: WebGLRenderingContext, architecture: Architecture,
   const platformModel: ModelOptions = { drawArgs: platform, scale: 8, orientation: Vector.zero(), position: [5.5, -1, 0] };
   const light: ModelOptions = { drawArgs: lightSource, scale: .5, orientation: Vector.zero(), position: lightDirection, color: [1, .75, 0, 1] };
 
-  [roomModel, platformModel, ...models].forEach(x => drawObj(x, projectionMatrix, viewMatrix, cam, lightDirection, timeOffset))
-  drawLight(light, projectionMatrix, viewMatrix, cam, lightDirection);
+  [roomModel, platformModel, ...models].forEach(x => drawObj(x, projectionMatrix, cam, lightDirection, timeOffset))
+  drawLight(light, projectionMatrix, cam, lightDirection);
 }

@@ -1,7 +1,6 @@
 export interface UniformFunctions {
   projectionMatrix: Function,
-  modelMatrix: Function,
-  viewMatrix: Function,
+  modelViewMatrix: Function,
   normalMatrix: Function,
   texture: Function,
   colorMult: Function,
@@ -44,8 +43,7 @@ export const create = (gl: WebGLRenderingContext, program: WebGLProgram): Progra
   },
   uniformFunctions: {
     projectionMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uProjectionMatrix')),
-    modelMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uModelMatrix')),
-    viewMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uViewMatrix')),
+    modelViewMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uModelViewMatrix')),
     normalMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uNormalMatrix')),
     texture: texture(gl, gl.getUniformLocation(program, 'uSampler')),
     colorMult: vec4Uniform(gl, gl.getUniformLocation(program, 'uColorMult')),

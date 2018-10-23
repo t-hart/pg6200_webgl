@@ -3,8 +3,7 @@ attribute vec3 aVertexNormal;
 attribute vec4 aVertexColor;
 
 uniform mat4 uNormalMatrix;
-uniform mat4 uModelMatrix;
-uniform mat4 uViewMatrix;
+uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
 
 uniform vec4 uColorMult;
@@ -14,7 +13,7 @@ varying highp vec4 vColor;
 varying highp vec3 vLighting;
 
 void main(void) {
-    gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aVertexPosition;
+    gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
     vColor = aVertexColor * uColorMult;
 
     highp vec3 ambientLight = vec3(0.5, 0.5, 0.5);

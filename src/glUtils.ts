@@ -1,4 +1,5 @@
 import { UniformFunctions } from './programInfo'
+import Vector from './vector'
 import { range, objectFromValues } from './utils'
 
 export const getGlContext = (canvasId: string) => {
@@ -55,11 +56,11 @@ export const createAttributeSetters = (gl: WebGLRenderingContext, program: WebGL
 type Matrix = number[] | Float32Array
 export interface Uniforms {
   projectionMatrix: Matrix,
-  modelMatrix: Matrix,
+  modelViewMatrix: Matrix,
   normalMatrix: Matrix,
-  viewMatrix: Matrix,
   texture: WebGLTexture | null,
-  colorMult: number[] | Float32Array
+  colorMult: Vector,
+  lightDirection: Vector
 }
 
 export const setUniforms = (setters: UniformFunctions) => (uniforms: Uniforms) => {
