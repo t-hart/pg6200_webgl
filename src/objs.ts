@@ -1,10 +1,18 @@
-import bunny from './obj_files/bunny.obj'
-import bunnyHi from './obj_files/bunny_10k.obj'
+// @ts-ignore
+import bunny from './obj_files/bunny'
+// @ts-ignore
+import bunnyHi from './obj_files/bunny_10k'
+// @ts-ignore
 import cubeTexture from './textures/cubetexture.png'
+// @ts-ignore
 import chessTexture from './textures/chess.png'
-import brain from './obj_files/brain.obj'
-import sphere from './obj_files/sphere.obj'
+// @ts-ignore
+import brain from './obj_files/brain'
+// @ts-ignore
+import sphere from './obj_files/sphere'
+// @ts-ignore
 import circularPlane from './obj_files/circular_plane'
+// @ts-ignore
 import platforms from './obj_files/platforms'
 
 export interface ObjData {
@@ -144,6 +152,7 @@ const cube = {
     [0.0, 0.0, 1.0, 1.0],    // Bottom face: blue
     [1.0, 1.0, 0.0, 1.0],    // Right face: yellow
     [1.0, 0.0, 1.0, 1.0],    // Left face: purple
+    // @ts-ignore: flatmap is just fine, and typing x is a bit overzealous.
   ].flatMap(x => [].concat(...Array(4).fill(x))),
   min: [-1, -1, -1],
   max: [1, 1, 1],
@@ -161,5 +170,5 @@ export default {
   brain: { model: brain },
   sphere: { model: sphere },
   'plane (circular)': { model: circularPlane },
-  platforms: { model: platforms }
+  platforms: { model: platforms },
 }
