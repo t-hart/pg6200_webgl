@@ -32,7 +32,7 @@ let initialState = glRenderingContext => {
   keys: StringMap.empty,
   gl: glRenderingContext,
   aspect: getAspect(glRenderingContext),
-  lightDirection: Vector.make(1, 2, 5),
+  lightDirection: Vector.make(25, 15, 15),
   lightShader: getLightShader(glRenderingContext),
 };
 

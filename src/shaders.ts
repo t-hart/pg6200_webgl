@@ -81,16 +81,17 @@ export const lightShader = (gl: WebGLRenderingContext) => {
 
   gl.useProgram(program)
 
-  const shadowDepthTextureSize = 4096
+  const width = 512
+  const height = 512
   const shadowFramebuffer = gl.createFramebuffer()
 
-  glUtils.bindFramebuffer(gl, shadowFramebuffer, shadowDepthTextureSize, shadowDepthTextureSize)
+  glUtils.bindFramebuffer(gl, shadowFramebuffer, width, height)
 
-  const shadowDepthTexture = textureUtils.depthTexture(gl, shadowDepthTextureSize, shadowDepthTextureSize)
+  const shadowDepthTexture = textureUtils.depthTexture(gl, width, height)
 
   // const projectionMatrix = mat4.ortho(mat4.create(), -40, 40, -40, 40, -40.0, 800)
+  const projectionMatrix = mat4.ortho(mat4.create(), -8, 8, -8, 8, .1, 100)
   // const projectionMatrix = mat4.ortho(mat4.create(), -2, 2, -2, 2, .1, 100)
-  const projectionMatrix = mat4.ortho(mat4.create(), -40, 40, -40, 40, .1, 200)
 
   const shadowProjectionMatrix = gl.getUniformLocation(program, 'uProjectionMatrix')
   // const shadowModelViewMatrix = gl.getUniformLocation(program, 'uModelViewMatrix')
@@ -108,7 +109,7 @@ export const lightShader = (gl: WebGLRenderingContext) => {
     shadowFramebuffer,
     prepareRender: () => {
       gl.useProgram(program)
-      glUtils.bindFramebuffer(gl, shadowFramebuffer, shadowDepthTextureSize, shadowDepthTextureSize)
+      glUtils.bindFramebuffer(gl, shadowFramebuffer, width, height)
       // gl.bindTexture(gl.TEXTURE_2D, shadowDepthTexture)
 
       gl.clearColor(0, 0, 0, 1)

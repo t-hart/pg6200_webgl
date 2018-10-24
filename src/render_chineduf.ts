@@ -12,13 +12,7 @@ import * as glUtils from './glUtils'
 export default (gl: WebGLRenderingContext, architecture: Architecture, lightShader: LightShader, projectionMatrix: glUtils.Matrix, models: ModelOptions[], cam: Camera, lightDirection: Vec, timeOffset: number) => {
 
   const lightProjectionMatrix = lightShader.projectionMatrix
-  // const lightViewMatrix = mat4.lookAt(mat4.create(), Vector.scale(10)(lightDirection), [0, 0, 0], [0, 1, 0])
   const lightViewMatrix = mat4.lookAt(mat4.create(), lightDirection, [0, 0, 0], [0, 1, 0])
-  // const lightViewMatrix = mat4.lookAt(mat4.create(), [1, 1, 5], [0, 0, 0], [0, 1, 0])
-  // const lightViewMatrix = mat4.lookAt(mat4.create(), [2, 8, -12], [0, 0, 0], [0, 1, 0])
-  // const lightViewMatrix = mat4.fromRotationTranslation(mat4.create(), rotation(cam), translation(cam))
-  // mat4.invert(lightViewMatrix, lightViewMatrix)
-  const offset = translation(cam)
 
   interface ModelRenderData {
     modelMatrix: glUtils.Matrix,
@@ -43,37 +37,25 @@ export default (gl: WebGLRenderingContext, architecture: Architecture, lightShad
       return initial
     }
 
-    // const modelMatrixForCam = mat4.fromTranslation(mat4.create(), offset)
-    const modelMatrixForCam = makeModelMatrix(mat4.fromTranslation(mat4.create(), offset))
+    const modelMatrixForCam = makeModelMatrix(mat4.fromTranslation(mat4.create(), translation(cam)))
 
-    // const modelMatrix = mat4.create()
-    // const modelMatrix = mat4.fromQuat(mat4.create(), rotation(cam))
-    // const modelMatrix = mat4.fromTranslation(mat4.create(), offset)
-    // const modelMatrix = makeModelMatrix(mat4.fromTranslation(mat4.create(), offset))
     const modelMatrix = makeModelMatrix(mat4.create())
-    // const modelMatrix = makeModelMatrix(mat4.fromQuat(mat4.create(), rotation(cam)))
-    // const modelMatrix = mat4.fromRotationTranslation(mat4.create(), rotation(cam) offset)
-    // mat4.mul(modelMatrix, mat4.fromQuat(mat4.create(), rotation(cam)), modelMatrix)
-
 
     const normalMatrix = mat4.create()
     mat4.invert(normalMatrix, modelMatrix)
     mat4.transpose(normalMatrix, normalMatrix)
-
 
     return {
       modelMatrix,
       normalMatrix,
       color: model.color || [0.36, .66, .8, 1],
       drawArgs: model.drawArgs,
-      // modelMatrixForCam: mat4.mul(mat4.create(), modelMatrixForCam, modelMatrix)
       modelMatrixForCam
     }
   })
 
   const drawShadowMap = (...models: ModelRenderData[]) => {
     lightShader.prepareRender()
-    // glUtils.bindFramebuffer(gl, null, gl.drawingBufferWidth, gl.drawingBufferHeight)
 
     models.forEach(model => {
       const { modelMatrix } = model
@@ -82,7 +64,6 @@ export default (gl: WebGLRenderingContext, architecture: Architecture, lightShad
       const uniforms = {
         modelViewMatrix,
         lightProjectionMatrix,
-        // texture: lightShader.shadowDepthTexture
       }
 
       render(gl, uniforms, lightShader.program, model.drawArgs)
@@ -103,7 +84,6 @@ export default (gl: WebGLRenderingContext, architecture: Architecture, lightShad
       mat4.mul(lightModelViewMatrix, lightViewMatrix, modelMatrix)
 
       const uniforms = {
-        // projectionMatrix: lightProjectionMatrix,
         projectionMatrix,
         lightProjectionMatrix,
         modelViewMatrix,
