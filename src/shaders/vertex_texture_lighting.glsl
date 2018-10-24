@@ -14,20 +14,13 @@ uniform vec3 uLightDirection;
 out highp vec2 vTextureCoord;
 out highp vec3 vLighting;
 
-const mat4 texUnitConverter = mat4(
-  0.5, 0.0, 0.0, 0.0,
-  0.0, 0.5, 0.0, 0.0,
-  0.0, 0.0, 0.5, 0.0,
-  0.5, 0.5, 0.5, 1.0
-);
-
 out vec4 shadowPos;
 
 void main(void) {
     gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
     vTextureCoord = aTextureCoord;
 
-    shadowPos = texUnitConverter * uLightProjectionMatrix * uLightModelViewMatrix * aVertexPosition;
+    shadowPos =  uLightProjectionMatrix * uLightModelViewMatrix * aVertexPosition;
 
     // Apply lighting effect
     highp vec3 ambientLight = vec3(0.5, 0.5, 0.5);

@@ -57,6 +57,8 @@ export default (gl: WebGLRenderingContext, architecture: Architecture, lightShad
   const drawShadowMap = (...models: ModelRenderData[]) => {
     lightShader.prepareRender()
 
+    gl.cullFace(gl.FRONT)
+
     models.forEach(model => {
       const { modelMatrix } = model
 
@@ -74,6 +76,8 @@ export default (gl: WebGLRenderingContext, architecture: Architecture, lightShad
 
   const drawModels = (...models: ModelRenderData[]) => {
     const { shadowDepthTexture } = lightShader
+
+    gl.cullFace(gl.BACK)
 
     models.forEach(model => {
       const { modelMatrixForCam, modelMatrix, normalMatrix } = model

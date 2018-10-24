@@ -1,41 +1,32 @@
 #version 300 es
 precision highp float;
 
-in vec4 shadowPos;
+in vec4 vShadowPosition;
 in vec4 vColor;
 in vec3 vLighting;
+in vec4 vAmbientColor;
 
 uniform sampler2D uDepthTexture;
 
 out vec4 fragColor;
 
-float decodeFloat(vec4 color) {
-  const vec4 bitshift = vec4(
-    1.0 / (256.0 * 256.0 * 256.0),
-    1.0 / (256.0 * 256.0),
-    1.0 / 256.0,
-    1
-  );
-  return dot(color, bitshift);
-}
-
 void main(void) {
-  vec3 fragmentDepth = shadowPos.xyz;
-  float shadowAcneRemover = 0.007;
-  fragmentDepth.z -= shadowAcneRemover;
+  vec3 shadowCoord = vShadowPosition.xyz;
+  float acneThreshold = 0.0015;
+  shadowCoord.z -= acneThreshold;
+
+  float visibility = 0.0;
 
   float texelSize = 1.0 / 1024.0;
-  float amountInLight = 0.0;
 
   for (int x = -1; x <= 1; x++) {
     for (int y = -1; y <= 1; y++) {
-      float texelDepth = decodeFloat(texture(uDepthTexture, fragmentDepth.xy + vec2(x, y) * texelSize));
-      if (fragmentDepth.z < texelDepth) {
-        amountInLight += 1.0;
+      if (shadowCoord.z < texture(uDepthTexture, shadowCoord.xy + vec2(x, y) * texelSize).r) {
+        visibility += 1.0;
       }
     }
   }
 
-  amountInLight /= 9.0;
-  fragColor = amountInLight * vec4(vColor.rgb * vLighting, vColor.a);
+  visibility /= 9.0;
+  fragColor = vAmbientColor + visibility * vec4(vColor.rgb * vLighting, vColor.a);
 }
