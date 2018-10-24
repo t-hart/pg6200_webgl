@@ -33,6 +33,16 @@ const texture = (gl: WebGLRenderingContext, location: WebGLUniformLocation | nul
   gl.uniform1i(location, x)
 }
 
+export const uniformFunctions = (gl: WebGLRenderingContext, program: WebGLProgram) => ({
+  projectionMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uProjectionMatrix')),
+  modelViewMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uModelViewMatrix')),
+  normalMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uNormalMatrix')),
+  texture: texture(gl, gl.getUniformLocation(program, 'uSampler')),
+  colorMult: vec4Uniform(gl, gl.getUniformLocation(program, 'uColorMult')),
+  lightDirection: vec3Uniform(gl, gl.getUniformLocation(program, 'uLightDirection'))
+
+})
+
 export const create = (gl: WebGLRenderingContext, program: WebGLProgram): ProgramInfo => ({
   program: program,
   attribLocations: {

@@ -19,7 +19,8 @@ export interface Architecture {
 const mapObject = (o: object, f: Function) =>
   Object.entries(o).reduce((x, [k, v]) => ({ ...x, [k]: f(v) }), {})
 
-export const defaultProgram = "color"
+// export const defaultProgram = "color"
+export const defaultProgram = "cam"
 
 export const architecture = (gl: WebGLRenderingContext) => {
   const make = (obj: ObjTexture, program: string, texturePath?: string) => {
@@ -31,7 +32,7 @@ export const architecture = (gl: WebGLRenderingContext) => {
   return {
     lightSource: make(objs.sphere, 'color'),
     room: make(objs.cube, 'lighting', textures.chess),
-    platform: make(objs.platforms, 'color')
+    platform: make(objs.floor, 'cam')
   }
 }
 
@@ -42,6 +43,7 @@ export default (gl: WebGLRenderingContext) => mapObject(objs, (x: ObjTexture) =>
     return mapObject(programs, (program: WebGLProgram) => drawArgs.create(gl, { program, objData: x.model, texture }))
   }
   catch (e) {
+    // alert(e)
     console.error(e)
     return {}
   }

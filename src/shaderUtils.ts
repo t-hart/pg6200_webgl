@@ -24,6 +24,6 @@ const loadShader = (gl: WebGLRenderingContext, type: number, source: string) => 
   if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     return shader
   } else {
-    return Error(`An error occurred while compiling the shaders: ${gl.getShaderInfoLog(shader)}`)
+    throw Error(`An error occurred while compiling the shaders: ${gl.getShaderInfoLog(shader)}`)
   }
 }

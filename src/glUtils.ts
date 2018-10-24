@@ -57,10 +57,10 @@ type Matrix = number[] | Float32Array
 export interface Uniforms {
   projectionMatrix: Matrix,
   modelViewMatrix: Matrix,
-  normalMatrix: Matrix,
-  texture: WebGLTexture | null,
-  colorMult: Vector,
-  lightDirection: Vector
+  normalMatrix?: Matrix,
+  texture?: WebGLTexture | null,
+  colorMult?: Vector,
+  lightDirection?: Vector
 }
 
 export const setUniforms = (setters: UniformFunctions) => (uniforms: Uniforms) => {
@@ -84,4 +84,9 @@ export const createTexture = (gl: WebGLRenderingContext, width: number = 256, he
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+}
+
+export const bindFramebuffer = (gl: WebGLRenderingContext, target: WebGLFramebuffer | null, width: number, height: number) => {
+  gl.bindFramebuffer(gl.FRAMEBUFFER, target)
+  gl.viewport(0, 0, width, height)
 }

@@ -30,6 +30,29 @@ export interface ObjTexture {
   texturePath?: string
 }
 
+const floor = {
+  v: [
+    // Bottom Left (0)
+    -30.0, 0.0, 30.0,
+    // Bottom Right (1)
+    30.0, 0.0, 30.0,
+    // Top Right (2)
+    30.0, 0.0, -30.0,
+    // Top Left (3)
+    -30.0, 0.0, -30.0
+  ],
+  f: [
+    // Front face
+    0, 1, 2, 0, 2, 3
+  ],
+  colors: [],
+  vt: [],
+  vn: [],
+  min: [-30, 0, -30],
+  max: [30, 0, 30]
+
+}
+
 const cube = {
   v: [
     // Front face
@@ -171,4 +194,5 @@ export default {
   sphere: { model: sphere },
   'plane (circular)': { model: circularPlane },
   platforms: { model: platforms },
+  floor: { model: floor }
 }

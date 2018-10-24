@@ -27,7 +27,7 @@ let initialState = glRenderingContext => {
   rafId: None,
   previousTime: 0.0,
   nextTime: 0.0,
-  cam: Camera.create(),
+  cam: Camera.create(glRenderingContext),
   keys: StringMap.empty,
   gl: glRenderingContext,
   aspect: getAspect(glRenderingContext),
@@ -39,7 +39,7 @@ let reset = state => {
   models: StringMap.map(Model.reset, state.models),
   previousTime: 0.0,
   nextTime: 0.0,
-  cam: Camera.create(),
+  cam: Camera.create(state.gl),
   keys: StringMap.empty,
   lightDirection: Vector.make(1, 5, 4),
 };

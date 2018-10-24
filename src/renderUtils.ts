@@ -5,6 +5,8 @@ import { Architecture } from './models'
 import Vec, * as Vector from './vector'
 import ModelOptions from './modelOptions'
 
+import cdfRender from './render_chineduf'
+
 type Matrix = number[] | Float32Array
 
 const prepareCanvas = (gl: WebGLRenderingContext) => {
@@ -37,6 +39,8 @@ const drawLight = (model: ModelOptions, projectionMatrix: Matrix, cam: Camera, l
   mat4.invert(normalMatrix, modelViewMatrix)
   mat4.transpose(normalMatrix, normalMatrix)
 
+  mat4.mul(modelViewMatrix, mat4.fromQuat(mat4.create(), rotation(cam)), modelViewMatrix)
+
   const uniforms = {
     projectionMatrix,
     modelViewMatrix,
@@ -46,7 +50,7 @@ const drawLight = (model: ModelOptions, projectionMatrix: Matrix, cam: Camera, l
     lightDirection
   }
 
-  render(uniforms)
+  render(uniforms, model.drawArgs.programInfo.program)
 }
 
 const drawObj = (model: ModelOptions, projectionMatrix: Matrix, cam: Camera, lightDirection: Vec, timeOffset: number) => {
@@ -79,7 +83,7 @@ const drawObj = (model: ModelOptions, projectionMatrix: Matrix, cam: Camera, lig
     lightDirection
   }
 
-  render(uniforms)
+  render(uniforms, model.drawArgs.programInfo.program)
 }
 
 export const drawScene = (gl: WebGLRenderingContext, architecture: Architecture, models: ModelOptions[], cam: Camera, aspect: number, lightDirection: Vec, timeOffset: number) => {
@@ -102,9 +106,11 @@ export const drawScene = (gl: WebGLRenderingContext, architecture: Architecture,
 
   const { room, platform, lightSource } = architecture
   const roomModel: ModelOptions = { drawArgs: room, scale: 20, orientation: Vector.zero(), position: Vector.zero() };
-  const platformModel: ModelOptions = { drawArgs: platform, scale: 8, orientation: Vector.zero(), position: [5.5, -1, 0] };
+  const platformModel: ModelOptions = { drawArgs: platform, scale: 8, orientation: Vector.zero(), position: [0, -1, 0] };
   const light: ModelOptions = { drawArgs: lightSource, scale: .5, orientation: Vector.zero(), position: lightDirection, color: [1, .75, 0, 1] };
 
-  [roomModel, platformModel, ...models].forEach(x => drawObj(x, projectionMatrix, cam, lightDirection, timeOffset))
-  drawLight(light, projectionMatrix, cam, lightDirection);
+  // [roomModel, platformModel, ...models].forEach(x => drawObj(x, projectionMatrix, cam, lightDirection, timeOffset))
+  // drawLight(light, projectionMatrix, cam, lightDirection);
+
+  cdfRender(gl, architecture, projectionMatrix, models, cam, lightDirection, timeOffset)
 }

@@ -1,3 +1,3 @@
 type t;
 
-[@bs.module "../camera"] external create: unit => t = "";
+[@bs.module "../camera"] external create: WebGl.renderingContext => t = "";
