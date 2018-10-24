@@ -29,7 +29,9 @@
     2. Do the first render pass for depths, using the light's projection matrix. Render to the allocated frame buffer object.
     3. Do a second render (map and include the remaining models that don't affect shadows) using the depth texture's values to calculate what parts of the scene should be in shadow and not.
 
-    The light projection matrix uses a pretty simple ~lookAt~ function to always face in towards the center of the world and can easily be controlled through the UI
+       The render loop culls front facing triangles during the shadow map rendering and back facing triangles during the actual rendering to help combat shadow acne.
+
+    The light projection matrix uses a simple ~lookAt~ function to always face in towards the center of the world and can easily be controlled through the UI
 
   #+CAPTION: The main UI controls, including model selection, light sliders, and individual model controls (different models may have different shader programs available, for instance)
   [[file:images/ui_controls.png]]
@@ -67,7 +69,7 @@
 
 
 **  Known bugs and probable causes
-   At the time of writing, I am not aware of any bugs. While not
+   At the time of writing, I am not aware of any bugs.
 
 **  Testing methods utilized
    While I am very much an avid proponent of testing, there was no formal or rigorous testing used as part of this project. This is due in part to the fact that testing graphics is inherently more difficult as it can often be hard to test visuals, and due in part to the fact that WebGL is a very stateful system, where setting up test cases and assertions can be very difficult.
@@ -77,5 +79,7 @@ That said, one point where tests could have been very useful is in matrix multip
 Furthermore, as my knowledge of WebGL is still very basic, the entire exercise has been in the realm some may describe 'exploratory programming', where you don't really know what you're going to end up with and how you're going to get there, but you do have an idea of the rough outlines of things. At this level, I would argue that proper testing is still more of an overhead than a boon. Once a proper architecture is established and a solid understanding of the system is in place, however, erecting a test suite would be very beneficial.
 
 ** Sources
-   Throughout the assignment I have had to lean heavily on the few sources I could find. The most valuable ones
-were the [[https://webgl2fundamentals.org/webgl/lessons/webgl-render-to-texture.html][WebGL2 Fundamentals article for rendering to textures]] from whence I got the use of depth textures, the [[http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/][opengl-tutorial article on shadow mapping]], which informed my use of the shadow bias matrix, shadow acne removal, and front and back face culling for rendering, and [[http://www.chinedufn.com/webgl-shadow-mapping-tutorial/][this CFN shadow mapping tutorial]], which influenced the use of the 'percentage closer filtering' algorithm for smoothing the shadows as well as some more basic information around the mapping process itself.
+   Throughout the assignment I have had to lean heavily on the few sources I could find, and as such I would be remiss not to mention the most valuable ones.
+    - [[https://webgl2fundamentals.org/webgl/lessons/webgl-render-to-texture.html][WebGL2 Fundamentals article for rendering to textures]] from whence I got the use of depth textures, the
+    - [[http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/][opengl-tutorial article on shadow mapping]], which informed my use of the shadow bias matrix, shadow acne removal, and front and back face culling for rendering
+    - [[http://www.chinedufn.com/webgl-shadow-mapping-tutorial/][this CFN shadow mapping tutorial]], which influenced the use of the 'percentage closer filtering' algorithm for smoothing the shadows as well as some more basic information around the mapping process itself. Also includes the shadow bias matrix.
