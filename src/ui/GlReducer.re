@@ -50,8 +50,9 @@ let reducer = (action, state) =>
           drawScene(
             state.gl,
             state.architecture,
-            models,
+            state.lightShader,
             cam,
+            models,
             state.aspect,
             light,
             state.nextTime,

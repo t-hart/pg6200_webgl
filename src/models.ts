@@ -30,8 +30,8 @@ export const architecture = (gl: WebGLRenderingContext) => {
   }
 
   return {
-    lightSource: make(objs.sphere, 'color'),
-    room: make(objs.cube, 'lighting', textures.chess),
+    lightSource: make(objs.sphere, 'cam'),
+    room: make(objs.cube, 'cam', textures.chess),
     platform: make(objs.floor, 'cam')
   }
 }

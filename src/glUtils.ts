@@ -53,7 +53,8 @@ const setAttributes = (setters: object) => (attribs: object) => {
 export const createAttributeSetters = (gl: WebGLRenderingContext, program: WebGLProgram) =>
   setAttributes(attribSetters(gl, program))
 
-type Matrix = number[] | Float32Array
+export type Matrix = number[] | Float32Array
+
 export interface Uniforms {
   projectionMatrix: Matrix,
   modelViewMatrix: Matrix,

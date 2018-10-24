@@ -26,7 +26,8 @@ interface RenderArgs {
 
 export const render = (gl: WebGLRenderingContext, uniforms: glUtils.Uniforms, program: WebGLProgram, drawArgs: DrawArgs) => {
   const { attribs, buffers, objData } = drawArgs
-  // gl.useProgram(program)
+  gl.useProgram(program)
+  // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   glUtils.createAttributeSetters(gl, program)(attribs)
   glUtils.setUniforms(programInfo.uniformFunctions(gl, program))(uniforms)
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices)

@@ -4,7 +4,7 @@ precision highp float;
 in vec4 shadowPos;
 
 uniform sampler2D depthColorTexture;
-uniform vec4 uColor;
+uniform vec4 uColorMult;
 
 out vec4 fragColor;
 
@@ -36,5 +36,5 @@ void main(void) {
   }
 
   amountInLight /= 9.0;
-  fragColor = amountInLight * uColor;
+  fragColor = amountInLight * uColorMult;
 }

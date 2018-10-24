@@ -9,14 +9,19 @@ type architecture;
 external getArchitecture: WebGl.renderingContext => architecture =
   "architecture";
 
+type lightShader;
+[@bs.module "../shaders"]
+external getLightShader: WebGl.renderingContext => lightShader = "lightShader";
+
 type aspect = float;
 [@bs.module "../renderUtils"]
 external drawScene:
   (
     WebGl.renderingContext,
     architecture,
-    array(Model.abstract),
+    lightShader,
     Camera.t,
+    array(Model.abstract),
     aspect,
     array(int),
     float

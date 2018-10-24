@@ -15,6 +15,7 @@ type state = {
   gl: WebGl.renderingContext,
   aspect: float,
   lightDirection: Vector.t(int),
+  lightShader,
 };
 
 let initialState = glRenderingContext => {
@@ -31,7 +32,8 @@ let initialState = glRenderingContext => {
   keys: StringMap.empty,
   gl: glRenderingContext,
   aspect: getAspect(glRenderingContext),
-  lightDirection: Vector.make(1, 5, 4),
+  lightDirection: Vector.make(1, 2, 5),
+  lightShader: getLightShader(glRenderingContext),
 };
 
 let reset = state => {

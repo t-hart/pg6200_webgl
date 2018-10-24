@@ -1,6 +1,8 @@
 export interface UniformFunctions {
   projectionMatrix: Function,
   modelViewMatrix: Function,
+  lightModelViewMatrix: Function,
+  lightProjectionMatrix: Function,
   normalMatrix: Function,
   texture: Function,
   colorMult: Function,
@@ -36,11 +38,12 @@ const texture = (gl: WebGLRenderingContext, location: WebGLUniformLocation | nul
 export const uniformFunctions = (gl: WebGLRenderingContext, program: WebGLProgram) => ({
   projectionMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uProjectionMatrix')),
   modelViewMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uModelViewMatrix')),
+  lightModelViewMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uLightModelViewMatrix')),
+  lightProjectionMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uLightProjectionMatrix')),
   normalMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uNormalMatrix')),
   texture: texture(gl, gl.getUniformLocation(program, 'uSampler')),
   colorMult: vec4Uniform(gl, gl.getUniformLocation(program, 'uColorMult')),
   lightDirection: vec3Uniform(gl, gl.getUniformLocation(program, 'uLightDirection'))
-
 })
 
 export const create = (gl: WebGLRenderingContext, program: WebGLProgram): ProgramInfo => ({
@@ -51,14 +54,7 @@ export const create = (gl: WebGLRenderingContext, program: WebGLProgram): Progra
     aTextureCoord: gl.getAttribLocation(program, 'aTextureCoord'),
     aVertexColor: gl.getAttribLocation(program, 'aVertexColor')
   },
-  uniformFunctions: {
-    projectionMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uProjectionMatrix')),
-    modelViewMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uModelViewMatrix')),
-    normalMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uNormalMatrix')),
-    texture: texture(gl, gl.getUniformLocation(program, 'uSampler')),
-    colorMult: vec4Uniform(gl, gl.getUniformLocation(program, 'uColorMult')),
-    lightDirection: vec3Uniform(gl, gl.getUniformLocation(program, 'uLightDirection'))
-  }
+  uniformFunctions: uniformFunctions(gl, program)
 })
 
 export default ProgramInfo

@@ -1,13 +1,13 @@
 import { mat4 } from 'gl-matrix-ts'
+import { LightShader } from './shaders'
 import { rotation, translation } from './camera'
 import Camera from './camera'
 import { Architecture } from './models'
 import Vec, * as Vector from './vector'
 import ModelOptions from './modelOptions'
+import { Matrix } from './glUtils'
 
 import cdfRender from './render_chineduf'
-
-type Matrix = number[] | Float32Array
 
 const prepareCanvas = (gl: WebGLRenderingContext) => {
   gl.clearColor(0, 0, 0, 1)
@@ -86,7 +86,7 @@ const drawObj = (model: ModelOptions, projectionMatrix: Matrix, cam: Camera, lig
   render(uniforms, model.drawArgs.programInfo.program)
 }
 
-export const drawScene = (gl: WebGLRenderingContext, architecture: Architecture, models: ModelOptions[], cam: Camera, aspect: number, lightDirection: Vec, timeOffset: number) => {
+export const drawScene = (gl: WebGLRenderingContext, architecture: Architecture, lightShader: LightShader, cam: Camera, models: ModelOptions[], aspect: number, lightDirection: Vec, timeOffset: number) => {
   prepareCanvas(gl)
 
   // get light direction. render everything orthographically to an fbo. This is the depth texture.
@@ -104,13 +104,13 @@ export const drawScene = (gl: WebGLRenderingContext, architecture: Architecture,
   const projectionMatrix = mat4.perspective(mat4.create(), fieldOfView, aspect, zNear, zFar)
   // const projectionMatrix = mat4.ortho(mat4.create(), -2, 2, -2, 2, .1, 100)
 
-  const { room, platform, lightSource } = architecture
-  const roomModel: ModelOptions = { drawArgs: room, scale: 20, orientation: Vector.zero(), position: Vector.zero() };
-  const platformModel: ModelOptions = { drawArgs: platform, scale: 8, orientation: Vector.zero(), position: [0, -1, 0] };
-  const light: ModelOptions = { drawArgs: lightSource, scale: .5, orientation: Vector.zero(), position: lightDirection, color: [1, .75, 0, 1] };
+  // const { room, platform, lightSource } = architecture
+  // const roomModel: ModelOptions = { drawArgs: room, scale: 20, orientation: Vector.zero(), position: Vector.zero() };
+  // const platformModel: ModelOptions = { drawArgs: platform, scale: 8, orientation: Vector.zero(), position: [0, -1, 0] };
+  // const light: ModelOptions = { drawArgs: lightSource, scale: .5, orientation: Vector.zero(), position: lightDirection, color: [1, .75, 0, 1] };
 
   // [roomModel, platformModel, ...models].forEach(x => drawObj(x, projectionMatrix, cam, lightDirection, timeOffset))
   // drawLight(light, projectionMatrix, cam, lightDirection);
 
-  cdfRender(gl, architecture, projectionMatrix, models, cam, lightDirection, timeOffset)
+  cdfRender(gl, architecture, lightShader, projectionMatrix, models, cam, lightDirection, timeOffset)
 }
