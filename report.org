@@ -1,0 +1,13 @@
+* Graphics programming - home exam 1
+**  Description of solution
+***  Limitations
+***  Things I did not have time for
+**  Technical challenges met during implementation
+**  Known bugs and probable causes
+
+**  Testing methods utilized
+   While I am very much an avid proponent of testing, there was no formal or rigorous testing used as part of this project. This is due in part to the fact that testing graphics is inherently more difficult as it can often be hard to test visuals, and due in part to the fact that WebGL is a very stateful system, where setting up test cases and assertions can be very difficult.
+
+That said, one point where tests could have been very useful is in matrix multiplication and model transformations. If you knew what you would want to end up with, you could have set up a test case and written functions and refined them until they gave the desired output. However, this would require a very good understanding of exactly where you wanted to go and it sounds more like a tool for making sure your calculations and transformations are correct. That said, broken up into small enough functions, this could have been a good way to assert that transformations are correct and to detect potential regressions.
+
+Furthermore, as my knowledge of WebGL is still very basic, the entire exercise has been in the realm some may describe 'exploratory programming', where you don't really know what you're going to end up with and how you're going to get there, but you do have an idea of the rough outlines of things. At this level, I would argue that proper testing is still more of an overhead than a boon. Once a proper architecture is established and a solid understanding of the system is in place, however, erecting a test suite would be very beneficial.
