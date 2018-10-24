@@ -5,10 +5,6 @@ type renderingContext = {
   drawingBufferWidth: int,
 };
 
-[@bs.deriving abstract]
-type texture =
-  | ();
+type texture;
 
-[@bs.deriving abstract]
-type program =
-  | ();
+type program;

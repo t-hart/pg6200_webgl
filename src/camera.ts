@@ -1,7 +1,8 @@
+import { cameraShaderProgram } from './shaders'
 import Quaternion, * as quat from './quaternion'
 import Vector, * as vec from './vector'
 
-const VELOCITY = 2
+const VELOCITY = 10
 const ROTATION = VELOCITY * .5
 
 const X = vec.rotate([1, 0, 0])
@@ -11,13 +12,15 @@ const Z = vec.rotate([0, 0, 1])
 interface Camera {
   translation: Vector,
   rotation: Quaternion,
-  rotationConjugate: Quaternion
+  rotationConjugate: Quaternion,
+  shaderProgram: WebGLProgram
 }
 
-export const create = (translation: Vector = [0, 0, -6], rotation: Quaternion = [0, 0, 0, 1]) => ({
+export const create = (gl: WebGLRenderingContext, translation: Vector = [0, 0, -6], rotation: Quaternion = [0, 0, 0, 1]) => ({
   translation,
   rotation,
-  rotationConjugate: quat.conjugate(rotation)
+  rotationConjugate: quat.conjugate(rotation),
+  shaderProgram: cameraShaderProgram(gl)
 })
 
 const translate = (camera: Camera, axis: Function, delta: number) => ({

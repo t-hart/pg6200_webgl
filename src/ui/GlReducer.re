@@ -9,11 +9,13 @@ type action =
   | KeyUp(Webapi.Dom.KeyboardEvent.t)
   | SelectShader(modelName, shaderKey)
   | SetScale(modelName, int)
-  | SetRotation(modelName, Vector.t(int))
+  | SetOrientation(modelName, Vector.t(int))
+  | SetPosition(modelName, Vector.t(int))
   | SetRafId(option(Webapi.rafId))
   | PrepareRender
-  | Render(array(Model.abstract), bool, float)
+  | Render(array(Model.abstract), array(int), bool, float)
   | SetAspect(float)
+  | SetLightDirection(Vector.t(int))
   | Reset;
 
 let handleKeyPress = state =>
@@ -32,7 +34,7 @@ let cancelAnimation =
 
 let reducer = (action, state) =>
   switch (action) {
-  | Render(models, shouldLoop, currentTime) =>
+  | Render(models, light, shouldLoop, currentTime) =>
     let delta = currentTime -. state.nextTime;
     let deltaClamped = delta > 0.1 ? 0.03344409800000392 : delta;
     let cam =
@@ -47,15 +49,17 @@ let reducer = (action, state) =>
         self => {
           drawScene(
             state.gl,
-            state.room,
-            models,
+            state.architecture,
+            state.lightShader,
             cam,
+            models,
             state.aspect,
+            light,
             state.nextTime,
           );
           shouldLoop ?
             Webapi.requestCancellableAnimationFrame(x =>
-              self.send(Render(models, shouldLoop, x *. 0.001))
+              self.send(Render(models, light, shouldLoop, x *. 0.001))
             )
             ->Some
             ->SetRafId
@@ -68,14 +72,21 @@ let reducer = (action, state) =>
   | PrepareRender =>
     let models =
       StringMap.filter((_, x) => Model.shouldRender(x), state.models);
-    let sideEffects =
-      StringMap.is_empty(models) ?
-        (_ => state.clear()) :
-        {
-          let models =
-            models |> StringMap.map(Model.toAbstract) |> StringMap.toArray;
-          (send => send(Render(models, shouldLoop(state), state.nextTime)));
-        };
+    let sideEffects = {
+      let models =
+        models |> StringMap.map(Model.toAbstract) |> StringMap.toArray;
+      (
+        send =>
+          send(
+            Render(
+              models,
+              Vector.toArray(state.lightDirection),
+              shouldLoop(state),
+              state.nextTime,
+            ),
+          )
+      );
+    };
     ReasonReact.SideEffects(
       (
         self => {
@@ -116,14 +127,34 @@ let reducer = (action, state) =>
       (self => self.send(PrepareRender)),
     );
 
-  | SetRotation(modelName, rotation) =>
+  | SetPosition(modelName, position) =>
     ReasonReact.UpdateWithSideEffects(
       {
         ...state,
         models:
           StringMap.update(
             modelName,
-            mapOption(Model.setRotation(rotation)),
+            mapOption(Model.setPosition(position)),
+            state.models,
+          ),
+      },
+      (self => self.send(PrepareRender)),
+    )
+
+  | SetLightDirection(lightDirection) =>
+    ReasonReact.UpdateWithSideEffects(
+      {...state, lightDirection},
+      (self => self.send(PrepareRender)),
+    )
+
+  | SetOrientation(modelName, orientation) =>
+    ReasonReact.UpdateWithSideEffects(
+      {
+        ...state,
+        models:
+          StringMap.update(
+            modelName,
+            mapOption(Model.setOrientation(orientation)),
             state.models,
           ),
       },
@@ -154,7 +185,7 @@ let reducer = (action, state) =>
 
   | Reset =>
     ReasonReact.UpdateWithSideEffects(
-      initialState(state.gl),
+      reset(state),
       (
         self => {
           cancelAnimation(state.rafId);

@@ -1,0 +1,85 @@
+* Graphics programming - home exam 1
+**  Description of solution
+  This report describes how I completed the first PG6200 home exam.
+
+  The end result is what I believe to be a functioning implementation of a shadow map algorithm.
+
+  #+CAPTION: A cube rendering the depth texture as its own texture
+  [[file:images/cube_final_rendering_depth_texture.png]]
+
+  #+CAPTION: The stanford bunny casting a shadow
+  [[file:images/bunny_final.png]]
+
+*** Shaders
+    After moving to using depth textures, most of the shaders became pretty simple.
+
+    #+INCLUDE: "../src/shaders/light_fragment.glsl" src glsl
+    /With depth textures, just pass the r-value along/
+
+    --------
+    The camera/model vertex shader uses the shadow bias matrix to convert coordinates from coordinates in the space of [-1, 1] to coordinates in [0, 1]:
+    #+INCLUDE: "../src/shaders/cam_vertex.glsl" src glsl
+
+... and then calculates the shadow based on the light value of its nearest neighbors. To avoid areas in shadows to become completely blackened, we add the ambient light values to the visibility values:
+    #+INCLUDE: "../src/shaders/cam_fragment.glsl" src glsl
+
+*** GL general
+    The render loop is split into three stages:
+    1. Map the model data (positions, faces, etc) for the shadow casting objects into model and normal matrices
+    2. Do the first render pass for depths, using the light's projection matrix. Render to the allocated frame buffer object.
+    3. Do a second render (map and include the remaining models that don't affect shadows) using the depth texture's values to calculate what parts of the scene should be in shadow and not.
+
+       The render loop culls front facing triangles during the shadow map rendering and back facing triangles during the actual rendering to help combat shadow acne.
+
+    The light projection matrix uses a simple ~lookAt~ function to always face in towards the center of the world and can easily be controlled through the UI
+
+  #+CAPTION: The main UI controls, including model selection, light sliders, and individual model controls (different models may have different shader programs available, for instance)
+  [[file:images/ui_controls.png]]
+
+*** Known limitations and where to go next
+  Given more time, I would have liked to look more into shading and shadow mapping. In particular, it would have been interesting to explore other options to 'percentage closer filtering' or how that could be improved. I would also have liked to look more into diffuse and specular shading and how to implement these.
+  Furthermore, some more time looking into lighting scenes and models and how the shaders interact would likely yield fruitful results.
+
+*** Other comments
+    I personally really like the effect of the shadow mapping when the parts that are in shadow are completely obscured, but I realize that it's not always appropriate. However, because it looks really good and it was part of the process, I think it's worth including this image from before the ambient light was added back in to the model:
+
+  #+CAPTION: A brain with shadows and no ambient light.
+  [[file:images/brain_no_ambience.png]]
+
+
+**  Technical challenges met during implementation
+   The main challenge met during the implementation--which is likely to pop up other places in the report--was my lack of familiarity with WebGL as a whole. While I have made an effort to stay up to date and follow along with all the coursework, I recognize that I may not have succeeded completely, and as such, I must take at least part of the blame for this shortcoming.
+
+  The assignment states to use the data type ~gl.UNSIGNED_INT_24_8~ for the texture. However, despite spending a lot of time looking for resources I was unable to find any that showed how to use this. The data type was mentioned several times, including in [[https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_depth_texture][MDN's WebGL docs]] and on [[https://webgl2fundamentals.org/webgl/lessons/webgl-data-textures.html][WebGLFundamentals]], but neither those nor any other resources I came across have any examples on how to use it.
+
+  Once I had managed to render to the texture and could confirm that it looked correct by rendering to the canvas instead of to the texture, the next thing was displaying the shadows correctly. In this I faced several challenges, of which the one that took me the longest to solve was how to make the shadows not be affected by the position and rotation of the camera. In the end I realized I had to multiply the lightModelViewMatrix by the camera's rotation matrix to make the shadows appear in the right spot.
+
+  Dimensions of the target texture. This is an area where I struggled to find any good information, but from what I could find, it seems the standard is to make it square. The larger you make it, the more information it can hold and the smoother your shadows will look due to the increased resolution that comes with the larger size. Naturally, this is a point where you trade performance for visual quality, but for keeping downtime to a minimum, I went with 1024x1024, which gives me fairly smooth shadows and still acceptable performance on a mid-range laptop.
+
+  There was also a fair amount of confusion relating to the orthographic projection matrix to be used for the light projection. In particular what values would be appropriate for the corners, and the near and far values. In the end it became a case of trial and error: finding something that would be able to capture the whole scene without getting too blurry because it's too far out. The ideal way to solve this would probably be to calculate how much has to be shown on a case by case basis and then rendering just the required amount, so that when the camera approaches an object and gets closer, the level of detail on the shadows would increase.
+
+  I had an issue with the shadow acne remover used in my fragment shader. At first it was much too coarse which caused the shadows to be severely reduced creating strange artefacts like the thick outline at the edges of the cube being lit when they were clearly in shadow. By making the acne remover much smaller I was able to greatly reduce the effect, but the issue still persists at a much smaller scale. In the end, adding the ambient light seemed to take care of the issue, as can be seen in the after photo.
+
+  #+CAPTION: Before: Acne issues. Note the thick outline along the edge of the cube, which should be in shadow.
+  [[file:images/cube_bad_acne.png]]
+
+  #+CAPTION: After: Cleared of issues
+  [[file:images/cube_final.png]]
+
+
+
+**  Known bugs and probable causes
+   At the time of writing, I am not aware of any bugs.
+
+**  Testing methods utilized
+   While I am very much an avid proponent of testing, there was no formal or rigorous testing used as part of this project. This is due in part to the fact that testing graphics is inherently more difficult as it can often be hard to test visuals, and due in part to the fact that WebGL is a very stateful system, where setting up test cases and assertions can be very difficult.
+
+That said, one point where tests could have been very useful is in matrix multiplication and model transformations. If you knew what you would want to end up with, you could have set up a test case and written functions and refined them until they gave the desired output. However, this would require a very good understanding of exactly where you wanted to go and it sounds more like a tool for making sure your calculations and transformations are correct. That said, broken up into small enough functions, this could have been a good way to assert that transformations are correct and to detect potential regressions.
+
+Furthermore, as my knowledge of WebGL is still very basic, the entire exercise has been in the realm some may describe 'exploratory programming', where you don't really know what you're going to end up with and how you're going to get there, but you do have an idea of the rough outlines of things. At this level, I would argue that proper testing is still more of an overhead than a boon. Once a proper architecture is established and a solid understanding of the system is in place, however, erecting a test suite would be very beneficial.
+
+** Sources
+   Throughout the assignment I have had to lean heavily on the few sources I could find, and as such I would be remiss not to mention the most valuable ones.
+    - [[https://webgl2fundamentals.org/webgl/lessons/webgl-render-to-texture.html][WebGL2 Fundamentals article for rendering to textures]] from whence I got the use of depth textures, the
+    - [[http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/][opengl-tutorial article on shadow mapping]], which informed my use of the shadow bias matrix, shadow acne removal, and front and back face culling for rendering
+    - [[http://www.chinedufn.com/webgl-shadow-mapping-tutorial/][this CFN shadow mapping tutorial]], which influenced the use of the 'percentage closer filtering' algorithm for smoothing the shadows as well as some more basic information around the mapping process itself. Also includes the shadow bias matrix.

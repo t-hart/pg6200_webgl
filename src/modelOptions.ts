@@ -3,7 +3,9 @@ import Vector from './vector'
 
 interface ModelOptions {
   scale: number,
-  rotation: Vector,
+  orientation: Vector,
+  color?: Vector,
+  position: Vector,
   drawArgs: DrawArgs
 }
 

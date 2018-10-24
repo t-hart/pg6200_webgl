@@ -20,12 +20,12 @@ let elementArray = (toElement, xs) =>
 let modelButtons = (send, models) =>
   elementArray(
     ((name, model)) =>
-      <button
+      <SpanButton
         key=name
         className={Model.shouldRender(model) ? "active" : ""}
-        onClick={_ => name->ClickModel->send}>
-        {ReasonReact.string(name)}
-      </button>,
+        onClick={_ => name->ClickModel->send}
+        text=name
+      />,
     models,
   );
 
@@ -54,33 +54,35 @@ let shaderButtons = (onClick, model: Model.t) =>
     model.drawArgs,
   );
 
-let rangeSlider = (value, onChange) =>
-  <input
-    className="button-style"
-    type_="range"
-    min=0
-    max="200"
-    value
-    step=1.0
-    onChange
-  />;
+let rangeSlider = (~min=0, ~max="200", ~step=1.0, value, onChange) =>
+  <input className="button-style" type_="range" min max value step onChange />;
 
-let rotationSliders = (send, name, rotation) =>
+let sliders = (~min=0, ~max="200", onChange, send, vec) =>
   List.map2(
     (f, a) =>
-      rangeSlider(string_of_int(a), event =>
+      rangeSlider(~min, ~max, string_of_int(a), event =>
         send(
           event
           ->Event.value
           ->int_of_string
-          ->(v => Vector.update(rotation, f(v)))
-          ->(x => SetRotation(name, x)),
+          ->(v => Vector.update(vec, f(v)))
+          ->onChange,
         )
       ),
     [Vector.x, Vector.y, Vector.z],
-    Vector.toList(rotation),
+    Vector.toList(vec),
   )
   |> Array.of_list;
+
+let lightDirectionSliders = (send, vec) =>
+  <div className="display-contents">
+    ...{sliders(~min=-50, ~max="50", x => SetLightDirection(x), send, vec)}
+  </div>;
+
+let positionSliders = name =>
+  sliders(~min=-100, ~max="100", x => SetPosition(name, x));
+
+let orientationSliders = name => sliders(x => SetOrientation(name, x));
 
 let modelTransforms = (send, name, model: Model.t) =>
   <>
@@ -93,9 +95,15 @@ let modelTransforms = (send, name, model: Model.t) =>
       }
     </fieldset>
     <fieldset className="span-all no-pad-h">
-      <legend> {ReasonReact.string("Rotation (X, Y, Z)")} </legend>
+      <legend> {ReasonReact.string("Orientation (X, Y, Z)")} </legend>
       <div className="controls">
-        ...{rotationSliders(send, name, model.rotation)}
+        ...{orientationSliders(name, send, model.orientation)}
+      </div>
+    </fieldset>
+    <fieldset className="span-all no-pad-h">
+      <legend> {ReasonReact.string("Position (X, Y, Z)")} </legend>
+      <div className="controls">
+        ...{positionSliders(name, send, model.position)}
       </div>
     </fieldset>
   </>;
@@ -120,6 +128,10 @@ let fieldsets = (send, state): array(Fieldset.t) =>
           legend: "",
         }),
         Leaf({content: modelButtons(send, state.models), legend: "Models"}),
+        Leaf({
+          content: lightDirectionSliders(send, state.lightDirection),
+          legend: "Light direction",
+        }),
       |],
       state.models
       |> StringMap.filter((_, v) => Model.shouldRender(v))
