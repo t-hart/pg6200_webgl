@@ -3,6 +3,8 @@ include GlHandlerImports;
 type programName = string;
 type modelName = string;
 
+let defaultLightDirection = Vector.make(25, 15, 15);
+
 type state = {
   models: StringMap.t(Model.t),
   architecture,
@@ -32,7 +34,7 @@ let initialState = glRenderingContext => {
   keys: StringMap.empty,
   gl: glRenderingContext,
   aspect: getAspect(glRenderingContext),
-  lightDirection: Vector.make(25, 15, 15),
+  lightDirection: defaultLightDirection,
   lightShader: getLightShader(glRenderingContext),
 };
 
@@ -43,7 +45,7 @@ let reset = state => {
   nextTime: 0.0,
   cam: Camera.create(state.gl),
   keys: StringMap.empty,
-  lightDirection: Vector.make(1, 5, 4),
+  lightDirection: defaultLightDirection,
 };
 
 let shouldLoop = state =>
