@@ -44,5 +44,4 @@ void main(void) {
 
   highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);
   vLighting = directionalLightColor * directional;
-  // vLighting = ambientLight + (directionalLightColor * directional);
 }

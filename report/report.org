@@ -7,13 +7,43 @@
   #+CAPTION: A cube rendering the depth texture as its own texture
   [[file:images/cube_final_rendering_depth_texture.png]]
 
-  #+CAPTION: A brain with shadows and no ambient light.
-  [[file:images/brain_no_ambience.png]]
-
   #+CAPTION: The stanford bunny casting a shadow
   [[file:images/bunny_final.png]]
 
-  Throughout
+*** Shaders
+    After moving to using depth textures, most of the shaders became pretty simple.
+
+    #+INCLUDE: "../src/shaders/light_fragment.glsl" src glsl
+    /With depth textures, just pass the r-value along/
+
+    --------
+    The camera/model vertex shader uses the shadow bias matrix to convert coordinates from coordinates in the space of [-1, 1] to coordinates in [0, 1]:
+    #+INCLUDE: "../src/shaders/cam_vertex.glsl" src glsl
+
+... and then calculates the shadow based on the light value of its nearest neighbors. To avoid areas in shadows to become completely blackened, we add the ambient light values to the visibility values:
+    #+INCLUDE: "../src/shaders/cam_fragment.glsl" src glsl
+
+*** GL general
+    The render loop is split into three stages:
+    1. Map the model data (positions, faces, etc) for the shadow casting objects into model and normal matrices
+    2. Do the first render pass for depths, using the light's projection matrix. Render to the allocated frame buffer object.
+    3. Do a second render (map and include the remaining models that don't affect shadows) using the depth texture's values to calculate what parts of the scene should be in shadow and not.
+
+    The light projection matrix uses a pretty simple ~lookAt~ function to always face in towards the center of the world and can easily be controlled through the UI
+
+  #+CAPTION: The main UI controls, including model selection, light sliders, and individual model controls (different models may have different shader programs available, for instance)
+  [[file:images/ui_controls.png]]
+
+*** Known limitations and where to go next
+  Given more time, I would have liked to look more into shading and shadow mapping. In particular, it would have been interesting to explore other options to 'percentage closer filtering' or how that could be improved. I would also have liked to look more into diffuse and specular shading and how to implement these.
+  Furthermore, some more time looking into lighting scenes and models and how the shaders interact would likely yield fruitful results.
+
+*** Other comments
+    I personally really like the effect of the shadow mapping when the parts that are in shadow are completely obscured, but I realize that it's not always appropriate. However, because it looks really good and it was part of the process, I think it's worth including this image from before the ambient light was added back in to the model:
+
+  #+CAPTION: A brain with shadows and no ambient light.
+  [[file:images/brain_no_ambience.png]]
+
 
 **  Technical challenges met during implementation
    The main challenge met during the implementation--which is likely to pop up other places in the report--was my lack of familiarity with WebGL as a whole. While I have made an effort to stay up to date and follow along with all the coursework, I recognize that I may not have succeeded completely, and as such, I must take at least part of the blame for this shortcoming.
@@ -26,10 +56,18 @@
 
   There was also a fair amount of confusion relating to the orthographic projection matrix to be used for the light projection. In particular what values would be appropriate for the corners, and the near and far values. In the end it became a case of trial and error: finding something that would be able to capture the whole scene without getting too blurry because it's too far out. The ideal way to solve this would probably be to calculate how much has to be shown on a case by case basis and then rendering just the required amount, so that when the camera approaches an object and gets closer, the level of detail on the shadows would increase.
 
+  I had an issue with the shadow acne remover used in my fragment shader. At first it was much too coarse which caused the shadows to be severely reduced creating strange artefacts like the thick outline at the edges of the cube being lit when they were clearly in shadow. By making the acne remover much smaller I was able to greatly reduce the effect, but the issue still persists at a much smaller scale. In the end, adding the ambient light seemed to take care of the issue, as can be seen in the after photo.
+
+  #+CAPTION: Before: Acne issues. Note the thick outline along the edge of the cube, which should be in shadow.
+  [[file:images/cube_bad_acne.png]]
+
+  #+CAPTION: After: Cleared of issues
+  [[file:images/cube_final.png]]
+
+
 
 **  Known bugs and probable causes
-  I had an issue with the shadow acne remover used in my fragment shader. At first it was much too coarse which caused the shadows to be severely reduced creating strange artefacts like the thick outline at the edges of the cube being lit when they were clearly in shadow. By making the acne remover much smaller I was able to greatly reduce the effect, but the issue still persists at a much smaller scale. It seems likely to be caused by a depth comparison issue, where the points along the edge are too close to what the point that the light hits and so is quite possibly caused by the depth texture resolution being too low. It could possibly also be caused by how the texture is set to wrap and/or the filters applied to it (~TEXTURE_MIN_FILTER~/~TEXTURE_MAG_FILTER~). A bit more time would have likely helped a fix for it.
-
+   At the time of writing, I am not aware of any bugs. While not
 
 **  Testing methods utilized
    While I am very much an avid proponent of testing, there was no formal or rigorous testing used as part of this project. This is due in part to the fact that testing graphics is inherently more difficult as it can often be hard to test visuals, and due in part to the fact that WebGL is a very stateful system, where setting up test cases and assertions can be very difficult.
