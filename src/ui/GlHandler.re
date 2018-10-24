@@ -76,7 +76,7 @@ let sliders = (~min=0, ~max="200", onChange, send, vec) =>
 
 let lightDirectionSliders = (send, vec) =>
   <div className="display-contents">
-    ...{sliders(~min=-5, ~max="5", x => SetLightDirection(x), send, vec)}
+    ...{sliders(~min=-50, ~max="50", x => SetLightDirection(x), send, vec)}
   </div>;
 
 let positionSliders = name =>

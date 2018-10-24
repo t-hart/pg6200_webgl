@@ -39,12 +39,14 @@ const attribSetters = (gl: WebGLRenderingContext, program: WebGLProgram) => {
   const keyVals = range(numAttribs)
     .map(i => gl.getActiveAttrib(program, i))
     .filter(x => x)
+    // @ts-ignore -- we've already filtered out null values
     .map(x => [x.name, createAttribSetter(gl.getAttribLocation(program, x.name))])
   return objectFromValues(...keyVals)
 }
 
 const setAttributes = (setters: object) => (attribs: object) => {
   Object.entries(attribs).forEach(([k, v]) => {
+    // @ts-ignore
     const setter = setters[k] || (() => { })
     setter(v)
   })
@@ -56,16 +58,19 @@ export const createAttributeSetters = (gl: WebGLRenderingContext, program: WebGL
 export type Matrix = number[] | Float32Array
 
 export interface Uniforms {
-  projectionMatrix: Matrix,
-  modelViewMatrix: Matrix,
+  projectionMatrix?: Matrix,
+  modelViewMatrix?: Matrix,
   normalMatrix?: Matrix,
   texture?: WebGLTexture | null,
   colorMult?: Vector,
-  lightDirection?: Vector
+  lightDirection?: Vector,
+  lightProjectionMatrix?: Matrix,
+  lightModelViewMatrix?: Matrix
 }
 
 export const setUniforms = (setters: UniformFunctions) => (uniforms: Uniforms) => {
   Object.entries(uniforms).forEach(([k, v]) => {
+    // @ts-ignore
     setters[k](v)
   })
 }

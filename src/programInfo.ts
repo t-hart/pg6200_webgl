@@ -10,7 +10,7 @@ export interface UniformFunctions {
 }
 
 interface ProgramInfo {
-  program: WebGLProgram | null,
+  program: WebGLProgram,
   attribLocations: {
     aVertexPosition: number,
     aVertexNormal: number,
