@@ -5,7 +5,7 @@ in vec4 shadowPos;
 in vec4 vColor;
 in vec3 vLighting;
 
-uniform sampler2D depthColorTexture;
+uniform sampler2D uDepthTexture;
 
 out vec4 fragColor;
 
@@ -29,7 +29,7 @@ void main(void) {
 
   for (int x = -1; x <= 1; x++) {
     for (int y = -1; y <= 1; y++) {
-      float texelDepth = decodeFloat(texture(depthColorTexture, fragmentDepth.xy + vec2(x, y) * texelSize));
+      float texelDepth = decodeFloat(texture(uDepthTexture, fragmentDepth.xy + vec2(x, y) * texelSize));
       if (fragmentDepth.z < texelDepth) {
         amountInLight += 1.0;
       }

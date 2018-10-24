@@ -5,6 +5,7 @@ export interface UniformFunctions {
   lightProjectionMatrix: Function,
   normalMatrix: Function,
   texture: Function,
+  depthTexture: Function,
   colorMult: Function,
   lightDirection: Function,
 }
@@ -42,6 +43,7 @@ export const uniformFunctions = (gl: WebGLRenderingContext, program: WebGLProgra
   lightProjectionMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uLightProjectionMatrix')),
   normalMatrix: matrixUniform(gl, gl.getUniformLocation(program, 'uNormalMatrix')),
   texture: texture(gl, gl.getUniformLocation(program, 'uSampler')),
+  depthTexture: texture(gl, gl.getUniformLocation(program, 'uDepthTexture')),
   colorMult: vec4Uniform(gl, gl.getUniformLocation(program, 'uColorMult')),
   lightDirection: vec3Uniform(gl, gl.getUniformLocation(program, 'uLightDirection'))
 })

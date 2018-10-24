@@ -89,7 +89,8 @@ export default (gl: WebGLRenderingContext, architecture: Architecture, lightShad
         modelViewMatrix,
         normalMatrix,
         lightModelViewMatrix,
-        texture: shadowDepthTexture,
+        texture: model.drawArgs.texture,
+        depthTexture: shadowDepthTexture,
         colorMult: model.color,
         lightDirection
       }
